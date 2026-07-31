@@ -31,7 +31,7 @@ interface MeasurementsState {
   reset: () => void;
 }
 
-export const useMeasurementsStore = create<MeasurementsState>((set, get) => ({
+export const useMeasurementsStore = create<MeasurementsState>((set) => ({
   measurements: [],
   isLoading: false,
   error: null,
@@ -43,7 +43,7 @@ export const useMeasurementsStore = create<MeasurementsState>((set, get) => ({
 
     try {
       logger.debug("Fetching measurements for profile", { profileId });
-      const result = await getMeasurements({ profileId });
+      const result = await getMeasurements();
 
       if (result.error) {
         logger.warn("Error fetching measurements", {
@@ -83,16 +83,13 @@ export const useMeasurementsStore = create<MeasurementsState>((set, get) => ({
     }
   },
 
-  addMeasurement: async (profileId, measurement) => {
+  addMeasurement: async (profileId) => {
     set({ isLoading: true, error: null });
 
     try {
       logger.debug("Adding new measurement", { profileId });
 
-      const result = await addMeasurementAction({
-        ...measurement,
-        profileId,
-      });
+      const result = await addMeasurementAction();
 
       if (result.error) {
         logger.warn("Error adding measurement", {
@@ -134,16 +131,13 @@ export const useMeasurementsStore = create<MeasurementsState>((set, get) => ({
     }
   },
 
-  updateMeasurement: async (id, measurement) => {
+  updateMeasurement: async (id) => {
     set({ isLoading: true, error: null });
 
     try {
       logger.debug("Updating measurement", { id });
 
-      const result = await updateMeasurementAction({
-        ...measurement,
-        id,
-      });
+      const result = await updateMeasurementAction();
 
       if (result.error) {
         logger.warn("Error updating measurement", {
@@ -186,7 +180,7 @@ export const useMeasurementsStore = create<MeasurementsState>((set, get) => ({
     try {
       logger.debug("Deleting measurement", { id });
 
-      const result = await deleteMeasurementAction({ id });
+      const result = await deleteMeasurementAction();
 
       if (result.error) {
         logger.warn("Error deleting measurement", {

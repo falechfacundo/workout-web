@@ -13,18 +13,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
-interface TrainingSessionDetailPageProps {
-  params: {
-    id: string;
-    sessionId: string;
-  };
-}
-
-export default function TrainingSessionDetailPage({
-  params,
-}: TrainingSessionDetailPageProps) {
+export default function TrainingSessionDetailPage() {
+  const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
   const router = useRouter();
   const {
     currentSession,
@@ -40,8 +32,8 @@ export default function TrainingSessionDetailPage({
     // Cargar los datos de la sesión y sus ejercicios
     async function loadData() {
       try {
-        await fetchSession(params.sessionId);
-        await fetchSessionExercises(params.sessionId);
+        await fetchSession(sessionId);
+        await fetchSessionExercises(sessionId);
       } catch (error) {
         console.error("Error loading session data:", error);
       }
@@ -53,7 +45,7 @@ export default function TrainingSessionDetailPage({
     return () => {
       reset();
     };
-  }, [params.sessionId, fetchSession, fetchSessionExercises, reset]);
+  }, [sessionId, fetchSession, fetchSessionExercises, reset]);
 
   if (isLoading) {
     return (
@@ -114,7 +106,7 @@ export default function TrainingSessionDetailPage({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" asChild>
-              <Link href={`/dashboard/mesocycles/${params.id}`}>
+              <Link href={`/dashboard/mesocycles/${id}`}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
               </Link>
@@ -124,18 +116,18 @@ export default function TrainingSessionDetailPage({
                 {currentSession.name}
               </h1>
               <p className="text-muted-foreground">
-                {currentSession.day_of_week !== null
+                {currentSession.day_of_week != null
                   ? `${dayNames[currentSession.day_of_week]} - `
                   : ""}
-                {currentSession.week_number
-                  ? `Week ${currentSession.week_number}`
+                {currentSession.scheduled_date
+                  ? new Date(currentSession.scheduled_date).toLocaleDateString()
                   : ""}
               </p>
             </div>
           </div>
           <Button asChild>
             <Link
-              href={`/dashboard/mesocycles/${params.id}/sessions/${params.sessionId}/exercises/new`}
+              href={`/dashboard/mesocycles/${id}/sessions/${sessionId}/exercises/new`}
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Exercise
@@ -143,13 +135,13 @@ export default function TrainingSessionDetailPage({
           </Button>
         </div>
 
-        {currentSession.notes && (
+        {currentSession.description && (
           <Card>
             <CardHeader>
-              <CardTitle>Notes</CardTitle>
+              <CardTitle>Description</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>{currentSession.notes}</p>
+              <p>{currentSession.description}</p>
             </CardContent>
           </Card>
         )}
@@ -170,7 +162,7 @@ export default function TrainingSessionDetailPage({
                 </p>
                 <Button asChild>
                   <Link
-                    href={`/dashboard/mesocycles/${params.id}/sessions/${params.sessionId}/exercises/new`}
+                    href={`/dashboard/mesocycles/${id}/sessions/${sessionId}/exercises/new`}
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Add First Exercise
@@ -201,32 +193,28 @@ export default function TrainingSessionDetailPage({
                     <div>
                       <div className="text-sm font-medium">Sets</div>
                       <div className="text-sm text-muted-foreground">
-                        {exercise.target_sets}
+                        {exercise.sets}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium">Reps</div>
                       <div className="text-sm text-muted-foreground">
-                        {exercise.target_reps_min && exercise.target_reps_max
-                          ? `${exercise.target_reps_min}-${exercise.target_reps_max}`
-                          : exercise.target_reps_min ||
-                            exercise.target_reps_max ||
-                            "Not specified"}
+                        {exercise.reps || "Not specified"}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium">RIR</div>
                       <div className="text-sm text-muted-foreground">
-                        {exercise.target_rir !== null
-                          ? exercise.target_rir
+                        {exercise.rir !== null && exercise.rir !== undefined
+                          ? exercise.rir
                           : "Not specified"}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm font-medium">Rest</div>
                       <div className="text-sm text-muted-foreground">
-                        {exercise.planned_rest_seconds
-                          ? `${exercise.planned_rest_seconds} seconds`
+                        {exercise.rest_between_sets
+                          ? `${exercise.rest_between_sets} seconds`
                           : "Not specified"}
                       </div>
                     </div>
@@ -244,7 +232,7 @@ export default function TrainingSessionDetailPage({
                   <div className="mt-4 flex justify-end gap-2">
                     <Button variant="outline" size="sm" asChild>
                       <Link
-                        href={`/dashboard/mesocycles/${params.id}/sessions/${params.sessionId}/exercises/${exercise.id}/edit`}
+                        href={`/dashboard/mesocycles/${id}/sessions/${sessionId}/exercises/${exercise.id}/edit`}
                       >
                         Edit
                       </Link>

@@ -20,50 +20,11 @@ import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("training-session-schedule");
 
-interface ScheduleSectionProps {
-  totalWeeks: number;
-}
-
-export function ScheduleSection({ totalWeeks }: ScheduleSectionProps) {
+export function ScheduleSection() {
   const form = useFormContext();
 
   return (
     <div className="grid gap-6 sm:grid-cols-2">
-      <FormField
-        control={form.control}
-        name="week_number"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Week Number</FormLabel>
-            <Select
-              onValueChange={(value) => {
-                const numValue = parseInt(value);
-                logger.debug("Week number changed", { value: numValue });
-                field.onChange(numValue);
-              }}
-              defaultValue={field.value?.toString()}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select week" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {Array.from({ length: totalWeeks }, (_, i) => (
-                  <SelectItem key={i + 1} value={(i + 1).toString()}>
-                    Week {i + 1}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormDescription>
-              Which week of the mesocycle this session belongs to
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       <FormField
         control={form.control}
         name="day_of_week"
@@ -95,6 +56,29 @@ export function ScheduleSection({ totalWeeks }: ScheduleSectionProps) {
             </Select>
             <FormDescription>
               Which day of the week this session is scheduled for
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="duration_minutes"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Duration (minutes)</FormLabel>
+            <FormControl>
+              <input
+                type="number"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="e.g. 60"
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+              />
+            </FormControl>
+            <FormDescription>
+              Estimated duration for this session
             </FormDescription>
             <FormMessage />
           </FormItem>

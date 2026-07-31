@@ -1,7 +1,8 @@
 "use client";
 
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+// @ts-expect-error - react-beautiful-dnd type declarations not installed
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Plus, GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,7 @@ export function ExerciseList() {
 
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="exercises">
-          {(provided) => (
+          {(provided: any) => (
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
@@ -77,7 +78,7 @@ export function ExerciseList() {
             >
               {fields.map((field, index) => (
                 <Draggable key={field.id} draggableId={field.id} index={index}>
-                  {(provided) => (
+                  {(provided: any) => (
                     <Card
                       ref={provided.innerRef}
                       {...provided.draggableProps}

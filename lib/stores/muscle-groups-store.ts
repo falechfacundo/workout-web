@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getMuscleGroups } from "@/lib/actions/muscle-groups";
 import { createLogger } from "@/lib/utils/logger";
-import { MuscleGroup } from "@/lib/schemas/muscle-groups";
+import { MuscleGroup } from "@/lib/schemas/muscle-group";
 
 const logger = createLogger("muscle-groups-store");
 

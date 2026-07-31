@@ -398,7 +398,7 @@ export default function Home() {
                 </h3>
                 <p className="text-muted-foreground">
                   Navigate to the Mesocycles section in your dashboard and click
-                  "Create Mesocycle". Follow the guided process to set up your
+                  &quot;Create Mesocycle&quot;. Follow the guided process to set up your
                   training program.
                 </p>
               </div>
@@ -443,7 +443,7 @@ export default function Home() {
                 </h3>
                 <p className="text-muted-foreground">
                   Yes, you can cancel your subscription at any time from your
-                  account settings. You'll continue to have access until the end
+                  account settings. You&apos;ll continue to have access until the end
                   of your billing period.
                 </p>
               </div>

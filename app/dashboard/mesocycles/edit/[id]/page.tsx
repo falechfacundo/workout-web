@@ -7,15 +7,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 interface EditMesocyclePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function EditMesocyclePage({
   params,
 }: EditMesocyclePageProps) {
-  const { data: mesocycle, error } = await getMesocycle(params.id);
+  const { id } = await params;
+  const { data: mesocycle, error } = await getMesocycle(id);
 
   if (error || !mesocycle) {
     return notFound();
@@ -42,7 +43,17 @@ export default async function EditMesocyclePage({
         </div>
 
         <div className="mx-auto max-w-2xl">
-          <MesocycleForm initialData={mesocycle} userId={mesocycle.user_id} />
+          <MesocycleForm
+            initialData={{
+              ...mesocycle,
+              focus_muscle_groups: Array.isArray(mesocycle.focus_muscle_groups)
+                ? mesocycle.focus_muscle_groups.map((f: any) =>
+                    typeof f === "string" ? f : f.muscle_group_id
+                  )
+                : [],
+            }}
+            userId={mesocycle.user_id}
+          />
         </div>
       </div>
     </DashboardLayout>

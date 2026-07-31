@@ -104,8 +104,10 @@ CREATE TABLE IF NOT EXISTS exercises (
   name TEXT NOT NULL,
   description TEXT,
   instructions TEXT,
+  video_url TEXT,
   equipment_needed TEXT,
   difficulty_level TEXT CHECK (difficulty_level IN ('beginner', 'intermediate', 'advanced')),
+  primary_muscle_group_id UUID REFERENCES muscle_groups(id) ON DELETE SET NULL,
   is_default BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
@@ -163,8 +165,13 @@ CREATE TABLE IF NOT EXISTS mesocycle_muscle_group_focus (
 CREATE TABLE IF NOT EXISTS training_sessions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   mesocycle_id UUID REFERENCES mesocycles(id) ON DELETE CASCADE,
-    day_of_week INTEGER CHECK (day_of_week BETWEEN 0 AND 6),
+  name TEXT NOT NULL,
+  description TEXT,
+  day_of_week INTEGER CHECK (day_of_week BETWEEN 0 AND 6),
   duration_minutes INTEGER,
+  status TEXT DEFAULT 'planned' CHECK (status IN ('planned', 'in_progress', 'completed', 'cancelled')),
+  scheduled_date DATE,
+  completed_date DATE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW())
 );
@@ -190,9 +197,11 @@ CREATE TABLE IF NOT EXISTS workout_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   training_session_id UUID REFERENCES training_sessions(id) ON DELETE SET NULL,
+  mesocycle_id UUID REFERENCES mesocycles(id) ON DELETE SET NULL,
   date DATE NOT NULL,
   start_time TIMESTAMP WITH TIME ZONE,
   end_time TIMESTAMP WITH TIME ZONE,
+  duration_minutes INTEGER,
   notes TEXT,
   rating INTEGER CHECK (rating BETWEEN 1 AND 5),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
@@ -741,6 +750,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to get volume by muscle group for a user within a period (used by dashboard)
+CREATE OR REPLACE FUNCTION get_volume_by_muscle_group(
+  user_id_param UUID,
+  period_param TEXT DEFAULT 'month'
+)
+RETURNS TABLE (
+  id UUID,
+  name TEXT,
+  volume NUMERIC,
+  sets NUMERIC
+) AS $$
+DECLARE
+  start_date DATE;
+BEGIN
+  IF period_param = 'week' THEN
+    start_date := CURRENT_DATE - INTERVAL '7 days';
+  ELSIF period_param = 'month' THEN
+    start_date := CURRENT_DATE - INTERVAL '1 month';
+  ELSIF period_param = 'year' THEN
+    start_date := CURRENT_DATE - INTERVAL '1 year';
+  ELSE
+    start_date := CURRENT_DATE - INTERVAL '1 month';
+  END IF;
+
+  RETURN QUERY
+  SELECT 
+    mg.id,
+    mg.name,
+    SUM(el.reps * el.weight * CASE WHEN emg.is_primary THEN 1.0 ELSE 0.5 END) AS volume,
+    COUNT(DISTINCT el.id) * CASE WHEN emg.is_primary THEN 1.0 ELSE 0.5 END AS sets
+  FROM 
+    exercise_logs el
+    JOIN workout_logs wl ON el.workout_log_id = wl.id
+    JOIN exercises e ON el.exercise_id = e.id
+    JOIN exercise_muscle_groups emg ON e.id = emg.exercise_id
+    JOIN muscle_groups mg ON emg.muscle_group_id = mg.id
+  WHERE 
+    wl.user_id = user_id_param
+    AND wl.date >= start_date
+  GROUP BY 
+    mg.id, mg.name, emg.is_primary
+  ORDER BY 
+    volume DESC;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Create triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_modified_column()
 RETURNS TRIGGER AS $$
@@ -792,4 +847,24 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 
 CREATE TRIGGER update_mesocycle_muscle_group_focus_modtime
 BEFORE UPDATE ON mesocycle_muscle_group_focus
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_mesocycle_templates_modtime
+BEFORE UPDATE ON mesocycle_templates
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_mesocycle_template_goals_modtime
+BEFORE UPDATE ON mesocycle_template_goals
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_mesocycle_template_muscle_focus_modtime
+BEFORE UPDATE ON mesocycle_template_muscle_focus
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_training_session_templates_modtime
+BEFORE UPDATE ON training_session_templates
+FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+CREATE TRIGGER update_template_session_exercises_modtime
+BEFORE UPDATE ON template_session_exercises
 FOR EACH ROW EXECUTE FUNCTION update_modified_column();

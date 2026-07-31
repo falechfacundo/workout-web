@@ -1,10 +1,5 @@
 import { z } from "zod";
-import {
-  muscleGroupSchema,
-  muscleGroupWithIncidenceSchema,
-  type MuscleGroup,
-  type MuscleGroupWithIncidence,
-} from "./muscle-group";
+import { muscleGroupWithIncidenceSchema } from "./muscle-group";
 
 /**
  * Schema for exercises table

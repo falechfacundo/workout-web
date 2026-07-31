@@ -4,57 +4,43 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/utils/supabase/server";
 import { z } from "zod";
-import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
-import { AppError } from "@/lib/error";
-import {
-  workoutLogSchema,
-  workoutLogWithRelationsSchema,
-  type WorkoutLogWithRelations,
-  type WorkoutLog,
-} from "../schemas/workout-log";
-import {
-  workoutSetSchema,
-  workoutSetFormSchema,
-  type WorkoutSet,
-  type WorkoutSetFormValues,
-} from "../schemas/workout-set";
-import { exerciseLogSchema, type ExerciseLog } from "../schemas/exercise-log";
 
-// Create a specific logger for this module
 const logger = createLogger("workout-logs-actions");
 
 // Schema for validation
 const WorkoutLogSchema = z.object({
   id: z.string().optional(),
   user_id: z.string(),
-  session_template_id: z.string().optional(),
+  training_session_id: z.string().optional(),
   mesocycle_id: z.string().optional(),
-  start_time: z.string().default(() => new Date().toISOString()),
+  date: z.string().default(() => new Date().toISOString().split("T")[0]),
+  start_time: z.string().optional(),
   end_time: z.string().optional(),
   notes: z.string().optional(),
   duration_minutes: z.number().min(0).optional(),
+  rating: z.number().min(1).max(5).optional(),
 });
 
 export type WorkoutLogFormData = z.infer<typeof WorkoutLogSchema>;
 
 // Schema for set in workout
-const WorkoutSetSchema = z.object({
+const ExerciseLogSetSchema = z.object({
   id: z.string().optional(),
   workout_log_id: z.string().optional(),
   exercise_id: z.string(),
   set_number: z.number().min(1),
-  reps_performed: z.number().min(0),
-  weight_lifted: z.number().min(0),
-  rpe: z.number().min(0).max(10).optional(),
+  reps: z.number().min(0),
+  weight: z.number().min(0).optional().nullable(),
+  rir: z.number().min(0).max(10).optional().nullable(),
   notes: z.string().optional(),
 });
 
-export type WorkoutSetFormData = z.infer<typeof WorkoutSetSchema>;
+export type ExerciseLogSetFormData = z.infer<typeof ExerciseLogSetSchema>;
 
 type WorkoutLogWithSets =
-  Database["public"]["Tables"]["workout_logs"]["Row"] & {
-    sets: Database["public"]["Tables"]["workout_log_sets"]["Row"][];
+  any & {
+    exercise_logs: any[];
     session?: {
       name: string;
     };
@@ -68,7 +54,7 @@ export async function createWorkoutLog(
 ): Promise<{ data: WorkoutLogWithSets | null; error: string | null }> {
   try {
     logger.debug("Iniciando creación de workout log", {
-      sessionTemplateId: formData.session_template_id,
+      trainingSessionId: formData.training_session_id,
       mesocycleId: formData.mesocycle_id,
     });
     const startTime = performance.now();
@@ -78,7 +64,16 @@ export async function createWorkoutLog(
 
     const { data: workoutLog, error: workoutError } = await supabase
       .from("workout_logs")
-      .insert(validatedData)
+      .insert({
+        user_id: validatedData.user_id,
+        training_session_id: validatedData.training_session_id || null,
+        mesocycle_id: validatedData.mesocycle_id || null,
+        date: validatedData.date,
+        start_time: validatedData.start_time || new Date().toISOString(),
+        notes: validatedData.notes || null,
+        duration_minutes: validatedData.duration_minutes || null,
+        rating: validatedData.rating || null,
+      })
       .select()
       .single();
 
@@ -95,13 +90,6 @@ export async function createWorkoutLog(
       userId: workoutLog.user_id,
       duration: Math.round(performance.now() - startTime),
     });
-
-    if (!workoutLog) {
-      return {
-        data: null,
-        error: "No se pudo crear el registro de entrenamiento",
-      };
-    }
 
     return { data: workoutLog as WorkoutLogWithSets, error: null };
   } catch (error) {
@@ -122,20 +110,21 @@ export async function updateWorkoutLog(
 
     const { data: workoutLog, error: workoutError } = await supabase
       .from("workout_logs")
-      .update(validatedData)
+      .update({
+        training_session_id: validatedData.training_session_id || null,
+        mesocycle_id: validatedData.mesocycle_id || null,
+        date: validatedData.date,
+        end_time: validatedData.end_time || null,
+        notes: validatedData.notes || null,
+        duration_minutes: validatedData.duration_minutes || null,
+        rating: validatedData.rating || null,
+      })
       .eq("id", id)
       .select()
       .single();
 
     if (workoutError) {
       return { data: null, error: workoutError.message };
-    }
-
-    if (!workoutLog) {
-      return {
-        data: null,
-        error: "No se pudo actualizar el registro de entrenamiento",
-      };
     }
 
     return { data: workoutLog as WorkoutLogWithSets, error: null };
@@ -162,7 +151,7 @@ export async function deleteWorkoutLog(
     }
 
     return { error: null };
-  } catch (error) {
+  } catch {
     return { error: "Error al eliminar el registro de entrenamiento" };
   }
 }
@@ -177,7 +166,7 @@ export async function getWorkoutLog(
       .select(
         `
         *,
-        sets:workout_sets(*)
+        exercise_logs:exercise_logs(*)
       `
       )
       .eq("id", id)
@@ -192,7 +181,7 @@ export async function getWorkoutLog(
     }
 
     return { data: workoutLog as WorkoutLogWithSets, error: null };
-  } catch (error) {
+  } catch {
     return {
       data: null,
       error: "Error al obtener el registro de entrenamiento",
@@ -210,20 +199,20 @@ export async function getWorkoutLogs(
       .select(
         `
         *,
-        sets:workout_log_sets(*),
-        session:training_sessions_template(name),
+        exercise_logs:exercise_logs(*),
+        session:training_sessions(name),
         mesocycle:mesocycles(name)
       `
       )
       .eq("user_id", userId)
-      .order("started_at", { ascending: false });
+      .order("date", { ascending: false });
 
     if (error) {
       return { data: null, error: error.message };
     }
 
     return { data: workoutLogs as WorkoutLogWithSets[], error: null };
-  } catch (error) {
+  } catch {
     return {
       data: null,
       error: "Error al obtener los registros de entrenamiento",
@@ -231,17 +220,60 @@ export async function getWorkoutLogs(
   }
 }
 
-export async function createWorkoutSet(formData: WorkoutSetFormData): Promise<{
-  data: Database["public"]["Tables"]["workout_log_sets"]["Row"] | null;
+export async function getWorkoutLogsByDateRange(
+  userId: string,
+  startDate: string,
+  endDate: string
+): Promise<{ data: WorkoutLogWithSets[] | null; error: string | null }> {
+  try {
+    const supabase = await createClient();
+    const { data: workoutLogs, error } = await supabase
+      .from("workout_logs")
+      .select(
+        `
+        *,
+        exercise_logs:exercise_logs(*),
+        session:training_sessions(name),
+        mesocycle:mesocycles(name)
+      `
+      )
+      .eq("user_id", userId)
+      .gte("date", startDate)
+      .lte("date", endDate)
+      .order("date", { ascending: true });
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    return { data: workoutLogs as WorkoutLogWithSets[], error: null };
+  } catch {
+    return {
+      data: null,
+      error: "Error al obtener los registros de entrenamiento",
+    };
+  }
+}
+
+export async function createExerciseLogSet(formData: ExerciseLogSetFormData): Promise<{
+  data: any | null;
   error: string | null;
 }> {
   try {
-    const validatedData = WorkoutSetSchema.parse(formData);
+    const validatedData = ExerciseLogSetSchema.parse(formData);
     const supabase = await createClient();
 
-    const { data: workoutSet, error: setError } = await supabase
-      .from("workout_log_sets")
-      .insert(validatedData)
+    const { data: exerciseLog, error: setError } = await supabase
+      .from("exercise_logs")
+      .insert({
+        workout_log_id: validatedData.workout_log_id!,
+        exercise_id: validatedData.exercise_id,
+        set_number: validatedData.set_number,
+        reps: validatedData.reps,
+        weight: validatedData.weight || null,
+        rir: validatedData.rir || null,
+        notes: validatedData.notes || null,
+      })
       .select()
       .single();
 
@@ -249,11 +281,7 @@ export async function createWorkoutSet(formData: WorkoutSetFormData): Promise<{
       return { data: null, error: setError.message };
     }
 
-    if (!workoutSet) {
-      return { data: null, error: "No se pudo crear el set" };
-    }
-
-    return { data: workoutSet, error: null };
+    return { data: exerciseLog, error: null };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { data: null, error: error.errors[0].message };
@@ -262,20 +290,27 @@ export async function createWorkoutSet(formData: WorkoutSetFormData): Promise<{
   }
 }
 
-export async function updateWorkoutSet(
+export async function updateExerciseLogSet(
   id: string,
-  formData: WorkoutSetFormData
+  formData: ExerciseLogSetFormData
 ): Promise<{
-  data: Database["public"]["Tables"]["workout_log_sets"]["Row"] | null;
+  data: any | null;
   error: string | null;
 }> {
   try {
-    const validatedData = WorkoutSetSchema.parse(formData);
+    const validatedData = ExerciseLogSetSchema.parse(formData);
     const supabase = await createClient();
 
-    const { data: workoutSet, error: setError } = await supabase
-      .from("workout_log_sets")
-      .update(validatedData)
+    const { data: exerciseLog, error: setError } = await supabase
+      .from("exercise_logs")
+      .update({
+        exercise_id: validatedData.exercise_id,
+        set_number: validatedData.set_number,
+        reps: validatedData.reps,
+        weight: validatedData.weight || null,
+        rir: validatedData.rir || null,
+        notes: validatedData.notes || null,
+      })
       .eq("id", id)
       .select()
       .single();
@@ -284,11 +319,7 @@ export async function updateWorkoutSet(
       return { data: null, error: setError.message };
     }
 
-    if (!workoutSet) {
-      return { data: null, error: "No se pudo actualizar el set" };
-    }
-
-    return { data: workoutSet, error: null };
+    return { data: exerciseLog, error: null };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { data: null, error: error.errors[0].message };
@@ -297,13 +328,13 @@ export async function updateWorkoutSet(
   }
 }
 
-export async function deleteWorkoutSet(
+export async function deleteExerciseLogSet(
   id: string
 ): Promise<{ error: string | null }> {
   try {
     const supabase = await createClient();
     const { error } = await supabase
-      .from("workout_log_sets")
+      .from("exercise_logs")
       .delete()
       .eq("id", id);
 
@@ -312,7 +343,7 @@ export async function deleteWorkoutSet(
     }
 
     return { error: null };
-  } catch (error) {
+  } catch {
     return { error: "Error al eliminar el set" };
   }
 }
@@ -326,7 +357,7 @@ export async function completeWorkoutLog(
   const { error } = await supabase
     .from("workout_logs")
     .update({
-      completed_at: new Date().toISOString(),
+      end_time: new Date().toISOString(),
       duration_minutes: duration,
       notes: notes || null,
     })
@@ -345,7 +376,7 @@ export async function completeWorkoutLog(
 export async function getWorkoutSets(workoutId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("workout_log_sets")
+    .from("exercise_logs")
     .select(
       `
       *,
@@ -383,14 +414,15 @@ export async function getWorkoutStats(
     .select(
       `
       id,
+      date,
       start_time,
       end_time,
       duration_minutes
     `
     )
     .eq("user_id", userId)
-    .gte("start_time", startDate.toISOString())
-    .order("start_time");
+    .gte("date", startDate.toISOString().split("T")[0])
+    .order("date");
 
   if (error) {
     throw new Error(`Error fetching workout stats: ${error.message}`);

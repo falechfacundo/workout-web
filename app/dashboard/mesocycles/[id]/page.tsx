@@ -5,36 +5,28 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Edit, Plus, Target } from "lucide-react";
+import { ArrowLeft, Edit, Plus, Target } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import { differenceInWeeks } from "date-fns";
 import { WeekContent } from "@/components/dashboard/mesocycles/week-content";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useEffect } from "react";
 
-interface MesocycleDetailPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function MesocycleDetailPage({
-  params,
-}: MesocycleDetailPageProps) {
+export default function MesocycleDetailPage() {
+  const { id } = useParams<{ id: string }>();
   const { currentMesocycle, fetchMesocycle, isLoading, error } =
     useMesocyclesStore();
 
   // Cargar los datos desde el store cuando el componente se monta
   useEffect(() => {
-    fetchMesocycle(params.id);
-  }, [params.id, fetchMesocycle]);
+    fetchMesocycle(id);
+  }, [id, fetchMesocycle]);
 
   // Mostrar estado de carga
   if (isLoading) {
@@ -119,13 +111,13 @@ export default function MesocycleDetailPage({
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button variant="outline" asChild>
-              <Link href={`/dashboard/mesocycles/edit/${params.id}`}>
+              <Link href={`/dashboard/mesocycles/edit/${id}`}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Mesocycle
               </Link>
             </Button>
             <Button asChild>
-              <Link href={`/dashboard/mesocycles/${params.id}/sessions/new`}>
+              <Link href={`/dashboard/mesocycles/${id}/sessions/new`}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Session
               </Link>
@@ -180,7 +172,7 @@ export default function MesocycleDetailPage({
                       className="flex items-center gap-2"
                     >
                       <Target className="h-5 w-5 text-primary" />
-                      <span className="font-medium">{goal.description}</span>
+                      <span className="font-medium">{goal.notes || goal.goal_type}</span>
                     </div>
                   ))
                 ) : (
@@ -246,7 +238,7 @@ export default function MesocycleDetailPage({
                 value={`week${weekNumber}`}
                 className="mt-4"
               >
-                <WeekContent mesocycleId={params.id} weekNumber={weekNumber} />
+                <WeekContent mesocycleId={id} weekNumber={weekNumber} />
               </TabsContent>
             );
           })}

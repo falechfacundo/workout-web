@@ -136,7 +136,6 @@ export const useExercisesStore = create<ExercisesState>((set, get) => ({
   filterExercises: () => {
     const { exercises, searchQuery, selectedMuscleGroupId } = get();
     let filtered = [...exercises];
-    const startCount = filtered.length;
 
     // Filter by search query
     if (searchQuery) {

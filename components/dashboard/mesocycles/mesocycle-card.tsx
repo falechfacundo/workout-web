@@ -8,14 +8,20 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Database } from "@/lib/database.types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
-type Mesocycle = Database["public"]["Tables"]["mesocycles"]["Row"];
-
 interface MesocycleCardProps {
-  mesocycle: Mesocycle;
+  mesocycle: {
+    id: string;
+    name: string;
+    description?: string | null;
+    start_date: string;
+    end_date: string;
+    status: string;
+    created_at?: string;
+    updated_at?: string;
+  };
 }
 
 export function MesocycleCard({ mesocycle }: MesocycleCardProps) {
@@ -25,7 +31,7 @@ export function MesocycleCard({ mesocycle }: MesocycleCardProps) {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <CardTitle>{mesocycle.name}</CardTitle>
-            <CardDescription>{mesocycle.goal}</CardDescription>
+            <CardDescription>{mesocycle.description || "No description"}</CardDescription>
           </div>
           <Badge
             variant={
@@ -62,9 +68,9 @@ export function MesocycleCard({ mesocycle }: MesocycleCardProps) {
               </div>
             </div>
             <div>
-              <div className="text-sm font-medium">Goal</div>
+              <div className="text-sm font-medium">Description</div>
               <div className="text-sm text-muted-foreground">
-                {mesocycle.goal || "No goal"}
+                {mesocycle.description || "No description"}
               </div>
             </div>
           </div>

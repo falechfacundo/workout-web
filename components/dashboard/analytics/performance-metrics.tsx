@@ -22,8 +22,8 @@ export function PerformanceMetrics({ userId }: PerformanceMetricsProps) {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        const data = await getPerformanceMetrics(userId)
-        setMetrics(data)
+        const result = await getPerformanceMetrics(userId)
+        setMetrics(result.data && typeof result.data === 'object' && 'totalWorkouts' in result.data ? result.data as any : null)
       } catch (error) {
         console.error("Failed to fetch performance metrics:", error)
       } finally {

@@ -20,8 +20,8 @@ export function VolumeByMuscleGroup({ userId }: VolumeByMuscleGroupProps) {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        const volumeData = await getVolumeByMuscleGroup(userId, period)
-        setData(volumeData)
+        const result = await getVolumeByMuscleGroup(userId, period)
+        setData(Array.isArray(result.data) ? result.data : [])
       } catch (error) {
         console.error("Failed to fetch volume data:", error)
       } finally {
@@ -75,7 +75,7 @@ export function VolumeByMuscleGroup({ userId }: VolumeByMuscleGroupProps) {
               <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                <YAxis tickLine={false} axisLine={false} tickFormatter={(value: string | number) => `${value}`} />
                 <Tooltip content={<ChartTooltipContent indicator="dashed" />} />
                 <Bar dataKey="volume" fill="var(--color-volume)" radius={4} name="Volume" />
               </BarChart>

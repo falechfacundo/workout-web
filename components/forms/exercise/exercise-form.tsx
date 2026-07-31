@@ -15,7 +15,6 @@ import { createLogger } from "@/lib/utils/logger";
 import {
   exerciseFormSchema,
   type ExerciseFormValues,
-  type ExerciseFormData,
 } from "@/lib/schemas/exercise";
 
 import { BasicInfoSection } from "./basic-info-section";
@@ -24,7 +23,7 @@ import { MuscleGroupsSection } from "./muscle-groups-section";
 const logger = createLogger("exercise-form");
 
 interface ExerciseFormProps {
-  initialData?: ExerciseFormData;
+  initialData?: ExerciseFormValues;
 }
 
 export function ExerciseForm({ initialData }: ExerciseFormProps) {
@@ -54,8 +53,8 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
 
     try {
       const result = initialData?.id
-        ? await updateExercise(values as ExerciseFormData)
-        : await createExercise(values as ExerciseFormData);
+        ? await updateExercise(values as ExerciseFormValues)
+        : await createExercise(values as ExerciseFormValues);
 
       if (result?.error) {
         logger.warn("Error submitting exercise form", {

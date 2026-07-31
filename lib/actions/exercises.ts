@@ -5,13 +5,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/utils/supabase/server";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
-import { AppError } from "@/lib/error";
 import {
   exerciseFormSchema,
-  type Exercise,
   type ExerciseWithRelations,
-  type ExerciseFormData,
-  type MuscleGroup,
+  type ExerciseFormValues,
 } from "@/lib/schemas/exercise";
 
 // Crear un logger específico para el módulo de ejercicios
@@ -217,10 +214,10 @@ export async function getExercise(id: string) {
       .single();
 
     if (error) {
-      logger.warn(`Error al obtener ejercicio con ID ${id}`, error, {
+      logger.warn(`Error al obtener ejercicio con ID ${id}`, {
         errorCode: error.code,
         errorMessage: error.message,
-      });
+      }, error);
 
       return {
         data: null,
@@ -242,8 +239,8 @@ export async function getExercise(id: string) {
     if (muscleGroupsError) {
       logger.warn(
         `Error al obtener grupos musculares para ejercicio ${id}`,
-        muscleGroupsError,
-        { exerciseId: id, exerciseName: data.name }
+        { exerciseId: id, exerciseName: data.name },
+        muscleGroupsError
       );
     } else {
       data.secondary_muscle_groups =
@@ -272,7 +269,7 @@ export async function getExercise(id: string) {
   });
 }
 
-export async function createExercise(formData: ExerciseFormData) {
+export async function createExercise(formData: ExerciseFormValues) {
   return safeAction(async () => {
     logger.debug("Iniciando creación de ejercicio", {
       exerciseName: formData.name,
@@ -421,13 +418,12 @@ export async function createExercise(formData: ExerciseFormData) {
   });
 }
 
-export async function updateExercise(formData: ExerciseFormData) {
+export async function updateExercise(formData: ExerciseFormValues) {
   return safeAction(async () => {
     logger.debug("Iniciando actualización de ejercicio", {
       exerciseId: formData.id,
       exerciseName: formData.name,
     });
-    const startTime = performance.now();
 
     // Validate form data
     const validatedFields = exerciseFormSchema.safeParse(formData);

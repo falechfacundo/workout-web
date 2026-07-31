@@ -30,11 +30,12 @@ import { X } from "lucide-react";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createLogger } from "@/lib/utils/logger";
+import type { MesocycleTemplateFormValues } from "@/lib/schemas/mesocycle-template";
 
 const logger = createLogger("template-muscle-focus-section");
 
 export function MuscleFocusSection() {
-  const form = useFormContext();
+  const form = useFormContext<MesocycleTemplateFormValues>();
   const { muscleGroups, isLoading, fetchMuscleGroups } = useMuscleGroupsStore();
 
   useEffect(() => {

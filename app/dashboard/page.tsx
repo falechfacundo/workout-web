@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dumbbell, Calendar, Target, BarChart3, Clock } from "lucide-react";
+import { Calendar } from "lucide-react";
 import Link from "next/link";
 
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
@@ -20,6 +20,7 @@ import { createClient } from "@/lib/utils/supabase/client";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useWorkoutLogsStore } from "@/lib/stores/workout-logs-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { getPerformanceMetrics } from "@/lib/actions/analytics";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
@@ -31,7 +32,7 @@ export default function DashboardPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
 
   const { activeMesocycles, fetchActiveMesocycles } = useMesocyclesStore();
-  const { workoutStats, fetchWorkoutStats } = useWorkoutLogsStore();
+  const { fetchWorkoutStats } = useWorkoutLogsStore();
 
   // Cargar datos cuando el usuario está autenticado
   useEffect(() => {
@@ -47,17 +48,13 @@ export default function DashboardPage() {
         ]);
 
         // Obtener métricas de rendimiento
-        const { data: analyticsData, error: analyticsError } = await supabase
-          .from("analytics_performance_metrics")
-          .select("*")
-          .eq("user_id", user.id)
-          .single();
+        const metricsResult = await getPerformanceMetrics(user.id);
 
-        if (analyticsError && analyticsError.code !== "PGRST116") {
+        if (metricsResult.error) {
           setError("Error loading performance metrics");
         } else {
           setMetrics(
-            analyticsData || {
+            metricsResult.data || {
               totalWorkouts: 0,
               totalVolume: 0,
               totalSets: 0,
@@ -75,7 +72,7 @@ export default function DashboardPage() {
         if (volumeError) {
           console.error("Error loading muscle group volume:", volumeError);
         } else {
-          setMuscleGroupVolume(volumeData || []);
+          setMuscleGroupVolume((volumeData as any[]) || []);
         }
       } catch (err) {
         console.error("Dashboard error:", err);

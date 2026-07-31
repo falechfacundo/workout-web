@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Play, Pause, RotateCcw, Timer } from "lucide-react"
@@ -21,6 +21,19 @@ export function WorkoutTimer({ defaultRestTime = 90, onTimerComplete, className 
   const countRef = useRef<NodeJS.Timeout | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
+  const handleTimerComplete = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.play().catch((e) => console.error("Error playing audio:", e))
+    }
+    setIsPaused(true)
+    onTimerComplete?.()
+  }, [onTimerComplete])
+
+  const handleTimerCompleteRef = useRef(handleTimerComplete)
+  useEffect(() => {
+    handleTimerCompleteRef.current = handleTimerComplete
+  }, [handleTimerComplete])
+
   useEffect(() => {
     // Initialize audio
     audioRef.current = new Audio("/sounds/timer-complete.mp3")
@@ -36,13 +49,7 @@ export function WorkoutTimer({ defaultRestTime = 90, onTimerComplete, className 
   useEffect(() => {
     if (isActive && !isPaused) {
       countRef.current = setInterval(() => {
-        setTime((time) => {
-          if (isRestTimer && time >= restTime) {
-            handleTimerComplete()
-            return 0
-          }
-          return time + 1
-        })
+        setTime((time) => time + 1)
       }, 1000)
     } else if (countRef.current) {
       clearInterval(countRef.current)
@@ -53,7 +60,14 @@ export function WorkoutTimer({ defaultRestTime = 90, onTimerComplete, className 
         clearInterval(countRef.current)
       }
     }
-  }, [isActive, isPaused, isRestTimer, restTime])
+  }, [isActive, isPaused])
+
+  // Detectar la finalización del descanso cuando el tiempo alcanza el límite
+  useEffect(() => {
+    if (isActive && !isPaused && isRestTimer && time >= restTime) {
+      handleTimerCompleteRef.current()
+    }
+  }, [isActive, isPaused, isRestTimer, time, restTime])
 
   const handleStart = () => {
     setIsActive(true)
@@ -71,16 +85,6 @@ export function WorkoutTimer({ defaultRestTime = 90, onTimerComplete, className 
   const handleReset = () => {
     setIsActive(false)
     setTime(0)
-  }
-
-  const handleTimerComplete = () => {
-    if (audioRef.current) {
-      audioRef.current.play().catch((e) => console.error("Error playing audio:", e))
-    }
-    setIsPaused(true)
-    if (onTimerComplete) {
-      onTimerComplete()
-    }
   }
 
   const startRestTimer = (seconds: number = defaultRestTime) => {

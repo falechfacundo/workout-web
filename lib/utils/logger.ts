@@ -285,6 +285,9 @@ export class ModuleLogger {
       [ErrorCode.UNAUTHORIZED]: LogLevel.WARN,
       [ErrorCode.CONFLICT]: LogLevel.WARN,
       [ErrorCode.SERVER_ERROR]: LogLevel.ERROR,
+      [ErrorCode.RATE_LIMIT_EXCEEDED]: LogLevel.WARN,
+      [ErrorCode.BAD_REQUEST]: LogLevel.WARN,
+      [ErrorCode.FORBIDDEN]: LogLevel.WARN,
     };
 
     this.logger.logEntry({

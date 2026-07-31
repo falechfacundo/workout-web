@@ -9,9 +9,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
-import { createLogger } from "@/lib/utils/logger";
-
-const logger = createLogger("measurement-body-section");
 
 export function BodyMeasurementsSection() {
   const form = useFormContext();

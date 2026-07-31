@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,15 +40,12 @@ import { createClient } from "@/lib/utils/supabase/client";
 export default function WorkoutLogsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [user, setUser] = useState<any>(null);
+  const [, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMesocycleId, setSelectedMesocycleId] = useState<string | null>(
     null
   );
-  const [calculatedMuscleGroupData, setCalculatedMuscleGroupData] = useState<
-    Record<string, any>
-  >({});
 
   const {
     workoutLogs,
@@ -61,7 +58,56 @@ export default function WorkoutLogsPage() {
 
   const { mesocycles, fetchMesocycles } = useMesocyclesStore();
 
-  const [filteredWorkoutLogs, setFilteredWorkoutLogs] = useState(workoutLogs);
+  // Métricas de grupos musculares por workout derivadas de logs y sets
+  const calculatedMuscleGroupData = useMemo(() => {
+    const muscleGroupMetricsMap: Record<string, any> = {};
+
+    if (!workoutLogs || !workoutSets) return muscleGroupMetricsMap;
+
+    workoutLogs.forEach((log) => {
+      const workoutSetsList = workoutSets.filter(
+        (set) => set.workout_log_id === log.id
+      );
+
+      if (workoutSetsList && workoutSetsList.length > 0) {
+        muscleGroupMetricsMap[log.id] =
+          calculateMuscleGroupMetricsFromSets(workoutSetsList);
+      }
+    });
+
+    return muscleGroupMetricsMap;
+  }, [workoutLogs, workoutSets]);
+
+  // Logs filtrados derivados de los datos y criterios de filtrado
+  const filteredWorkoutLogs = useMemo(() => {
+    if (!workoutLogs) return [];
+
+    let filtered = [...workoutLogs];
+
+    if (searchQuery) {
+      filtered = filtered.filter((log) => {
+        const sessionName = log.session?.name?.toLowerCase() || "";
+        const mesocycleName = log.mesocycle?.name?.toLowerCase() || "";
+        return (
+          sessionName.includes(searchQuery.toLowerCase()) ||
+          mesocycleName.includes(searchQuery.toLowerCase())
+        );
+      });
+    }
+
+    if (selectedMesocycleId) {
+      filtered = filtered.filter(
+        (log) => log.mesocycle_id === selectedMesocycleId
+      );
+    }
+
+    filtered.sort(
+      (a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    return filtered;
+  }, [workoutLogs, searchQuery, selectedMesocycleId]);
 
   // Verificar autenticación y cargar datos
   useEffect(() => {
@@ -109,66 +155,6 @@ export default function WorkoutLogsPage() {
 
     loadWorkoutSets();
   }, [workoutLogs, fetchWorkoutSets]);
-
-  // Efecto para calcular las métricas de grupos musculares por workout
-  useEffect(() => {
-    if (!workoutLogs || !workoutSets) return;
-
-    const muscleGroupMetricsMap: Record<string, any> = {};
-
-    workoutLogs.forEach((log) => {
-      // Obtener los sets para este workout
-      const workoutSetsList = workoutSets.filter(
-        (set) => set.workout_log_id === log.id
-      );
-
-      if (workoutSetsList && workoutSetsList.length > 0) {
-        // Calcular métricas usando una función similar a calculateMuscleGroupMetrics
-        const muscleGroupMetrics =
-          calculateMuscleGroupMetricsFromSets(workoutSetsList);
-        muscleGroupMetricsMap[log.id] = muscleGroupMetrics;
-      }
-    });
-
-    setCalculatedMuscleGroupData(muscleGroupMetricsMap);
-  }, [workoutLogs, workoutSets]);
-
-  // Efecto para filtrar los logs cuando cambian los criterios
-  useEffect(() => {
-    if (!workoutLogs) {
-      setFilteredWorkoutLogs([]);
-      return;
-    }
-
-    let filtered = [...workoutLogs];
-
-    // Filtrar por búsqueda
-    if (searchQuery) {
-      filtered = filtered.filter((log) => {
-        const sessionName = log.session?.name?.toLowerCase() || "";
-        const mesocycleName = log.mesocycle?.name?.toLowerCase() || "";
-        return (
-          sessionName.includes(searchQuery.toLowerCase()) ||
-          mesocycleName.includes(searchQuery.toLowerCase())
-        );
-      });
-    }
-
-    // Filtrar por mesociclo
-    if (selectedMesocycleId) {
-      filtered = filtered.filter(
-        (log) => log.mesocycle_id === selectedMesocycleId
-      );
-    }
-
-    // Ordenar por fecha (más reciente primero)
-    filtered.sort(
-      (a, b) =>
-        new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
-    );
-
-    setFilteredWorkoutLogs(filtered);
-  }, [workoutLogs, searchQuery, selectedMesocycleId]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -276,7 +262,7 @@ export default function WorkoutLogsPage() {
                 <DropdownMenuCheckboxItem
                   key={mesocycle.id}
                   checked={selectedMesocycleId === mesocycle.id}
-                  onClick={() => handleMesocycleFilter(mesocycle.id)}
+                  onClick={() => mesocycle.id && handleMesocycleFilter(mesocycle.id)}
                 >
                   {mesocycle.name}
                 </DropdownMenuCheckboxItem>
@@ -336,8 +322,8 @@ export default function WorkoutLogsPage() {
             </Card>
           ) : (
             filteredWorkoutLogs.map((log) => {
-              const sets =
-                workoutSets.filter((set) => set.workout_log_id === log.id) ||
+              const sets: any[] =
+                workoutSets.filter((set: any) => set.workout_log_id === log.id) ||
                 [];
               const muscleGroupData = calculatedMuscleGroupData[log.id] || [];
 
@@ -357,16 +343,16 @@ export default function WorkoutLogsPage() {
                             {log.mesocycle?.name
                               ? `${log.mesocycle.name} - `
                               : ""}
-                            {new Date(log.started_at).toLocaleDateString()}
+                            {new Date(log.date).toLocaleDateString()}
                           </CardDescription>
                         </div>
                       </div>
                       <Badge>
-                        {log.completed_at
-                          ? new Date(log.started_at).toLocaleDateString() ===
+                        {log.end_time
+                          ? new Date(log.date).toLocaleDateString() ===
                             new Date().toLocaleDateString()
                             ? "Today"
-                            : new Date(log.started_at).toLocaleDateString()
+                            : new Date(log.date).toLocaleDateString()
                           : "In Progress"}
                       </Badge>
                     </div>
@@ -403,8 +389,8 @@ export default function WorkoutLogsPage() {
                               .reduce(
                                 (sum, set) =>
                                   sum +
-                                  (set.weight_lifted || 0) *
-                                    (set.reps_performed || 0),
+                                  (set.weight || 0) *
+                                    (set.reps || 0),
                                 0
                               )
                               .toLocaleString()}{" "}
@@ -523,9 +509,9 @@ function calculateMuscleGroupMetricsFromSets(sets: any[]) {
       muscleGroupMetrics[primaryMuscleId].sets += sets.length;
 
       for (const set of sets) {
-        const setVolume = (set.weight_lifted || 0) * (set.reps_performed || 0);
+        const setVolume = (set.weight || 0) * (set.reps || 0);
         muscleGroupMetrics[primaryMuscleId].volume += setVolume;
-        muscleGroupMetrics[primaryMuscleId].weight += set.weight_lifted || 0;
+        muscleGroupMetrics[primaryMuscleId].weight += set.weight || 0;
       }
     }
 
@@ -553,9 +539,9 @@ function calculateMuscleGroupMetricsFromSets(sets: any[]) {
 
         for (const set of sets) {
           const setVolume =
-            (set.weight_lifted || 0) * (set.reps_performed || 0) * 0.5;
+            (set.weight || 0) * (set.reps || 0) * 0.5;
           muscleGroupMetrics[muscleId].volume += setVolume;
-          muscleGroupMetrics[muscleId].weight += (set.weight_lifted || 0) * 0.5;
+          muscleGroupMetrics[muscleId].weight += (set.weight || 0) * 0.5;
         }
       }
     }

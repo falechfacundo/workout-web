@@ -46,13 +46,12 @@ export function SessionExerciseForm({
     resolver: zodResolver(sessionExerciseFormSchema),
     defaultValues: {
       id: initialData?.id || undefined,
-      session_template_id: sessionId,
+      training_session_id: sessionId,
       exercise_id: initialData?.exercise_id || "",
-      target_sets: initialData?.target_sets || 3,
-      target_reps_min: initialData?.target_reps_min || 8,
-      target_reps_max: initialData?.target_reps_max || 12,
-      target_rir: initialData?.target_rir || 2,
-      planned_rest_seconds: initialData?.planned_rest_seconds || 90,
+      sets: initialData?.sets || 3,
+      reps: initialData?.reps || 8,
+      rir: initialData?.rir || 2,
+      rest_between_sets: initialData?.rest_between_sets || 90,
       notes: initialData?.notes || "",
     },
   });

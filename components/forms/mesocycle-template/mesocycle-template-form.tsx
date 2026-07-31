@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
-import { createClientComponentClient } from "@supabase/auth-client-js";
+import { createClient } from "@/lib/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export function MesocycleTemplateForm({
   onCancel,
 }: MesocycleTemplateFormProps) {
   const router = useRouter();
-  const supabase = createClientComponentClient<Database>();
+  const supabase = createClient();
 
   // Get actions from store
   const { createTemplate, updateTemplate, isLoading, error } =

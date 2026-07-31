@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Trash2, Edit, LineChart, Plus } from "lucide-react";
+import { Trash2, Edit, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -17,7 +16,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -32,7 +30,6 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MeasurementForm } from "@/components/forms/measurement/measurement-form";
-import { Database } from "@/lib/database.types";
 import { useMeasurementsStore } from "@/lib/stores/measurements-store";
 import {
   LineChart as CustomLineChart,
@@ -46,7 +43,7 @@ import {
 } from "recharts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+import { type Profile } from "@/lib/schemas/profile";
 
 interface MeasurementHistoryProps {
   profile: Profile;
@@ -58,8 +55,6 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
     isLoading,
     error,
     fetchMeasurements,
-    addMeasurement,
-    updateMeasurement,
     deleteMeasurement,
   } = useMeasurementsStore();
 

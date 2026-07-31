@@ -75,12 +75,12 @@ export function ProfileForm({
 
     try {
       // Format date as ISO string if it exists
-      const formattedData: ProfileFormData = {
+      const formattedData = {
         ...data,
         birth_date: data.birth_date
           ? data.birth_date.toISOString().split("T")[0]
           : null,
-      };
+      } as ProfileFormData;
 
       const result = await updateUserProfile(formattedData);
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { exerciseLogSchema, type ExerciseLog } from "./exercise-log";
+import { exerciseLogSchema } from "./exercise-log";
 
 /**
  * Form schema for workout logs
@@ -8,8 +8,9 @@ import { exerciseLogSchema, type ExerciseLog } from "./exercise-log";
  */
 export const workoutLogFormSchema = z.object({
   user_id: z.string(),
+  date: z.string().optional(),
   mesocycle_id: z.string().optional(),
-  session_template_id: z.string().optional(),
+  training_session_id: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -21,18 +22,20 @@ export const workoutLogFormSchema = z.object({
  * Relations:
  * - Belongs to a user (many-to-one)
  * - Can be part of a mesocycle (many-to-one, optional)
- * - Can be based on a session template (many-to-one, optional)
+ * - Can be based on a training session (many-to-one, optional)
  * - Has multiple exercise_logs (one-to-many)
  */
 export const workoutLogSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
   mesocycle_id: z.string().uuid().optional().nullable(),
-  session_template_id: z.string().uuid().optional().nullable(),
-  start_time: z.string(),
+  training_session_id: z.string().uuid().optional().nullable(),
+  date: z.string(),
+  start_time: z.string().optional().nullable(),
   end_time: z.string().optional().nullable(),
-  total_volume: z.number().optional().nullable(),
+  duration_minutes: z.number().int().optional().nullable(),
   notes: z.string().optional().nullable(),
+  rating: z.number().int().min(1).max(5).optional().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -50,7 +53,7 @@ export type WorkoutLogFormValues = z.infer<typeof workoutLogFormSchema>;
  * Schema for workout log with related data
  *
  * Extends the base schema with information about the exercises performed
- * and related entities like mesocycle and session template
+ * and related entities like mesocycle and training session
  */
 export const workoutLogWithRelationsSchema = workoutLogSchema.extend({
   exercise_logs: z.array(exerciseLogSchema).optional(),
@@ -60,7 +63,7 @@ export const workoutLogWithRelationsSchema = workoutLogSchema.extend({
       name: z.string(),
     })
     .optional(),
-  session_template: z
+  session: z
     .object({
       id: z.string().uuid(),
       name: z.string(),

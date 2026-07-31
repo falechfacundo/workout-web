@@ -30,16 +30,15 @@ export function WeekContent({ mesocycleId, weekNumber }: WeekContentProps) {
 
   const {
     sessions,
+    sessionExercises,
     isLoading,
     error,
     fetchSessionsByMesocycle,
     fetchSessionExercises,
   } = useTrainingSessionsStore();
 
-  // Filtrar sesiones para esta semana
-  const weekSessions = sessions.filter(
-    (session) => session.week_number === weekNumber
-  );
+  // Show all sessions for this mesocycle (scheduled_date based)
+  const weekSessions = sessions;
 
   useEffect(() => {
     async function loadSessions() {
@@ -58,10 +57,10 @@ export function WeekContent({ mesocycleId, weekNumber }: WeekContentProps) {
       for (const session of weekSessions) {
         if (!exercisesLoaded[session.id]) {
           try {
-            const exercises = await fetchSessionExercises(session.id);
+            await fetchSessionExercises(session.id);
             setExercisesData((prev) => ({
               ...prev,
-              [session.id]: exercises,
+              [session.id]: sessionExercises,
             }));
             setExercisesLoaded((prev) => ({
               ...prev,
@@ -82,7 +81,7 @@ export function WeekContent({ mesocycleId, weekNumber }: WeekContentProps) {
     }
 
     loadExercises();
-  }, [sessionsLoaded, weekSessions, fetchSessionExercises, exercisesLoaded]);
+  }, [sessionsLoaded, weekSessions, fetchSessionExercises, exercisesLoaded, sessionExercises]);
 
   if (isLoading || !sessionsLoaded) {
     return (
@@ -158,7 +157,7 @@ export function WeekContent({ mesocycleId, weekNumber }: WeekContentProps) {
                   <div>
                     <CardTitle>{session.name}</CardTitle>
                     <CardDescription>
-                      {session.day_of_week !== null
+                      {session.day_of_week != null
                         ? `${dayNames[session.day_of_week]} - `
                         : ""}
                       {isExercisesLoading
@@ -168,7 +167,7 @@ export function WeekContent({ mesocycleId, weekNumber }: WeekContentProps) {
                   </div>
                 </div>
                 <Badge variant="outline">
-                  {session.day_of_week !== null
+                  {session.day_of_week != null
                     ? dayNames[session.day_of_week]
                     : "Flexible"}
                 </Badge>

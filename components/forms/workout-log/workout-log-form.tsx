@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -13,10 +13,9 @@ import { createLogger } from "@/lib/utils/logger";
 import {
   workoutLogFormSchema,
   type WorkoutLogFormValues,
-  type WorkoutLogFormData,
 } from "@/lib/schemas/workout-log";
 
-import { useWorkoutLogsStore } from "@/lib/stores/workout-logs-store";
+import { createWorkoutLog } from "@/lib/actions/workout-logs";
 
 import { MesocycleSelector } from "./mesocycle-selector";
 import { SessionSelector } from "./session-selector";
@@ -31,19 +30,22 @@ interface WorkoutLogFormProps {
 export function WorkoutLogForm({ userId }: WorkoutLogFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createLog } = useWorkoutLogsStore();
 
   const form = useForm<WorkoutLogFormValues>({
     resolver: zodResolver(workoutLogFormSchema),
     defaultValues: {
       user_id: userId,
+      date: new Date().toISOString().split("T")[0],
       mesocycle_id: undefined,
-      session_template_id: undefined,
+      training_session_id: undefined,
       notes: "",
     },
   });
 
-  const selectedMesocycle = form.watch("mesocycle_id");
+  const selectedMesocycle = useWatch({
+    control: form.control,
+    name: "mesocycle_id",
+  });
 
   async function onSubmit(values: WorkoutLogFormValues) {
     logger.debug("Submitting workout log form", {
@@ -54,7 +56,12 @@ export function WorkoutLogForm({ userId }: WorkoutLogFormProps) {
     setIsSubmitting(true);
 
     try {
-      const workoutLogId = await createLog(values as WorkoutLogFormData);
+      const result = await createWorkoutLog({
+        ...values,
+        date: values.date || new Date().toISOString().split("T")[0],
+      });
+
+      const workoutLogId = result.data?.id || null;
 
       if (!workoutLogId) {
         logger.warn("Failed to create workout log");

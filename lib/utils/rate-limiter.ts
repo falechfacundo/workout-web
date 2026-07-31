@@ -1,8 +1,4 @@
 // Use only client-side imports to avoid Next.js server component errors
-import { createClient } from "@/lib/utils/supabase/client";
-
-// Tiempo base de espera en milisegundos (30 segundos)
-const BASE_TIMEOUT = 30000;
 
 /**
  * Sistema para limitar intentos de inicio de sesión y prevenir ataques de fuerza bruta

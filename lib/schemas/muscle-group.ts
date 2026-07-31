@@ -4,7 +4,7 @@ import { z } from "zod";
 export const muscleGroupSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1),
-  is_default: z.boolean().optional(),
+  is_default: z.boolean().default(false),
   user_id: z.string().uuid().optional().nullable(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),

@@ -23,11 +23,10 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
     const fetchExercises = async () => {
       setIsExercisesLoading(true)
       try {
-        const exercisesData = await getExercises()
+        const result = await getExercises()
+        const exercisesData = Array.isArray(result.data) ? result.data : []
         setExercises(exercisesData)
-        if (exercisesData.length > 0 && !selectedExercise) {
-          setSelectedExercise(exercisesData[0].id)
-        }
+        setSelectedExercise((prev) => prev || exercisesData[0]?.id || "")
       } catch (error) {
         console.error("Failed to fetch exercises:", error)
       } finally {
@@ -44,8 +43,8 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
 
       setIsLoading(true)
       try {
-        const progressData = await getExerciseProgress(userId, selectedExercise)
-        setData(progressData)
+        const result = await getExerciseProgress(userId, selectedExercise)
+        setData(Array.isArray(result.data) ? result.data : [])
       } catch (error) {
         console.error("Failed to fetch exercise progress:", error)
       } finally {
@@ -110,13 +109,13 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
               <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="date" tickLine={false} axisLine={false} />
-                <YAxis yAxisId="left" tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                <YAxis yAxisId="left" tickLine={false} axisLine={false} tickFormatter={(value: string | number) => `${value}`} />
                 <YAxis
                   yAxisId="right"
                   orientation="right"
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => `${value}`}
+                  tickFormatter={(value: string | number) => `${value}`}
                 />
                 <Tooltip content={<ChartTooltipContent indicator="dashed" />} />
                 <Line

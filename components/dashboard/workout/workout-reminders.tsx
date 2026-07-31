@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast"
 import { Bell } from "lucide-react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
 
 const reminderSchema = z.object({
@@ -34,7 +34,7 @@ interface WorkoutRemindersProps {
   userId: string
 }
 
-export function WorkoutReminders({ userId }: WorkoutRemindersProps) {
+export function WorkoutReminders({ userId: _userId }: WorkoutRemindersProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<ReminderFormValues>({
@@ -46,6 +46,8 @@ export function WorkoutReminders({ userId }: WorkoutRemindersProps) {
       notificationType: "browser",
     },
   })
+
+  const enabled = useWatch({ control: form.control, name: "enabled" })
 
   async function onSubmit(values: ReminderFormValues) {
     setIsSubmitting(true)
@@ -118,7 +120,7 @@ export function WorkoutReminders({ userId }: WorkoutRemindersProps) {
               )}
             />
 
-            {form.watch("enabled") && (
+            {enabled && (
               <>
                 <FormField
                   control={form.control}

@@ -11,9 +11,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormContext } from "react-hook-form";
-import { createLogger } from "@/lib/utils/logger";
-
-const logger = createLogger("exercise-basic-info");
 
 export function BasicInfoSection() {
   const form = useFormContext();

@@ -49,7 +49,7 @@ export function GoalsSection() {
     const currentGoals = form.getValues("goals") || [];
     form.setValue(
       "goals",
-      currentGoals.filter((_, i) => i !== index)
+      currentGoals.filter((_: any, i: number) => i !== index)
     );
   };
 
@@ -67,7 +67,7 @@ export function GoalsSection() {
         </Button>
       </div>
 
-      {form.watch("goals")?.map((_, index) => (
+      {form.watch("goals")?.map((_: any, index: number) => (
         <div key={index} className="space-y-4 rounded-lg border p-4">
           <div className="flex justify-between items-center">
             <h4 className="font-medium">Goal {index + 1}</h4>

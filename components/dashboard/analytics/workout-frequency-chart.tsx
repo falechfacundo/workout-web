@@ -20,8 +20,8 @@ export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        const frequencyData = await getWorkoutFrequency(userId, period)
-        setData(frequencyData)
+        const result = await getWorkoutFrequency(userId, period)
+        setData(Array.isArray(result.data) ? result.data : [])
       } catch (error) {
         console.error("Failed to fetch workout frequency:", error)
       } finally {
@@ -75,7 +75,7 @@ export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
               <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="date" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                <YAxis tickLine={false} axisLine={false} tickFormatter={(value: string | number) => `${value}`} />
                 <Tooltip content={<ChartTooltipContent indicator="dashed" />} />
                 <Bar dataKey="count" fill="var(--color-count)" radius={4} name="Workouts" />
               </BarChart>

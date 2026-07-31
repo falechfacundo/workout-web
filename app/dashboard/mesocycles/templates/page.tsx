@@ -17,7 +17,6 @@ export default function MesocycleTemplatesPage() {
   const {
     userTemplates,
     defaultTemplates,
-    publicTemplates,
     isLoading: templatesLoading,
     error: templatesError,
     fetchTemplates,

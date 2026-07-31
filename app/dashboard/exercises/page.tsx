@@ -1,21 +1,18 @@
 "use client";
 
-import { getExercises } from "@/lib/actions/exercises";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { ErrorMessage } from "@/components/error-message";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useExercisesStore, useMuscleGroupsStore } from "@/lib/stores";
+import { useExercisesStore } from "@/lib/stores/exercises-store";
+import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
 import { ExerciseFilters } from "@/components/dashboard/exercises/exercise-filters";
 import { ExerciseList } from "@/components/dashboard/exercises/exercise-list";
-import { createClient } from "@/lib/utils/supabase/client";
-import { useRouter } from "next/navigation";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
 export default function ExercisesPage() {
-  const router = useRouter();
   const { user, isLoading: authLoading } = useRequireAuth();
   const [loading, setLoading] = useState(true);
 

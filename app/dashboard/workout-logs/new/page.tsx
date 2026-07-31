@@ -1,7 +1,7 @@
 "use client";
 
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
-import { WorkoutLogForm } from "@/components/forms/workout-log-form";
+import { WorkoutLogForm } from "@/components/forms/workout-log/workout-log-form";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";

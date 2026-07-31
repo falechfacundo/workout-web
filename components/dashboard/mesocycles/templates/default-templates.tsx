@@ -1,6 +1,5 @@
 import React from "react";
 import { TemplateCard } from "./template-card";
-import { Card, CardContent } from "@/components/ui/card";
 import { MesocycleTemplateWithRelations } from "@/lib/schemas/mesocycle-template";
 
 interface DefaultTemplatesProps {

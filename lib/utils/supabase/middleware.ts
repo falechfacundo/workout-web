@@ -36,31 +36,21 @@ export async function updateSession(request: NextRequest) {
               headers: request.headers,
             },
           });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
+          response.cookies.set(name, value, options as any);
         },
         remove(name: string, options) {
-          // Eliminar la cookie en la respuesta y en el objeto de cookies del request
           request.cookies.set({
             name,
             value: "",
             ...options,
             maxAge: 0,
-          });
+          } as any);
           response = NextResponse.next({
             request: {
               headers: request.headers,
             },
           });
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-            maxAge: 0,
-          });
+          response.cookies.set(name, "", { ...options, maxAge: 0 } as any);
         },
       },
     }

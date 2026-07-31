@@ -3,14 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/utils/supabase/server";
-import { cookies } from "next/headers";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
-import { AppError } from "@/lib/error";
 import {
   mesocycleSchema,
-  MesocycleSchema,
-  MesocycleWithRelations,
+  type Mesocycle,
+  type MesocycleWithRelations,
 } from "@/lib/schemas/mesocycle";
 
 // Crear logger específico para mesociclos
@@ -21,7 +19,7 @@ export async function getMesocycles(userId: string) {
     logger.debug("Obteniendo mesociclos para usuario", { userId });
     const startTime = performance.now();
 
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("mesocycles")
       .select("*")
@@ -59,12 +57,12 @@ export async function getActiveMesocycles(userId: string) {
     logger.debug("Obteniendo mesociclos activos para usuario", { userId });
     const startTime = performance.now();
 
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("mesocycles")
       .select("*")
       .eq("user_id", userId)
-      .eq("status", "active")
+      .eq("status", "in_progress")
       .order("start_date");
 
     if (error) {
@@ -98,7 +96,7 @@ export async function getMesocycle(id: string) {
     logger.debug("Obteniendo mesociclo por ID", { mesocycleId: id });
     const startTime = performance.now();
 
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
     // Fetch the main mesocycle data
     const { data: mesocycleData, error: mesocycleError } = await supabase
       .from("mesocycles")
@@ -131,17 +129,17 @@ export async function getMesocycle(id: string) {
       .eq("mesocycle_id", id);
 
     if (goalsError) {
-      logger.warn("Error al obtener objetivos del mesociclo", goalsError, {
+      logger.warn("Error al obtener objetivos del mesociclo", {
         mesocycleId: id,
         errorCode: goalsError.code,
-      });
+      }, goalsError);
     }
 
     if (focusError) {
-      logger.warn("Error al obtener grupos musculares enfocados", focusError, {
+      logger.warn("Error al obtener grupos musculares enfocados", {
         mesocycleId: id,
         errorCode: focusError.code,
-      });
+      }, focusError);
     }
 
     // Format the data for the frontend
@@ -169,7 +167,7 @@ export async function getMesocycle(id: string) {
   });
 }
 
-export async function createMesocycle(formData: MesocycleSchema) {
+export async function createMesocycle(formData: Mesocycle) {
   return safeAction(async () => {
     logger.debug("Iniciando creación de mesociclo", {
       userId: formData.user_id,
@@ -215,7 +213,7 @@ export async function createMesocycle(formData: MesocycleSchema) {
       focusMuscleGroupsCount: focus_muscle_groups?.length || 0,
     });
 
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("mesocycles")
       .insert([
@@ -255,10 +253,10 @@ export async function createMesocycle(formData: MesocycleSchema) {
 
       const goalsToInsert = goals.map((goal) => ({
         mesocycle_id: mesocycleId,
-        user_id,
-        type: goal.type,
-        description: goal.description,
+        goal_type: goal.goal_type,
         target_value: goal.target_value || null,
+        unit: goal.unit || null,
+        notes: goal.notes || null,
       }));
 
       const { error: goalsError } = await supabase
@@ -266,12 +264,12 @@ export async function createMesocycle(formData: MesocycleSchema) {
         .insert(goalsToInsert);
 
       if (goalsError) {
-        logger.warn("Error al añadir objetivos al mesociclo", goalsError, {
+        logger.warn("Error al añadir objetivos al mesociclo", {
           mesocycleId,
           userId: user_id,
           goalsCount: goals.length,
           errorCode: goalsError.code,
-        });
+        }, goalsError);
       }
     }
 
@@ -285,7 +283,6 @@ export async function createMesocycle(formData: MesocycleSchema) {
 
       const focusToInsert = focus_muscle_groups.map((muscleGroupId) => ({
         mesocycle_id: mesocycleId,
-        user_id,
         muscle_group_id: muscleGroupId,
       }));
 
@@ -294,12 +291,12 @@ export async function createMesocycle(formData: MesocycleSchema) {
         .insert(focusToInsert);
 
       if (focusError) {
-        logger.warn("Error al añadir grupos musculares enfocados", focusError, {
+        logger.warn("Error al añadir grupos musculares enfocados", {
           mesocycleId,
           userId: user_id,
           focusCount: focus_muscle_groups.length,
           errorCode: focusError.code,
-        });
+        }, focusError);
       }
     }
 
@@ -322,7 +319,7 @@ export async function createMesocycle(formData: MesocycleSchema) {
   });
 }
 
-export async function updateMesocycle(formData: MesocycleSchema) {
+export async function updateMesocycle(formData: Mesocycle) {
   return safeAction(async () => {
     // Validate form data
     const validatedFields = mesocycleSchema.safeParse(formData);
@@ -354,7 +351,7 @@ export async function updateMesocycle(formData: MesocycleSchema) {
     }
 
     // Update the main mesocycle data
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("mesocycles")
       .update({
@@ -390,10 +387,10 @@ export async function updateMesocycle(formData: MesocycleSchema) {
     if (goals && goals.length > 0) {
       const goalsToInsert = goals.map((goal) => ({
         mesocycle_id: id,
-        user_id,
-        type: goal.type,
-        description: goal.description,
+        goal_type: goal.goal_type,
         target_value: goal.target_value || null,
+        unit: goal.unit || null,
+        notes: goal.notes || null,
       }));
 
       const { error: goalsError } = await supabase
@@ -422,7 +419,6 @@ export async function updateMesocycle(formData: MesocycleSchema) {
     if (focus_muscle_groups && focus_muscle_groups.length > 0) {
       const focusToInsert = focus_muscle_groups.map((muscleGroupId) => ({
         mesocycle_id: id,
-        user_id,
         muscle_group_id: muscleGroupId,
       }));
 
@@ -447,7 +443,7 @@ export async function updateMesocycle(formData: MesocycleSchema) {
 
 export async function deleteMesocycle(id: string) {
   return safeAction(async () => {
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
     // Delete goals associated with this mesocycle
     const { error: goalsError } = await supabase
       .from("mesocycle_goals")
@@ -470,7 +466,7 @@ export async function deleteMesocycle(id: string) {
 
     // First delete all training sessions associated with this mesocycle
     const { error: sessionsError } = await supabase
-      .from("training_sessions_template")
+      .from("training_sessions")
       .delete()
       .eq("mesocycle_id", id);
 
@@ -502,9 +498,9 @@ export async function deleteMesocycle(id: string) {
 
 export async function getSessionCountByMesocycle(id: string) {
   return safeAction(async () => {
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
     const { count, error } = await supabase
-      .from("training_sessions_template")
+      .from("training_sessions")
       .select("*", { count: "exact" })
       .eq("mesocycle_id", id);
 
@@ -524,7 +520,7 @@ export async function getSessionCountByMesocycle(id: string) {
 
 export async function updateMesocycleStatus(id: string, status: string) {
   return safeAction(async () => {
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("mesocycles")
       .update({ status })
@@ -550,4 +546,4 @@ export async function updateMesocycleStatus(id: string, status: string) {
 }
 
 // Type for the form data - exported for use in components
-export type MesocycleFormData = MesocycleSchema;
+export type MesocycleFormData = Mesocycle;

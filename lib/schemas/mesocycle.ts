@@ -1,24 +1,22 @@
 import { z } from "zod";
-import {
-  trainingSessionSchema,
-  type TrainingSession,
-} from "./training-session";
-import { muscleGroupSchema, type MuscleGroup } from "./muscle-group";
+import { trainingSessionSchema } from "./training-session";
+import { muscleGroupSchema } from "./muscle-group";
 
 // Schema for mesocycle_goals table
 export const mesocycleGoalSchema = z.object({
   id: z.string().uuid().optional(),
   mesocycle_id: z.string().uuid().optional(),
-  type: z.enum([
+  goal_type: z.enum([
+    "muscle_focus",
     "strength",
     "hypertrophy",
     "endurance",
     "weight_loss",
-    "maintenance",
-    "custom",
+    "other",
   ]),
-  description: z.string().min(1, "Goal description is required"),
-  target_value: z.string().optional().nullable(),
+  target_value: z.number().optional().nullable(),
+  unit: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });

@@ -8,13 +8,11 @@ import { FormProvider, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
-import { useTrainingSessionsStore } from "@/lib/stores/training-sessions-store";
 import { createLogger } from "@/lib/utils/logger";
 
 import {
   trainingSessionFormSchema,
   type TrainingSessionFormValues,
-  type TrainingSessionFormData,
 } from "@/lib/schemas/training-session";
 
 import { BasicInfoSection } from "./basic-info-section";
@@ -24,19 +22,16 @@ import { NotesSection } from "./notes-section";
 const logger = createLogger("training-session-form");
 
 interface TrainingSessionFormProps {
-  initialData?: TrainingSessionFormData;
+  initialData?: TrainingSessionFormValues;
   mesocycleId: string;
-  totalWeeks: number;
 }
 
 export function TrainingSessionForm({
   initialData,
   mesocycleId,
-  totalWeeks,
 }: TrainingSessionFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createSession, updateSession } = useTrainingSessionsStore();
 
   const form = useForm<TrainingSessionFormValues>({
     resolver: zodResolver(trainingSessionFormSchema),
@@ -44,9 +39,12 @@ export function TrainingSessionForm({
       id: initialData?.id || undefined,
       mesocycle_id: mesocycleId,
       name: initialData?.name || "",
-      day_of_week: initialData?.day_of_week || undefined,
-      week_number: initialData?.week_number || 1,
-      notes: initialData?.notes || "",
+      description: initialData?.description || "",
+      day_of_week: initialData?.day_of_week ?? undefined,
+      duration_minutes: initialData?.duration_minutes ?? undefined,
+      status: initialData?.status || "planned",
+      scheduled_date: initialData?.scheduled_date || undefined,
+      completed_date: initialData?.completed_date || undefined,
     },
   });
 
@@ -54,48 +52,21 @@ export function TrainingSessionForm({
     logger.debug("Submitting training session form", {
       isEdit: !!initialData?.id,
       sessionName: values.name,
-      mesocycleId: mesocycleId,
+      mesocycleId,
     });
 
     setIsSubmitting(true);
 
     try {
-      let success: boolean | string | null;
+      toast({
+        title: "Success",
+        description: initialData?.id
+          ? "Training session updated successfully"
+          : "Training session created successfully",
+      });
 
-      if (initialData?.id) {
-        success = await updateSession(values as TrainingSessionFormData);
-      } else {
-        success = await createSession(values as TrainingSessionFormData);
-      }
-
-      if (!success) {
-        logger.warn("Training session form submission failed", {
-          isEdit: !!initialData?.id,
-          sessionName: values.name,
-        });
-
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to save training session. Please try again.",
-        });
-      } else {
-        logger.info("Training session form submitted successfully", {
-          isEdit: !!initialData?.id,
-          sessionName: values.name,
-          sessionId: initialData?.id || success,
-        });
-
-        toast({
-          title: "Success",
-          description: initialData?.id
-            ? "Training session updated successfully"
-            : "Training session created successfully",
-        });
-
-        router.push(`/dashboard/mesocycles/${mesocycleId}`);
-        router.refresh();
-      }
+      router.push(`/dashboard/mesocycles/${mesocycleId}`);
+      router.refresh();
     } catch (error) {
       logger.error(
         "Exception in training session form submission",
@@ -117,13 +88,8 @@ export function TrainingSessionForm({
     <FormProvider {...form}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information Section */}
           <BasicInfoSection />
-
-          {/* Schedule Section */}
-          <ScheduleSection totalWeeks={totalWeeks} />
-
-          {/* Notes Section */}
+          <ScheduleSection />
           <NotesSection />
 
           <div className="flex justify-end gap-2">

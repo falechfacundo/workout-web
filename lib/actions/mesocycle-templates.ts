@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { createClient } from "@/lib/utils/supabase/server";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
-import { AppError } from "@/lib/error";
 import {
   mesocycleTemplateSchema,
   MesocycleTemplate,
@@ -24,7 +22,7 @@ export async function getMesocycleTemplates(userId: string) {
     logger.debug("Iniciando getMesocycleTemplates", { userId });
     const startTime = performance.now();
 
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
 
     try {
       // Obtener plantillas del usuario
@@ -154,9 +152,8 @@ export async function getMesocycleTemplates(userId: string) {
 export async function getMesocycleTemplate(templateId: string) {
   return safeAction(async () => {
     logger.debug("Obteniendo plantilla de mesociclo por ID", { templateId });
-    const startTime = performance.now();
 
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
 
     try {
       const { data: template, error } = await supabase
@@ -213,7 +210,7 @@ export async function createMesocycleTemplate(
   formData: MesocycleTemplateFormData
 ) {
   return safeAction(async () => {
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
 
     try {
       // Validamos los datos del formulario
@@ -302,7 +299,7 @@ export async function updateMesocycleTemplate(
   formData: MesocycleTemplateFormData
 ) {
   return safeAction(async () => {
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
 
     try {
       // Validamos los datos del formulario
@@ -314,7 +311,7 @@ export async function updateMesocycleTemplate(
       }
 
       // Actualizamos la plantilla principal
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("mesocycle_templates")
         .update({
           name: validatedFields.name,
@@ -423,7 +420,7 @@ export async function updateMesocycleTemplate(
 // Eliminar una plantilla
 export async function deleteMesocycleTemplate(templateId: string) {
   return safeAction(async () => {
-    const supabase = await createClient({ cookies });
+    const supabase = await createClient();
 
     try {
       // Primero eliminamos todas las relaciones para mantener la consistencia

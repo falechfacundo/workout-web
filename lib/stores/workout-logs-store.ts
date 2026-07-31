@@ -7,10 +7,9 @@ import {
 } from "@/lib/actions/workout-logs";
 import { createLogger } from "@/lib/utils/logger";
 import {
-  type WorkoutLog,
   type WorkoutLogWithRelations,
 } from "@/lib/schemas/workout-log";
-import { type WorkoutSet } from "@/lib/schemas/workout-set";
+import { type ExerciseLogSet } from "@/lib/schemas/workout-set";
 
 // Create a logger for this store
 const logger = createLogger("workout-logs-store");
@@ -18,7 +17,7 @@ const logger = createLogger("workout-logs-store");
 interface WorkoutLogsState {
   workoutLogs: WorkoutLogWithRelations[];
   currentWorkoutLog: WorkoutLogWithRelations | null;
-  workoutSets: WorkoutSet[];
+  workoutSets: ExerciseLogSet[];
   workoutStats: any;
   isLoading: boolean;
   error: string | null;
@@ -98,7 +97,7 @@ export const useWorkoutLogsStore = create<WorkoutLogsState>((set) => ({
       }
       logger.info("Workout log details fetched successfully", {
         logId: id,
-        date: result.data?.started_at,
+        date: result.data?.date,
         hasExercises: result.data?.sets && result.data.sets.length > 0,
       });
 

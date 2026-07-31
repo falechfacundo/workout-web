@@ -43,7 +43,7 @@ export function SessionManager() {
           data: { session },
         } = await supabase.auth.getSession();
         if (session) {
-          setCurrentSessionId(session.id);
+          setCurrentSessionId((session as any).id ?? session.user?.id ?? "current");
         }
 
         // Usando Admin API para obtener todas las sesiones del usuario
@@ -61,7 +61,7 @@ export function SessionManager() {
             last_active_at: s.updated_at || s.created_at,
             user_agent: s.user_agent,
             ip: s.ip,
-            current: s.id === session?.id,
+            current: s.id === ((session as any).id ?? session?.user?.id ?? "current"),
           }));
 
           setSessions(formattedSessions);

@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 // Reemplazando la importación de supabase por la nueva forma recomendada
 import { createClient } from "@/lib/utils/supabase/client";
 import {

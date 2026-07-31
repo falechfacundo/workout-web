@@ -29,7 +29,7 @@ interface MesocyclesState {
   reset: () => void;
 }
 
-export const useMesocyclesStore = create<MesocyclesState>((set, get) => ({
+export const useMesocyclesStore = create<MesocyclesState>((set) => ({
   mesocycles: [],
   activeMesocycles: [],
   currentMesocycle: null,

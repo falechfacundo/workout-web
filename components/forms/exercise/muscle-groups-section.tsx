@@ -41,7 +41,7 @@ const logger = createLogger("exercise-muscle-groups");
 
 export function MuscleGroupsSection() {
   const form = useFormContext();
-  const { muscleGroups, isLoading, error, fetchMuscleGroups } =
+  const { muscleGroups, isLoading, fetchMuscleGroups } =
     useMuscleGroupsStore();
 
   useEffect(() => {
@@ -136,7 +136,7 @@ export function MuscleGroupsSection() {
                               onSelect={() => {
                                 const current = field.value || [];
                                 const updated = current.includes(group.id)
-                                  ? current.filter((id) => id !== group.id)
+                                  ? current.filter((id: string) => id !== group.id)
                                   : [...current, group.id];
                                 field.onChange(updated);
                                 logger.debug(

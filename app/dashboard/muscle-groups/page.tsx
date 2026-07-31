@@ -7,25 +7,17 @@ import { Plus } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { ErrorMessage } from "@/components/error-message";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
-import { Database } from "@/lib/database.types";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
 // Import the components with explicit paths
-import { MuscleGroupCard } from "@/components/dashboard/muscle-groups/muscle-group-card";
-import { MuscleGroupSkeleton } from "@/components/dashboard/muscle-groups/muscle-group-skeleton";
 import { SearchBar } from "@/components/dashboard/muscle-groups/search-bar";
 import { MuscleGroupList } from "@/components/dashboard/muscle-groups/muscle-group-list";
-
-type MuscleGroup = Database["public"]["Tables"]["muscle_groups"]["Row"];
 
 export default function MuscleGroupsPage() {
   const { user, isLoading: authLoading } = useRequireAuth();
   const { muscleGroups, isLoading, error, fetchMuscleGroups } =
     useMuscleGroupsStore();
 
-  const [filteredMuscleGroups, setFilteredMuscleGroups] = useState<
-    MuscleGroup[]
-  >([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -36,22 +28,12 @@ export default function MuscleGroupsPage() {
     fetchMuscleGroups();
   }, [fetchMuscleGroups, user, authLoading]);
 
-  // Actualizar los grupos musculares filtrados cuando cambian los datos o la búsqueda
-  useEffect(() => {
-    if (!searchQuery) {
-      setFilteredMuscleGroups(muscleGroups);
-      return;
-    }
-
-    const filtered = muscleGroups.filter(
-      (group) =>
-        group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (group.description &&
-          group.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-
-    setFilteredMuscleGroups(filtered);
-  }, [muscleGroups, searchQuery]);
+  // Grupos musculares filtrados derivados de los datos y la búsqueda
+  const filteredMuscleGroups = searchQuery
+    ? muscleGroups.filter((group) =>
+        group.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : muscleGroups;
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -130,7 +112,7 @@ export default function MuscleGroupsPage() {
           <SearchBar onSearch={handleSearch} />
         </div>
         <MuscleGroupList
-          muscleGroups={filteredMuscleGroups}
+          muscleGroups={filteredMuscleGroups as any}
           isLoading={isLoading}
         />
       </div>

@@ -2,7 +2,6 @@ import { Target } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,9 +18,6 @@ export function MuscleGroupCard({ muscleGroup }: { muscleGroup: MuscleGroup }) {
         </div>
         <div>
           <CardTitle>{muscleGroup.name}</CardTitle>
-          <CardDescription>
-            {muscleGroup.description || "No description available"}
-          </CardDescription>
         </div>
       </CardHeader>
       <CardContent>

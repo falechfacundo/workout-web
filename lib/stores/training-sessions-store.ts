@@ -218,7 +218,7 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
     addExerciseToSession: async (data) => {
       try {
         logger.debug("Adding exercise to session", {
-          sessionId: data.session_template_id,
+          sessionId: data.training_session_id,
           exerciseId: data.exercise_id,
         });
         set({ isLoading: true, error: null });
@@ -227,7 +227,7 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
 
         if (result.error) {
           logger.warn("Error adding exercise to session", {
-            sessionId: data.session_template_id,
+            sessionId: data.training_session_id,
             exerciseId: data.exercise_id,
             error: result.error,
           });
@@ -236,24 +236,18 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
         }
 
         logger.info("Exercise added to session successfully", {
-          sessionId: data.session_template_id,
+          sessionId: data.training_session_id,
           exerciseId: data.exercise_id,
-          exerciseSessionId: result.data?.id,
         });
 
-        // Update the session exercises list
-        set((state) => ({
-          sessionExercises: [...state.sessionExercises, result.data],
-          isLoading: false,
-        }));
-
+        set({ isLoading: false });
         return result;
       } catch (error) {
         logger.error(
           "Exception in addExerciseToSession",
           error instanceof Error ? error : new Error(String(error)),
           {
-            sessionId: data.session_template_id,
+            sessionId: data.training_session_id,
             exerciseId: data.exercise_id,
           }
         );
@@ -273,7 +267,7 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
       try {
         logger.debug("Updating session exercise", {
           id: data.id,
-          sessionId: data.session_template_id,
+          sessionId: data.training_session_id,
           exerciseId: data.exercise_id,
         });
         set({ isLoading: true, error: null });
@@ -291,18 +285,11 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
 
         logger.info("Session exercise updated successfully", {
           id: data.id,
-          sessionId: data.session_template_id,
+          sessionId: data.training_session_id,
           exerciseId: data.exercise_id,
         });
 
-        // Update the session exercise in the list
-        set((state) => ({
-          sessionExercises: state.sessionExercises.map((se) =>
-            se.id === data.id ? { ...se, ...result.data } : se
-          ),
-          isLoading: false,
-        }));
-
+        set({ isLoading: false });
         return result;
       } catch (error) {
         logger.error(

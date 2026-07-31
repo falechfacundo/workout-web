@@ -7,45 +7,56 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, Dumbbell, Save } from "lucide-react";
+import { ArrowLeft, Dumbbell } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getWorkoutLog, getWorkoutSets } from "@/lib/actions/workout-logs";
-import { WorkoutTimer } from "@/components/workout/workout-timer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MuscleGroupVolumeChart } from "@/components/workout/muscle-group-volume-chart";
+import { MuscleGroupVolumeChart } from "@/components/dashboard/workout/muscle-group-volume-chart";
 
 interface WorkoutLogDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function WorkoutLogDetailPage({
   params,
 }: WorkoutLogDetailPageProps) {
+  const { id } = await params;
+
+  let workout: any;
+  let sets: any[] = [];
   try {
-    const workout = await getWorkoutLog(params.id);
-    const sets = await getWorkoutSets(params.id);
+    const workoutResult = await getWorkoutLog(id);
 
-    // Group sets by exercise
-    const exerciseSets = {};
-    sets.forEach((set) => {
-      if (!exerciseSets[set.exercise_id]) {
-        exerciseSets[set.exercise_id] = {
-          exercise: set.exercise,
-          sets: [],
-        };
-      }
-      exerciseSets[set.exercise_id].sets.push(set);
-    });
+    if (workoutResult.error || !workoutResult.data) {
+      return notFound();
+    }
 
-    // Calculate muscle group metrics
-    const muscleGroupData = await calculateMuscleGroupMetrics(sets);
+    workout = workoutResult.data;
+    sets = (await getWorkoutSets(id)) as any[];
+  } catch (error) {
+    console.error("Error loading workout log:", error);
+    return notFound();
+  }
 
-    const isCompleted = !!workout.completed_at;
+  // Calculate muscle group metrics
+  const muscleGroupData = await calculateMuscleGroupMetrics(sets);
 
-    return (
+  // Group sets by exercise
+  const exerciseSets: Record<string, any> = {};
+  sets.forEach((set: any) => {
+    if (!exerciseSets[set.exercise_id]) {
+      exerciseSets[set.exercise_id] = {
+        exercise: set.exercise,
+        sets: [],
+      };
+    }
+    exerciseSets[set.exercise_id].sets.push(set);
+  });
+
+  return (
       <DashboardLayout>
         <div className="grid gap-4 md:gap-8">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -64,21 +75,11 @@ export default async function WorkoutLogDetailPage({
                   {workout.mesocycle?.name
                     ? `${workout.mesocycle.name} - `
                     : ""}
-                  {new Date(workout.started_at).toLocaleString()}
+                  {workout.date} {workout.start_time ? `- ${new Date(workout.start_time).toLocaleTimeString()}` : ""}
                 </p>
               </div>
             </div>
-            {!isCompleted && (
-              <Button asChild>
-                <Link href={`/dashboard/workout-logs/${params.id}/complete`}>
-                  <Save className="mr-2 h-4 w-4" />
-                  Complete Workout
-                </Link>
-              </Button>
-            )}
           </div>
-
-          {!isCompleted && <WorkoutTimer className="mb-2" />}
 
           <Tabs defaultValue="exercises">
             <TabsList className="grid w-full grid-cols-2">
@@ -109,13 +110,12 @@ export default async function WorkoutLogDetailPage({
                       <div className="rounded-lg border">
                         <div className="grid grid-cols-12 gap-2 p-3 font-medium text-sm border-b">
                           <div className="col-span-1">Set</div>
-                          <div className="col-span-2">Reps</div>
+                          <div className="col-span-3">Reps</div>
                           <div className="col-span-3">Weight</div>
                           <div className="col-span-2">RIR</div>
-                          <div className="col-span-3">Rest</div>
-                          <div className="col-span-1"></div>
+                          <div className="col-span-3"></div>
                         </div>
-                        {item.sets.map((set, index) => (
+                        {item.sets.map((set: any) => (
                           <div
                             key={set.id}
                             className="grid grid-cols-12 gap-2 p-3 items-center border-b last:border-0"
@@ -123,38 +123,21 @@ export default async function WorkoutLogDetailPage({
                             <div className="col-span-1 font-medium">
                               {set.set_number}
                             </div>
-                            <div className="col-span-2">
-                              {set.reps_performed}
+                            <div className="col-span-3">
+                              {set.reps}
                             </div>
                             <div className="col-span-3">
-                              {set.weight_lifted} {set.weight_unit}
+                              {set.weight || 0} kg
                             </div>
                             <div className="col-span-2">
-                              {set.rir_achieved !== null
-                                ? set.rir_achieved
+                              {set.rir !== null && set.rir !== undefined
+                                ? set.rir
                                 : "-"}
                             </div>
-                            <div className="col-span-3">
-                              {set.rest_taken_seconds
-                                ? `${set.rest_taken_seconds}s`
-                                : "-"}
-                            </div>
-                            <div className="col-span-1"></div>
+                            <div className="col-span-3"></div>
                           </div>
                         ))}
                       </div>
-
-                      {!isCompleted && (
-                        <div className="mt-4 flex justify-end">
-                          <Button size="sm" asChild>
-                            <Link
-                              href={`/dashboard/workout-logs/${params.id}/exercise/${item.exercise.id}`}
-                            >
-                              Add Set
-                            </Link>
-                          </Button>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -169,15 +152,6 @@ export default async function WorkoutLogDetailPage({
                       <p className="mb-4 text-center text-muted-foreground">
                         Start adding exercises to track your workout.
                       </p>
-                      {!isCompleted && (
-                        <Button asChild>
-                          <Link
-                            href={`/dashboard/workout-logs/${params.id}/add-exercise`}
-                          >
-                            Add First Exercise
-                          </Link>
-                        </Button>
-                      )}
                     </CardContent>
                   </Card>
                 )}
@@ -211,7 +185,7 @@ export default async function WorkoutLogDetailPage({
                         <div className="text-sm font-medium">Total Reps</div>
                         <div className="text-2xl font-bold">
                           {sets.reduce(
-                            (sum, set) => sum + set.reps_performed,
+                            (sum: number, set: any) => sum + set.reps,
                             0
                           )}
                         </div>
@@ -221,8 +195,8 @@ export default async function WorkoutLogDetailPage({
                         <div className="text-2xl font-bold">
                           {sets
                             .reduce(
-                              (sum, set) =>
-                                sum + set.weight_lifted * set.reps_performed,
+                              (sum: number, set: any) =>
+                                sum + (set.weight || 0) * set.reps,
                               0
                             )
                             .toLocaleString()}
@@ -249,32 +223,29 @@ export default async function WorkoutLogDetailPage({
         </div>
       </DashboardLayout>
     );
-  } catch (error) {
-    console.error("Error loading workout log:", error);
-    return notFound();
-  }
 }
 
 async function calculateMuscleGroupMetrics(sets: any[]) {
-  // Group sets by exercise
-  const exerciseSets = sets.reduce((acc, set) => {
-    if (!acc[set.exercise_id]) {
-      acc[set.exercise_id] = {
+  const exerciseSets: Record<string, any> = {};
+
+  sets.forEach((set: any) => {
+    if (!set.exercise || !set.exercise_id) return;
+
+    if (!exerciseSets[set.exercise_id]) {
+      exerciseSets[set.exercise_id] = {
         exercise: set.exercise,
         sets: [],
       };
     }
-    acc[set.exercise_id].sets.push(set);
-    return acc;
-  }, {});
 
-  // Calculate volume and weight per muscle group
-  const muscleGroupMetrics = {};
+    exerciseSets[set.exercise_id].sets.push(set);
+  });
+
+  const muscleGroupMetrics: Record<string, any> = {};
 
   for (const exerciseId in exerciseSets) {
     const { exercise, sets } = exerciseSets[exerciseId];
 
-    // Get primary muscle group
     if (exercise.primary_muscle_group_id) {
       const primaryMuscleId = exercise.primary_muscle_group_id;
       const primaryMuscleName = exercise.primary_muscle?.name || "Unknown";
@@ -289,17 +260,15 @@ async function calculateMuscleGroupMetrics(sets: any[]) {
         };
       }
 
-      // Add full volume for primary muscle
       muscleGroupMetrics[primaryMuscleId].sets += sets.length;
 
       for (const set of sets) {
-        const setVolume = set.weight_lifted * set.reps_performed;
+        const setVolume = (set.weight || 0) * set.reps;
         muscleGroupMetrics[primaryMuscleId].volume += setVolume;
-        muscleGroupMetrics[primaryMuscleId].weight += set.weight_lifted;
+        muscleGroupMetrics[primaryMuscleId].weight += set.weight || 0;
       }
     }
 
-    // Add secondary muscle groups (with reduced volume)
     if (
       exercise.secondary_muscle_groups &&
       exercise.secondary_muscle_groups.length > 0
@@ -318,13 +287,12 @@ async function calculateMuscleGroupMetrics(sets: any[]) {
           };
         }
 
-        // Add half volume for secondary muscles
         muscleGroupMetrics[muscleId].sets += sets.length * 0.5;
 
         for (const set of sets) {
-          const setVolume = set.weight_lifted * set.reps_performed * 0.5;
+          const setVolume = (set.weight || 0) * set.reps * 0.5;
           muscleGroupMetrics[muscleId].volume += setVolume;
-          muscleGroupMetrics[muscleId].weight += set.weight_lifted * 0.5;
+          muscleGroupMetrics[muscleId].weight += (set.weight || 0) * 0.5;
         }
       }
     }

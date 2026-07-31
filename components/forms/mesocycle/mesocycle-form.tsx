@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
@@ -13,6 +13,7 @@ import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import {
   mesocycleFormSchema,
   type MesocycleFormValues,
+  type MesocycleGoal,
 } from "@/lib/schemas/mesocycle";
 
 import { BasicInfoSection } from "./basic-info-section";
@@ -26,11 +27,7 @@ interface MesocycleFormProps {
   initialData?: Omit<MesocycleFormData, "start_date" | "end_date"> & {
     start_date?: string;
     end_date?: string;
-    goals?: {
-      type: string;
-      description: string;
-      target_value?: string;
-    }[];
+    goals?: MesocycleGoal[];
     focus_muscle_groups?: string[];
   };
   userId: string;

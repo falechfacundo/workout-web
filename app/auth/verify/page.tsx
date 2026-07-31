@@ -1,66 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/utils/supabase/client";
 
-export default function VerifyPage() {
+function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [email, setEmail] = useState<string | null>(null);
   const supabase = createClient();
 
+  // Email derivado de la URL (prioridad) o de localStorage (fallback).
+  // Este componente solo se monta en el cliente (Suspense), así que leer
+  // localStorage durante el render es seguro.
+  const emailParam = searchParams.get("email");
+  const email =
+    emailParam ??
+    (typeof window !== "undefined"
+      ? localStorage.getItem("verification_email")
+      : null);
+
+  // Token de verificación presente en la URL (flujo de verificación automática)
+  const token = searchParams.get("token");
+  const type = searchParams.get("type");
+  const hasVerificationToken = !!token && type === "signup";
+  const [isVerifying, setIsVerifying] = useState(hasVerificationToken);
+
+  // Persistir el email de la URL para permitir reenvíos futuros
   useEffect(() => {
-    // Recuperar el email de los parámetros de búsqueda o localStorage
-    const emailParam = searchParams.get("email");
     if (emailParam) {
-      setEmail(emailParam);
-      // Guardar en localStorage para permitir reenvíos futuros
       localStorage.setItem("verification_email", emailParam);
-    } else {
-      // Intentar recuperar de localStorage
-      const storedEmail = localStorage.getItem("verification_email");
-      if (storedEmail) setEmail(storedEmail);
     }
+  }, [emailParam]);
 
-    // Verificar si hay un token en la URL (para flujo de verificación automática)
-    const token = searchParams.get("token");
-    const type = searchParams.get("type");
+  useEffect(() => {
+    if (!hasVerificationToken) return;
 
-    if (token && type === "signup") {
-      setIsVerifying(true);
-
-      // Intercambiar el token de verificación por una sesión
-      supabase.auth
-        .verifyOtp({ token, type })
-        .then(({ error }) => {
-          if (error) {
-            toast({
-              variant: "destructive",
-              title: "Verificación fallida",
-              description:
-                "El enlace de verificación es inválido o ha expirado.",
-            });
-          } else {
-            toast({
-              title: "Email verificado",
-              description:
-                "Tu correo ha sido verificado. Ahora puedes iniciar sesión.",
-            });
-            // Limpiar el email guardado ya que la verificación fue exitosa
-            localStorage.removeItem("verification_email");
-            // Redirigir al usuario a la página de inicio de sesión
-            router.push("/auth/login");
-          }
-        })
-        .finally(() => {
-          setIsVerifying(false);
-        });
-    }
-  }, [searchParams, router]);
+    // Intercambiar el token de verificación por una sesión
+    supabase.auth
+      .verifyOtp({ token_hash: token as string, type: "signup" })
+      .then(({ error }) => {
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Verificación fallida",
+            description:
+              "El enlace de verificación es inválido o ha expirado.",
+          });
+        } else {
+          toast({
+            title: "Email verificado",
+            description:
+              "Tu correo ha sido verificado. Ahora puedes iniciar sesión.",
+          });
+          // Limpiar el email guardado ya que la verificación fue exitosa
+          localStorage.removeItem("verification_email");
+          // Redirigir al usuario a la página de inicio de sesión
+          router.push("/auth/login");
+        }
+      })
+      .finally(() => {
+        setIsVerifying(false);
+      });
+  }, [hasVerificationToken, token, supabase, router]);
 
   // Función para reenviar el correo de verificación
   const resendVerificationEmail = async () => {
@@ -139,5 +142,13 @@ export default function VerifyPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center">Cargando...</div>}>
+      <VerifyContent />
+    </Suspense>
   );
 }

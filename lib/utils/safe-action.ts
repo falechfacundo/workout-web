@@ -2,6 +2,7 @@ import { z } from "zod";
 import { SafeActionResult } from "../types/server-actions";
 import { AppError, ErrorCode } from "../error";
 import { createLogger } from "./logger";
+import { getUser } from "../auth";
 
 const logger = createLogger("safe-action");
 
@@ -231,9 +232,9 @@ export function createAuthenticatedAction<TInput, TOutput>(options: {
 
     try {
       // Check authentication
-      const session = await auth();
+      const user = await getUser();
 
-      if (!session?.user?.id) {
+      if (!user?.id) {
         const error = AppError.unauthorized();
         actionLogger.appError(error, { actionId });
 
@@ -244,7 +245,7 @@ export function createAuthenticatedAction<TInput, TOutput>(options: {
         };
       }
 
-      const userId = session.user.id;
+      const userId = user.id;
       actionLogger.debug(`User authenticated`, { actionId, userId });
 
       // Validate input data using Zod schema

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Search, Target } from "lucide-react";
-import { type MuscleGroup } from "@/lib/schemas/exercise";
+import { type MuscleGroup } from "@/lib/schemas/muscle-group";
 
 interface ExerciseFiltersProps {
   searchQuery: string;

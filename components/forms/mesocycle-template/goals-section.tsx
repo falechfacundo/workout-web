@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
 import { createLogger } from "@/lib/utils/logger";
+import type { MesocycleTemplateFormValues } from "@/lib/schemas/mesocycle-template";
 
 const logger = createLogger("template-goals-section");
 
@@ -31,7 +32,7 @@ const GOAL_OPTIONS = [
 ];
 
 export function GoalsSection() {
-  const form = useFormContext();
+  const form = useFormContext<MesocycleTemplateFormValues>();
 
   const {
     fields: goalFields,

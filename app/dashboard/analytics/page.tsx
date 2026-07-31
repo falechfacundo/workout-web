@@ -1,10 +1,10 @@
 "use client";
 
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
-import { PerformanceMetrics } from "@/components/analytics/performance-metrics";
-import { VolumeByMuscleGroup } from "@/components/analytics/volume-by-muscle-group";
-import { ExerciseProgressChart } from "@/components/analytics/exercise-progress-chart";
-import { WorkoutFrequencyChart } from "@/components/analytics/workout-frequency-chart";
+import { PerformanceMetrics } from "@/components/dashboard/analytics/performance-metrics";
+import { VolumeByMuscleGroup } from "@/components/dashboard/analytics/volume-by-muscle-group";
+import { ExerciseProgressChart } from "@/components/dashboard/analytics/exercise-progress-chart";
+import { WorkoutFrequencyChart } from "@/components/dashboard/analytics/workout-frequency-chart";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
 export default function AnalyticsPage() {

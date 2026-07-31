@@ -11,7 +11,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ProfileForm } from "@/components/forms/profile-form";
+import { ProfileForm } from "@/components/forms/profile/profile-form";
 import { MeasurementHistory } from "@/components/dashboard/profile/measurement-history";
 import { Database } from "@/lib/database.types";
 import { useProfileStore } from "@/lib/stores/profile-store";

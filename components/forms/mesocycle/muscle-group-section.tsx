@@ -12,7 +12,7 @@ import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MuscleGroup } from "@/lib/schemas/mesocycle";
+import { MuscleGroup } from "@/lib/schemas/muscle-group";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("muscle-group-section");
@@ -71,7 +71,7 @@ export function MuscleGroupSection() {
                                     ? field.onChange([...currentValue, item.id])
                                     : field.onChange(
                                         currentValue.filter(
-                                          (value) => value !== item.id
+                                          (value: string) => value !== item.id
                                         )
                                       );
                                 }}

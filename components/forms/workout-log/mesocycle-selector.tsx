@@ -62,8 +62,8 @@ export function MesocycleSelector({ userId }: MesocycleSelectorProps) {
             </FormControl>
             <SelectContent>
               <SelectItem value="none">None (Free Workout)</SelectItem>
-              {activeMesocycles.map((mesocycle) => (
-                <SelectItem key={mesocycle.id} value={mesocycle.id}>
+              {activeMesocycles.filter((m) => m.id).map((mesocycle) => (
+                <SelectItem key={mesocycle.id!} value={mesocycle.id!}>
                   {mesocycle.name}
                 </SelectItem>
               ))}

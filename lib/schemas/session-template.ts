@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { exerciseSchema, type Exercise } from "./exercise";
+import { exerciseSchema } from "./exercise";
 
 /**
  * Form schema for session templates

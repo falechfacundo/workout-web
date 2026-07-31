@@ -66,7 +66,7 @@ export async function protectedAction(formData: ProtectedDataFormData) {
 
 // Example of an action that needs to know the user but doesn't require auth
 export async function conditionalAction(param: string) {
-  return safeAction(async () => {
+  return safeAction(async (): Promise<{ data: { authenticated: boolean; userId?: string; param: string }; error: null }> => {
     // This does not redirect if not authenticated
     const user = await getCurrentUser();
 

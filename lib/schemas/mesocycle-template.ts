@@ -1,13 +1,7 @@
 import { z } from "zod";
-import { muscleGroupSchema, type MuscleGroup } from "./muscle-group";
-import { exerciseSchema, type Exercise } from "./exercise";
-import {
-  trainingSessionTemplateSchema,
-  templateSessionExerciseSchema,
-  type TrainingSessionTemplate,
-  type TemplateSessionExercise,
-} from "./session-template";
-import { profileSchema, type Profile } from "./profile";
+import { muscleGroupSchema } from "./muscle-group";
+import { trainingSessionTemplateSchema } from "./session-template";
+import { profileSchema } from "./profile";
 
 /**
  * Schema for mesocycle_template_goals table

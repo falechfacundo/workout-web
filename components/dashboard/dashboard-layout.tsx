@@ -24,6 +24,11 @@ const navItems: NavItem[] = [
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
+    title: "Calendar",
+    href: "/dashboard/calendar",
+    icon: <Calendar className="h-5 w-5" />,
+  },
+  {
     title: "Muscle Groups",
     href: "/dashboard/muscle-groups",
     icon: <Target className="h-5 w-5" />,

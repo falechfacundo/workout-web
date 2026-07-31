@@ -10,7 +10,6 @@ import {
 import { createLogger } from "@/lib/utils/logger";
 
 import {
-  MesocycleTemplate,
   MesocycleTemplateWithRelations,
 } from "@/lib/schemas/mesocycle-template";
 
@@ -150,7 +149,7 @@ export const useMesocycleTemplatesStore = create<MesocycleTemplatesState>(
         set({ isLoading: true, error: null });
 
         // Usamos la server action directamente
-        const { data, error } = await updateMesocycleTemplate(template);
+        const { error } = await updateMesocycleTemplate(template);
 
         if (error) {
           throw new Error(error);
@@ -161,7 +160,7 @@ export const useMesocycleTemplatesStore = create<MesocycleTemplatesState>(
         get().fetchTemplates(userId);
 
         // Si la plantilla actual es la que se actualizó, actualizamos también el estado currentTemplate
-        if (get().currentTemplate?.id === template.id) {
+        if (template.id && get().currentTemplate?.id === template.id) {
           get().fetchTemplate(template.id);
         }
 
@@ -183,7 +182,7 @@ export const useMesocycleTemplatesStore = create<MesocycleTemplatesState>(
         set({ isLoading: true, error: null });
 
         // Usamos la server action directamente
-        const { data, error } = await deleteMesocycleTemplate(id);
+        const { error } = await deleteMesocycleTemplate(id);
 
         if (error) {
           throw new Error(error);

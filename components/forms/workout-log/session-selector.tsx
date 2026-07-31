@@ -29,15 +29,15 @@ interface SessionSelectorProps {
 
 export function SessionSelector({ mesocycleId }: SessionSelectorProps) {
   const form = useFormContext();
-  const { sessions, isLoading, fetchMesocycleSessions } =
+  const { sessions, isLoading, fetchSessionsByMesocycle } =
     useTrainingSessionsStore();
 
   useEffect(() => {
     if (mesocycleId && mesocycleId !== "none") {
       logger.debug("Fetching sessions for mesocycle", { mesocycleId });
-      fetchMesocycleSessions(mesocycleId);
+      fetchSessionsByMesocycle(mesocycleId);
     }
-  }, [mesocycleId, fetchMesocycleSessions]);
+  }, [mesocycleId, fetchSessionsByMesocycle]);
 
   if (!mesocycleId || mesocycleId === "none") {
     return null;
@@ -50,7 +50,7 @@ export function SessionSelector({ mesocycleId }: SessionSelectorProps) {
   return (
     <FormField
       control={form.control}
-      name="session_template_id"
+      name="training_session_id"
       render={({ field }) => (
         <FormItem>
           <FormLabel>Training Session</FormLabel>
@@ -70,8 +70,7 @@ export function SessionSelector({ mesocycleId }: SessionSelectorProps) {
               <SelectItem value="">Custom Workout</SelectItem>
               {sessions.map((session) => (
                 <SelectItem key={session.id} value={session.id}>
-                  {session.name}{" "}
-                  {session.week_number ? `(Week ${session.week_number})` : ""}
+                  {session.name}
                 </SelectItem>
               ))}
             </SelectContent>

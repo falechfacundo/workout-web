@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { createClient } from "@/lib/utils/supabase/client";
@@ -14,7 +14,7 @@ export default function MesocyclesPage() {
   const router = useRouter();
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
@@ -25,7 +25,28 @@ export default function MesocyclesPage() {
     fetchMesocycles,
   } = useMesocyclesStore();
 
-  const [filteredMesocycles, setFilteredMesocycles] = useState(mesocycles);
+  // Mesociclos filtrados derivados de los datos y los criterios de filtrado
+  const filteredMesocycles = useMemo(() => {
+    if (!mesocycles) return [];
+
+    let result = [...mesocycles];
+
+    // Filtrar por búsqueda
+    if (searchQuery) {
+      result = result.filter(
+        (m) =>
+          m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (m.goals && m.goals.some(g => g.notes?.toLowerCase().includes(searchQuery.toLowerCase()) || g.goal_type.toLowerCase().includes(searchQuery.toLowerCase())))
+      );
+    }
+
+    // Filtrar por estado
+    if (filterStatus) {
+      result = result.filter((m) => m.status === filterStatus);
+    }
+
+    return result;
+  }, [mesocycles, searchQuery, filterStatus]);
 
   // Verificar autenticación y cargar mesociclos
   useEffect(() => {
@@ -53,32 +74,6 @@ export default function MesocyclesPage() {
 
     loadData();
   }, [router, supabase.auth, fetchMesocycles]);
-
-  // Aplicar filtros cuando cambian los datos o los criterios de filtrado
-  useEffect(() => {
-    if (!mesocycles) {
-      setFilteredMesocycles([]);
-      return;
-    }
-
-    let result = [...mesocycles];
-
-    // Filtrar por búsqueda
-    if (searchQuery) {
-      result = result.filter(
-        (m) =>
-          m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (m.goal && m.goal.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-    }
-
-    // Filtrar por estado
-    if (filterStatus) {
-      result = result.filter((m) => m.status === filterStatus);
-    }
-
-    setFilteredMesocycles(result);
-  }, [mesocycles, searchQuery, filterStatus]);
 
   // Maneja la búsqueda
   const handleSearch = (query: string) => {
@@ -136,8 +131,8 @@ export default function MesocyclesPage() {
         />
         {hasMesocycles ? (
           <div className="grid gap-4">
-            {filteredMesocycles.map((mesocycle) => (
-              <MesocycleCard key={mesocycle.id} mesocycle={mesocycle} />
+            {filteredMesocycles.filter((m) => m.id).map((mesocycle) => (
+              <MesocycleCard key={mesocycle.id!} mesocycle={mesocycle as any} />
             ))}
           </div>
         ) : (

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 // Reemplazando la importación del cliente de Supabase con el nuevo enfoque
 import { createClient } from "@/lib/utils/supabase/client";
-import { Github, Mail } from "lucide-react";
+import { Github } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface SocialAuthProps {
@@ -21,7 +21,7 @@ export function SocialAuth({ callbackUrl = "/dashboard" }: SocialAuthProps) {
     try {
       setIsLoading(provider);
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: `${window.location.origin}${callbackUrl}`,

@@ -27,7 +27,7 @@ export function TrainingParametersSection() {
     <div className="grid gap-6 sm:grid-cols-2">
       <FormField
         control={form.control}
-        name="target_rir"
+        name="rir"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Target RIR</FormLabel>
@@ -61,7 +61,7 @@ export function TrainingParametersSection() {
       />
       <FormField
         control={form.control}
-        name="planned_rest_seconds"
+        name="rest_between_sets"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Rest Time (seconds)</FormLabel>
