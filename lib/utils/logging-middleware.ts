@@ -20,7 +20,7 @@ export async function logRequest(
   const url = req.nextUrl.toString();
   const method = req.method;
   const userAgent = req.headers.get("user-agent") || "unknown";
-  const ip = req.ip || req.headers.get("x-forwarded-for") || "unknown";
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
 
   // Log the incoming request
   logger.info(`${method} ${url}`, {
