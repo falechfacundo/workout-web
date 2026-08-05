@@ -1,14 +1,72 @@
--- Insert sample user (this is just for reference, actual users will be created through auth)
-INSERT INTO auth.users (id, email)
-VALUES 
-  ('00000000-0000-0000-0000-000000000000', 'demo@example.com')
+-- ============================================================
+-- DEMO USER (login: demo@example.com / password1234)
+-- ============================================================
+-- Creates a real auth user so the demo account can actually log in.
+-- The password is stored as a bcrypt hash of 'password1234'.
+INSERT INTO auth.users (
+  instance_id,
+  id,
+  aud,
+  role,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+)
+VALUES (
+  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'demo@example.com',
+  crypt('password1234', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}',
+  '{"username":"demo_user","full_name":"Demo User"}',
+  now(),
+  now()
+)
+ON CONFLICT (id) DO UPDATE SET
+  email = EXCLUDED.email,
+  encrypted_password = EXCLUDED.encrypted_password,
+  email_confirmed_at = EXCLUDED.email_confirmed_at,
+  raw_user_meta_data = EXCLUDED.raw_user_meta_data;
+
+-- Link the email identity so GoTrue resolves the demo user on sign in
+INSERT INTO auth.identities (
+  id,
+  user_id,
+  provider_id,
+  identity_data,
+  provider,
+  last_sign_in_at,
+  created_at,
+  updated_at
+)
+VALUES (
+  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-0000-0000-000000000000',
+  'demo@example.com',
+  '{"sub":"00000000-0000-0000-0000-000000000000","email":"demo@example.com"}',
+  'email',
+  now(),
+  now(),
+  now()
+)
 ON CONFLICT DO NOTHING;
 
--- Insert sample profile
+-- Insert sample profile (upsert because the on_auth_user_created trigger
+-- already creates one with username = email on sign up)
 INSERT INTO profiles (id, user_id, username, full_name, avatar_url)
 VALUES 
   ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'demo_user', 'Demo User', 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo')
-ON CONFLICT DO NOTHING;
+ON CONFLICT (user_id) DO UPDATE SET
+  username = EXCLUDED.username,
+  full_name = EXCLUDED.full_name,
+  avatar_url = EXCLUDED.avatar_url;
 
 -- Insert sample muscle groups
 INSERT INTO muscle_groups (id, name, is_default)

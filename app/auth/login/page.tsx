@@ -1,4 +1,5 @@
 import { AuthForm } from "@/components/auth/auth-form";
+import { DemoCredentials } from "@/components/auth/demo-credentials";
 
 export default function LoginPage() {
   return (
@@ -13,6 +14,7 @@ export default function LoginPage() {
           </p>
         </div>
         <AuthForm mode="signin" />
+        <DemoCredentials />
       </div>
     </div>
   );

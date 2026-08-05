@@ -91,6 +91,7 @@ The `seed.sql` file contains sample data for development and testing, including:
 
 1. **Sample User**
    - Demo user with profile
+   - Login: `demo@example.com` / password `password1234` (created as a real auth user, so you can actually sign in)
 
 2. **Muscle Groups**
    - Common muscle groups (chest, back, legs, shoulders, arms, core)

@@ -1,6 +1,9 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Enable pgcrypto (used by seed.sql to hash the demo user's password with crypt()/gen_salt())
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- TO DOO RLS 
 -- muscle groups - cualquiera puede ver los grupos de músculos por defecto
 -- exercises - cualquiera puede ver los ejercicios por defecto

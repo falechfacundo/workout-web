@@ -201,6 +201,16 @@ Implementa **4 niveles de protección**:
 
 Para más detalles, consulta [AUTH-SYSTEM.md](./AUTH-SYSTEM.md).
 
+### 🔑 Cuenta de demostración
+
+Para probar la app sin registrarte, podés usar la cuenta demo que se crea con el seed (`supabase db reset`). También aparece listada en la página de login con botones para copiar al portapapeles:
+
+| Campo | Valor |
+|---|---|
+| Email | demo@example.com |
+| Username | demo_user |
+| Contraseña | password1234 |
+
 ---
 
 ## 🔨 Desarrollo
