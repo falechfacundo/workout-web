@@ -9,6 +9,7 @@ import { BarChart3, Calendar, Dumbbell, LayoutDashboard, LogOut, Menu, Settings,
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { SignOutButton } from "@/components/auth/sign-out-button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 interface NavItem {
@@ -94,14 +95,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   {item.title}
                 </Link>
               ))}
-              <Link
-                href="/auth/signout"
-                className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-accent"
-                onClick={() => setOpen(false)}
-              >
+              <SignOutButton className="w-full justify-start gap-2 rounded-lg px-3 py-2">
                 <LogOut className="h-5 w-5" />
                 Sign Out
-              </Link>
+              </SignOutButton>
             </nav>
           </SheetContent>
         </Sheet>
@@ -131,10 +128,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 {item.title}
               </Link>
             ))}
-            <Link href="/auth/signout" className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-accent">
+            <SignOutButton className="w-full justify-start gap-2 rounded-lg px-3 py-2">
               <LogOut className="h-5 w-5" />
               Sign Out
-            </Link>
+            </SignOutButton>
           </nav>
         </aside>
         <main className="flex-1 p-4 md:p-6">{children}</main>

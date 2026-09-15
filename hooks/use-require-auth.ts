@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/providers/auth-provider";
+import { useSession } from "next-auth/react";
 
 type UseRequireAuthOptions = {
   redirectTo?: string;
@@ -19,8 +19,11 @@ type UseRequireAuthOptions = {
  */
 export function useRequireAuth(options: UseRequireAuthOptions = {}) {
   const { redirectTo = "/auth/login", redirectIfFound = false } = options;
-  const { user, session, isLoading } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
+
+  const isLoading = status === "loading";
+  const user = session?.user ?? null;
 
   useEffect(() => {
     // Don't do anything while auth state is loading

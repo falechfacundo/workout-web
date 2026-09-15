@@ -1,84 +1,76 @@
-import { createClient as createServerClient } from "@/lib/utils/supabase/server";
-import { redirect } from "next/navigation";
+import type { AuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
 
-/**
- * Obtener usuario autenticado - Esta es la función principal recomendada por Supabase
- * para verificar autenticación y proteger rutas/datos
- */
-export async function getUser() {
-  const supabase = await createServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+export const authOptions: AuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
 
-  if (error) {
-    console.error("Error al obtener el usuario:", error);
-  }
+        const user = await db.user.findUnique({
+          where: { email: credentials.email },
+        });
 
-  return user;
-}
+        if (!user) return null;
 
-/**
- * Obtener la sesión actual - Usar con precaución
- * Nota: Supabase recomienda usar getUser() en lugar de getSession()
- * para validar autenticación en el servidor
- */
-export async function getSession() {
-  const supabase = await createServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session;
-}
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          user.password_hash
+        );
+        if (!isValid) return null;
 
-/**
- * Función para cerrar sesión
- */
-export async function signOut() {
-  const supabase = await createServerClient();
-  await supabase.auth.signOut();
-}
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          mustChangePassword: user.must_change_password,
+        };
+      },
+    }),
+  ],
+  session: { strategy: "jwt" },
+  callbacks: {
+    async jwt({ token, user, trigger, session }) {
+      if (user) {
+        token.id = user.id;
+        token.mustChangePassword = user.mustChangePassword;
+      }
 
-/**
- * Proteger rutas - Redirecciona a login si no hay usuario autenticado
- * @param redirectTo - URL a la que redirigir si no hay usuario autenticado
- */
-export async function requireAuth(redirectTo = "/auth/login") {
-  const user = await getUser();
+      // Allow useSession().update({ mustChangePassword: false }) to refresh
+      // the middleware token state after changing the password.
+      if (
+        trigger === "update" &&
+        typeof session?.mustChangePassword === "boolean"
+      ) {
+        token.mustChangePassword = session.mustChangePassword;
+      }
 
-  if (!user) {
-    redirect(redirectTo);
-  }
-
-  return user;
-}
-
-/**
- * Crear cliente admin con Service Role Key - Usar con extrema precaución
- * y solo en contextos del servidor
- */
-export async function createServerSupabaseAdmin() {
-  if (typeof window !== "undefined") {
-    throw new Error(
-      "createServerSupabaseAdmin solo debe usarse en el servidor"
-    );
-  }
-
-  // Importación dinámica para asegurar que solo se use en el servidor
-  const { createClient } = await import("@supabase/supabase-js");
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-  if (!supabaseServiceKey) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY no está definida");
-  }
-
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
+      return token;
     },
-  });
+    async session({ session, token }) {
+      session.user.id = token.id as string;
+      session.user.mustChangePassword = token.mustChangePassword;
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/auth/login",
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+/**
+ * Obtener el usuario autenticado en el servidor (mediante la sesión de NextAuth)
+ */
+export async function getServerUser() {
+  const session = await getServerSession(authOptions);
+  return session?.user ?? null;
 }
