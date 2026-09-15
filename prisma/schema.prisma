@@ -1,0 +1,386 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String    @id @default(uuid(4))
+  email              String    @unique
+  name               String?
+  password_hash      String
+  must_change_password Boolean  @default(true)
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  profile                Profile?
+  profile_measurements   ProfileMeasurement[]
+  muscle_groups          MuscleGroup[]
+  exercises              Exercise[]
+  mesocycles             Mesocycle[]
+  workout_logs           WorkoutLog[]
+  workout_reminders      WorkoutReminder[]
+  mesocycle_templates    MesocycleTemplate[]
+  training_session_templates TrainingSessionTemplate[]
+
+  @@map("users")
+}
+
+model Profile {
+  id                    String   @id @default(uuid(4))
+  user_id               String   @unique
+  username              String?  @unique
+  full_name             String?
+  avatar_url            String?
+  weight_kg             Decimal? @db.Decimal(5, 2)
+  height_cm             Int?
+  birth_date            DateTime? @db.Date
+  sex                   String?
+  experience_level      String?
+  training_goal         String?
+  weekly_availability   Int?
+  session_duration_preference Int?
+  preferred_unit        String   @default("kg")
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  user                 User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  mesocycle_templates  MesocycleTemplate[]  @relation("MesocycleTemplateCreatedBy")
+
+  @@map("profiles")
+}
+
+model ProfileMeasurement {
+  id                String   @id @default(uuid(4))
+  user_id           String
+  date              DateTime @db.Date
+  weight_kg         Decimal? @db.Decimal(5, 2)
+  body_fat_percentage Decimal? @db.Decimal(4, 1)
+  chest_cm          Decimal? @db.Decimal(5, 1)
+  waist_cm          Decimal? @db.Decimal(5, 1)
+  hips_cm           Decimal? @db.Decimal(5, 1)
+  arm_left_cm       Decimal? @db.Decimal(5, 1)
+  arm_right_cm      Decimal? @db.Decimal(5, 1)
+  thigh_left_cm     Decimal? @db.Decimal(5, 1)
+  thigh_right_cm    Decimal? @db.Decimal(5, 1)
+  notes             String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, date])
+  @@index([user_id])
+  @@map("profile_measurements")
+}
+
+model MuscleGroup {
+  id        String   @id @default(uuid(4))
+  name      String   @unique
+  is_default Boolean @default(false)
+  user_id   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user                            User?                         @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  exercises                       Exercise[]                    @relation("PrimaryMuscleGroup")
+  exercise_muscle_groups          ExerciseMuscleGroup[]
+  mesocycle_muscle_group_focus    MesocycleMuscleGroupFocus[]
+  mesocycle_template_muscle_focus MesocycleTemplateMuscleFocus[]
+
+  @@map("muscle_groups")
+}
+
+model Exercise {
+  id          String   @id @default(uuid(4))
+  user_id     String?
+  name        String
+  description String?
+  instructions String?
+  video_url   String?
+  equipment_needed String?
+  difficulty_level String?
+  primary_muscle_group_id String?
+  is_default  Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user                    User?                   @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  primary_muscle_group    MuscleGroup?            @relation("PrimaryMuscleGroup", fields: [primary_muscle_group_id], references: [id], onDelete: SetNull)
+  exercise_muscle_groups  ExerciseMuscleGroup[]
+  session_exercises       SessionExercise[]
+  exercise_logs           ExerciseLog[]
+  template_session_exercises TemplateSessionExercise[]
+
+  @@index([primary_muscle_group_id])
+  @@map("exercises")
+}
+
+model ExerciseMuscleGroup {
+  id            String  @id @default(uuid(4))
+  exercise_id   String
+  muscle_group_id String
+  is_primary    Boolean @default(false)
+  incidence_level Int?   @default(5)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  exercise     Exercise   @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+  muscle_group MuscleGroup @relation(fields: [muscle_group_id], references: [id], onDelete: Cascade)
+
+  @@unique([exercise_id, muscle_group_id])
+  @@index([muscle_group_id])
+  @@map("exercise_muscle_groups")
+}
+
+model Mesocycle {
+  id         String   @id @default(uuid(4))
+  user_id    String
+  name       String
+  description String?
+  start_date DateTime @db.Date
+  end_date   DateTime @db.Date
+  status     String   @default("planned")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user                         User                        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  mesocycle_goals              MesocycleGoal[]
+  mesocycle_muscle_group_focus MesocycleMuscleGroupFocus[]
+  training_sessions            TrainingSession[]
+  workout_logs                 WorkoutLog[]
+
+  @@index([user_id])
+  @@map("mesocycles")
+}
+
+model MesocycleGoal {
+  id          String   @id @default(uuid(4))
+  mesocycle_id String
+  goal_type   String
+  target_value Decimal?
+  unit        String?
+  notes       String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  mesocycle Mesocycle @relation(fields: [mesocycle_id], references: [id], onDelete: Cascade)
+
+  @@map("mesocycle_goals")
+}
+
+model MesocycleMuscleGroupFocus {
+  id              String @id @default(uuid(4))
+  mesocycle_id    String
+  muscle_group_id String
+  priority        Int?   @default(5)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  mesocycle    Mesocycle    @relation(fields: [mesocycle_id], references: [id], onDelete: Cascade)
+  muscle_group MuscleGroup  @relation(fields: [muscle_group_id], references: [id], onDelete: Cascade)
+
+  @@unique([mesocycle_id, muscle_group_id])
+  @@index([muscle_group_id])
+  @@map("mesocycle_muscle_group_focus")
+}
+
+model TrainingSession {
+  id              String   @id @default(uuid(4))
+  mesocycle_id    String
+  name            String
+  description     String?
+  day_of_week     Int?
+  duration_minutes Int?
+  status          String   @default("planned")
+  scheduled_date  DateTime? @db.Date
+  completed_date  DateTime? @db.Date
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  mesocycle        Mesocycle         @relation(fields: [mesocycle_id], references: [id], onDelete: Cascade)
+  session_exercises SessionExercise[]
+  workout_logs      WorkoutLog[]
+  workout_reminders WorkoutReminder[]
+
+  @@index([mesocycle_id])
+  @@map("training_sessions")
+}
+
+model SessionExercise {
+  id            String @id @default(uuid(4))
+  training_session_id String
+  exercise_id   String
+  sets          Int
+  reps          Int
+  rir           Int?
+  rest_between_sets Int?
+  rest_after_exercise Int?
+  notes         String?
+  order_index   Int
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  training_session TrainingSession @relation(fields: [training_session_id], references: [id], onDelete: Cascade)
+  exercise         Exercise        @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@index([training_session_id])
+  @@index([exercise_id])
+  @@map("session_exercises")
+}
+
+model WorkoutLog {
+  id           String   @id @default(uuid(4))
+  user_id      String
+  training_session_id String?
+  mesocycle_id String?
+  date         DateTime @db.Date
+  start_time   DateTime?
+  end_time     DateTime?
+  duration_minutes Int?
+  notes        String?
+  rating       Int?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  training_session TrainingSession? @relation(fields: [training_session_id], references: [id], onDelete: SetNull)
+  mesocycle       Mesocycle?      @relation(fields: [mesocycle_id], references: [id], onDelete: SetNull)
+  exercise_logs   ExerciseLog[]
+
+  @@index([user_id])
+  @@index([training_session_id])
+  @@map("workout_logs")
+}
+
+model ExerciseLog {
+  id            String   @id @default(uuid(4))
+  workout_log_id String
+  exercise_id   String
+  set_number    Int
+  reps          Int
+  weight        Decimal? @db.Decimal(10, 2)
+  rir           Int?
+  notes         String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  workout_log WorkoutLog @relation(fields: [workout_log_id], references: [id], onDelete: Cascade)
+  exercise    Exercise   @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@index([workout_log_id])
+  @@index([exercise_id])
+  @@map("exercise_logs")
+}
+
+model WorkoutReminder {
+  id            String   @id @default(uuid(4))
+  user_id       String
+  training_session_id String?
+  day_of_week   Int?
+  time_of_day   String?
+  is_enabled    Boolean  @default(true)
+  notification_type String @default("browser")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user             User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  training_session TrainingSession? @relation(fields: [training_session_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@map("workout_reminders")
+}
+
+model MesocycleTemplate {
+  id           String   @id @default(uuid(4))
+  user_id      String?
+  name         String
+  description  String?
+  duration_weeks Int
+  is_default   Boolean  @default(false)
+  is_public    Boolean  @default(false)
+  created_by   String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  user         User?                          @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  created_by_profile Profile?                 @relation("MesocycleTemplateCreatedBy", fields: [created_by], references: [id], onDelete: SetNull)
+  goals        MesocycleTemplateGoal[]
+  muscle_focus MesocycleTemplateMuscleFocus[]
+  sessions     TrainingSessionTemplate[]
+
+  @@index([user_id])
+  @@map("mesocycle_templates")
+}
+
+model MesocycleTemplateGoal {
+  id                    String @id @default(uuid(4))
+  mesocycle_template_id String
+  goal_type             String
+  priority              Int?
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  mesocycle_template MesocycleTemplate @relation(fields: [mesocycle_template_id], references: [id], onDelete: Cascade)
+
+  @@map("mesocycle_template_goals")
+}
+
+model MesocycleTemplateMuscleFocus {
+  id                    String @id @default(uuid(4))
+  mesocycle_template_id String
+  muscle_group_id       String
+  focus_level           Int?   @default(5)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  mesocycle_template MesocycleTemplate @relation(fields: [mesocycle_template_id], references: [id], onDelete: Cascade)
+  muscle_group       MuscleGroup       @relation(fields: [muscle_group_id], references: [id], onDelete: Cascade)
+
+  @@unique([mesocycle_template_id, muscle_group_id])
+  @@index([muscle_group_id])
+  @@map("mesocycle_template_muscle_focus")
+}
+
+model TrainingSessionTemplate {
+  id                    String   @id @default(uuid(4))
+  mesocycle_template_id String
+  user_id               String?
+  name                  String
+  description           String?
+  day_of_week           Int?
+  estimated_duration_minutes Int?
+  is_default            Boolean  @default(false)
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  mesocycle_template        MesocycleTemplate        @relation(fields: [mesocycle_template_id], references: [id], onDelete: Cascade)
+  user                      User?                    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  template_session_exercises TemplateSessionExercise[]
+
+  @@map("training_session_templates")
+}
+
+model TemplateSessionExercise {
+  id                        String @id @default(uuid(4))
+  training_session_template_id String
+  exercise_id               String
+  sets                      Int
+  reps                      Int
+  rir                       Int?
+  rest_between_sets         Int?
+  rest_after_exercise       Int?
+  notes                     String?
+  order_index               Int
+  created_at                DateTime @default(now())
+  updated_at                DateTime @updatedAt
+
+  training_session_template TrainingSessionTemplate @relation(fields: [training_session_template_id], references: [id], onDelete: Cascade)
+  exercise                  Exercise                @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@index([training_session_template_id])
+  @@map("template_session_exercises")
+}

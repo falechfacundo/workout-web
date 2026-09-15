@@ -1,0 +1,31 @@
+// Canonical default muscle groups (seeded for every user via is_default).
+// Note: the legacy seed.sql listed "Lower Back" twice (duplicate name
+// violating the UNIQUE constraint on muscle_groups.name); we keep a single entry.
+export const muscleGroups: { name: string }[] = [
+  { name: "Chest" },
+  { name: "Back" },
+  { name: "Legs" },
+  { name: "Shoulders" },
+  { name: "Arms" },
+  { name: "Core" },
+  { name: "Upper Chest" },
+  { name: "Lower Chest" },
+  { name: "Lats" },
+  { name: "Trapezius" },
+  { name: "Middle Back" },
+  { name: "Lower Back" },
+  { name: "Quadriceps" },
+  { name: "Hamstrings" },
+  { name: "Calves" },
+  { name: "Glutes" },
+  { name: "Front Delts" },
+  { name: "Side Delts" },
+  { name: "Rear Delts" },
+  { name: "Biceps" },
+  { name: "Triceps" },
+  { name: "Forearms" },
+  { name: "Abs" },
+  { name: "Obliques" },
+  { name: "Adductors" },
+  { name: "Abductors" },
+]
