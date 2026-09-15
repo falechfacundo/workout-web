@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
@@ -16,6 +16,7 @@ import {
 } from "@/lib/schemas/workout-log";
 
 import { createWorkoutLog } from "@/lib/actions/workout-logs";
+import { useTrainingSessionsStore } from "@/lib/stores/training-sessions-store";
 
 import { MesocycleSelector } from "./mesocycle-selector";
 import { SessionSelector } from "./session-selector";
@@ -25,9 +26,11 @@ const logger = createLogger("workout-log-form");
 
 interface WorkoutLogFormProps {
   userId: string;
+  /** BL-3: sesión preseleccionada vía /workout-logs/new?template=<sessionId> */
+  initialSessionId?: string;
 }
 
-export function WorkoutLogForm({ userId }: WorkoutLogFormProps) {
+export function WorkoutLogForm({ userId, initialSessionId }: WorkoutLogFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -46,6 +49,29 @@ export function WorkoutLogForm({ userId }: WorkoutLogFormProps) {
     control: form.control,
     name: "mesocycle_id",
   });
+
+  const { fetchSession, currentSession } = useTrainingSessionsStore();
+  const templateAppliedRef = useRef(false);
+
+  // BL-3: si llega ?template=<sessionId>, fetch de la sesión…
+  useEffect(() => {
+    if (!initialSessionId || templateAppliedRef.current) return;
+    fetchSession(initialSessionId);
+  }, [initialSessionId, fetchSession]);
+
+  // …y cuando llega la data, preseleccionar mesociclo + sesión en el form
+  useEffect(() => {
+    if (!initialSessionId || templateAppliedRef.current) return;
+    if (currentSession?.id === initialSessionId && currentSession.mesocycle_id) {
+      form.setValue("mesocycle_id", currentSession.mesocycle_id);
+      form.setValue("training_session_id", initialSessionId);
+      templateAppliedRef.current = true;
+      logger.info("Workout log form preselected from template", {
+        sessionId: initialSessionId,
+        mesocycleId: currentSession.mesocycle_id,
+      });
+    }
+  }, [currentSession, initialSessionId, form]);
 
   async function onSubmit(values: WorkoutLogFormValues) {
     logger.debug("Submitting workout log form", {

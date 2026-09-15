@@ -1,15 +1,21 @@
 "use client";
 
+import { Suspense } from "react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { WorkoutLogForm } from "@/components/forms/workout-log/workout-log-form";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
-export default function NewWorkoutLogPage() {
+function NewWorkoutLogContent() {
   // Use auth protection
   const { user, isLoading } = useRequireAuth();
+
+  // BL-3: leer ?template=<sessionId> que genera week-content.tsx
+  const searchParams = useSearchParams();
+  const templateSessionId = searchParams.get("template") || undefined;
 
   if (isLoading) {
     return (
@@ -44,9 +50,24 @@ export default function NewWorkoutLogPage() {
         </div>
 
         <div className="mx-auto max-w-2xl">
-          <WorkoutLogForm userId={user.id} />
+          <WorkoutLogForm userId={user.id} initialSessionId={templateSessionId} />
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function NewWorkoutLogPage() {
+  // Suspense boundary requerido por useSearchParams en prerender estático
+  return (
+    <Suspense
+      fallback={
+        <DashboardLayout>
+          <div className="flex justify-center p-8">Loading...</div>
+        </DashboardLayout>
+      }
+    >
+      <NewWorkoutLogContent />
+    </Suspense>
   );
 }
