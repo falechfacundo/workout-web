@@ -23,7 +23,7 @@ Server actions should use the `safeAction` wrapper or one of its variants to ens
 "use server";
 
 import { safeAction } from "@/lib/utils/safe-action";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("exercises-actions");
@@ -32,19 +32,9 @@ export async function getExercises() {
   return safeAction(async () => {
     logger.debug("Fetching exercises");
 
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("exercises")
-      .select("*")
-      .order("name");
-
-    if (error) {
-      logger.error("Failed to fetch exercises", error);
-      return {
-        data: null,
-        error: `Error fetching exercises: ${error.message}`,
-      };
-    }
+    const data = await db.exercise.findMany({
+      orderBy: { name: "asc" },
+    });
 
     logger.info("Exercises fetched successfully", { count: data.length });
     return {
@@ -63,7 +53,7 @@ export async function getExercises() {
 
 import { z } from "zod";
 import { createSafeAction } from "@/lib/utils/safe-action";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
 import { mesocycleTemplateSchema } from "@/lib/schemas/mesocycle-template";
 import { createLogger } from "@/lib/utils/logger";
 
@@ -76,22 +66,10 @@ export const createMesocycleTemplate = createSafeAction({
     try {
       logger.debug("Creating mesocycle template", { name: data.name });
 
-      const supabase = await createClient();
-      const { data: newTemplate, error } = await supabase
-        .from("mesocycle_templates")
-        .insert([data])
-        .select()
-        .single();
-
-      if (error) {
-        logger.error("Failed to create mesocycle template", error, {
-          template: data.name,
-        });
-        return {
-          data: null,
-          error: `Error creating template: ${error.message}`,
-        };
-      }
+      const newTemplate = await db.mesocycleTemplate.create({
+        data: { name: data.name },
+        select: { id: true },
+      });
 
       logger.info("Mesocycle template created", { templateId: newTemplate.id });
       return {
@@ -121,7 +99,7 @@ export const createMesocycleTemplate = createSafeAction({
 import { z } from "zod";
 import { createAuthenticatedAction } from "@/lib/utils/safe-action";
 import { profileSchema } from "@/lib/schemas/profile";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
 
 export const updateProfile = createAuthenticatedAction({
   schema: z.object({
@@ -129,24 +107,13 @@ export const updateProfile = createAuthenticatedAction({
     bio: z.string().optional(),
   }),
   handler: async (data, userId) => {
-    const supabase = await createClient();
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .update({
+    const profile = await db.profile.update({
+      where: { user_id: userId },
+      data: {
         name: data.name,
-        bio: data.bio,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", userId)
-      .select()
-      .single();
-
-    if (error) {
-      return {
-        data: null,
-        error: `Error updating profile: ${error.message}`,
-      };
-    }
+        updated_at: new Date(),
+      },
+    });
 
     return {
       data: profile,
@@ -255,7 +222,7 @@ Log database operations for performance monitoring and debugging.
 // lib/db/mesocycle-repository.ts
 import { createLogger } from "@/lib/utils/logger";
 import { AppError } from "@/lib/error";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
 
 const logger = createLogger("mesocycle-repository");
 
@@ -264,40 +231,20 @@ export async function getMesocycleWithSessions(id: string, userId: string) {
   const startTime = performance.now();
 
   try {
-    const supabase = await createClient();
-
     // Fetch mesocycle
-    const { data: mesocycle, error: mesocycleError } = await supabase
-      .from("mesocycles")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", userId)
-      .single();
-
-    if (mesocycleError) {
-      throw AppError.fromDatabaseError(
-        mesocycleError,
-        "Failed to fetch mesocycle"
-      );
-    }
+    const mesocycle = await db.mesocycle.findFirst({
+      where: { id, user_id: userId },
+    });
 
     if (!mesocycle) {
       throw AppError.notFound("Mesocycle", id);
     }
 
     // Fetch sessions
-    const { data: sessions, error: sessionsError } = await supabase
-      .from("training_sessions")
-      .select("*")
-      .eq("mesocycle_id", id)
-      .order("scheduled_date", { ascending: true });
-
-    if (sessionsError) {
-      throw AppError.fromDatabaseError(
-        sessionsError,
-        "Failed to fetch training sessions"
-      );
-    }
+    const sessions = await db.trainingSession.findMany({
+      where: { mesocycle_id: id },
+      orderBy: { scheduled_date: "asc" },
+    });
 
     const duration = Math.round(performance.now() - startTime);
     logger.info(`Fetched mesocycle with ${sessions.length} sessions`, {
@@ -338,35 +285,36 @@ Log authentication events properly (without sensitive data).
 ```typescript
 // lib/auth.ts
 import { createLogger } from "@/lib/utils/logger";
+import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
 
 const logger = createLogger("auth");
 
-export async function signIn(email: string, password: string) {
+export async function verifyCredentials(email: string, password: string) {
   try {
     logger.info("Sign in attempt", { email: maskEmail(email) });
 
-    const supabase = await createClient();
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const user = await db.user.findUnique({ where: { email } });
 
-    if (error) {
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       logger.warn("Sign in failed", {
         email: maskEmail(email),
-        errorCode: error.code,
-        errorMessage: error.message,
+        errorCode: "invalid_credentials",
       });
-      throw error;
+      return null;
     }
 
     logger.info("Sign in successful", {
-      userId: data.user?.id,
+      userId: user.id,
       email: maskEmail(email),
     });
 
-    return data;
+    return user;
   } catch (error) {
+    logger.error(
+      "Unexpected error during sign in",
+      error instanceof Error ? error : new Error(String(error))
+    );
     throw error;
   }
 }
