@@ -15,6 +15,11 @@ import {
   type TrainingSessionFormValues,
 } from "@/lib/schemas/training-session";
 
+import {
+  createTrainingSession,
+  updateTrainingSession,
+} from "@/lib/actions/training-sessions";
+
 import { BasicInfoSection } from "./basic-info-section";
 import { ScheduleSection } from "./schedule-section";
 import { NotesSection } from "./notes-section";
@@ -58,6 +63,28 @@ export function TrainingSessionForm({
     setIsSubmitting(true);
 
     try {
+      // BL-1: persistir en DB via server actions (antes solo mostraba toast)
+      const result = initialData?.id
+        ? await updateTrainingSession({ ...values, id: initialData.id })
+        : await createTrainingSession({
+            ...values,
+            mesocycle_id: mesocycleId,
+          });
+
+      if (result?.error) {
+        logger.warn("Training session submission rejected", {
+          isEdit: !!initialData?.id,
+          error: result.error,
+        });
+
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error,
+        });
+        return;
+      }
+
       toast({
         title: "Success",
         description: initialData?.id
