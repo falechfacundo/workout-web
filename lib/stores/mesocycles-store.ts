@@ -191,7 +191,10 @@ export const useMesocyclesStore = create<MesocyclesState>((set) => ({
       const userId = data.user_id;
       if (userId) {
         set((state) => ({
-          mesocycles: [...state.mesocycles, result.data],
+          mesocycles: [
+            ...state.mesocycles,
+            result.data as unknown as Mesocycle,
+          ],
           isLoading: false,
         }));
       } else {
@@ -237,16 +240,19 @@ export const useMesocyclesStore = create<MesocyclesState>((set) => ({
       });
 
       // Update the mesocycle in the list
-      set((state) => ({
-        mesocycles: state.mesocycles.map((m) =>
-          m.id === data.id ? { ...m, ...result.data } : m
-        ),
-        currentMesocycle:
-          state.currentMesocycle?.id === data.id
-            ? { ...state.currentMesocycle, ...result.data }
-            : state.currentMesocycle,
-        isLoading: false,
-      }));
+      set((state) => {
+        const updated = result.data as unknown as Mesocycle;
+        return {
+          mesocycles: state.mesocycles.map((m) =>
+            m.id === updated.id ? { ...m, ...updated } : m
+          ),
+          currentMesocycle:
+            state.currentMesocycle?.id === updated.id
+              ? ({ ...state.currentMesocycle, ...updated } as unknown as MesocycleWithRelations)
+              : state.currentMesocycle,
+          isLoading: false,
+        };
+      });
 
       return result;
     } catch (error) {

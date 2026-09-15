@@ -110,7 +110,10 @@ export const useMeasurementsStore = create<MeasurementsState>((set) => ({
 
       // Actualiza el estado con la nueva medición
       set((state) => ({
-        measurements: [...state.measurements, result.data],
+        measurements: [
+          ...state.measurements,
+          result.data as unknown as Measurement,
+        ],
         isLoading: false,
       }));
 

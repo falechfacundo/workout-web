@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
 import { z } from "zod";
 import { createLogger } from "@/lib/utils/logger";
 
@@ -60,30 +60,24 @@ export async function createWorkoutLog(
     const startTime = performance.now();
 
     const validatedData = WorkoutLogSchema.parse(formData);
-    const supabase = await createClient();
 
-    const { data: workoutLog, error: workoutError } = await supabase
-      .from("workout_logs")
-      .insert({
+    const workoutLog = await db.workoutLog.create({
+      data: {
         user_id: validatedData.user_id,
         training_session_id: validatedData.training_session_id || null,
         mesocycle_id: validatedData.mesocycle_id || null,
-        date: validatedData.date,
-        start_time: validatedData.start_time || new Date().toISOString(),
+        date: new Date(validatedData.date),
+        start_time: validatedData.start_time
+          ? new Date(validatedData.start_time)
+          : new Date(),
         notes: validatedData.notes || null,
         duration_minutes: validatedData.duration_minutes || null,
         rating: validatedData.rating || null,
-      })
-      .select()
-      .single();
-
-    if (workoutError) {
-      logger.error("Error al crear workout log", workoutError, {
-        userId: formData.user_id,
-        errorCode: workoutError.code,
-      });
-      return { data: null, error: workoutError.message };
-    }
+      },
+      include: {
+        exercise_logs: true,
+      },
+    });
 
     logger.info("Workout log creado con éxito", {
       logId: workoutLog.id,
@@ -106,26 +100,22 @@ export async function updateWorkoutLog(
 ): Promise<{ data: WorkoutLogWithSets | null; error: string | null }> {
   try {
     const validatedData = WorkoutLogSchema.parse(formData);
-    const supabase = await createClient();
 
-    const { data: workoutLog, error: workoutError } = await supabase
-      .from("workout_logs")
-      .update({
+    const workoutLog = await db.workoutLog.update({
+      where: { id },
+      data: {
         training_session_id: validatedData.training_session_id || null,
         mesocycle_id: validatedData.mesocycle_id || null,
-        date: validatedData.date,
-        end_time: validatedData.end_time || null,
+        date: new Date(validatedData.date),
+        end_time: validatedData.end_time ? new Date(validatedData.end_time) : null,
         notes: validatedData.notes || null,
         duration_minutes: validatedData.duration_minutes || null,
         rating: validatedData.rating || null,
-      })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (workoutError) {
-      return { data: null, error: workoutError.message };
-    }
+      },
+      include: {
+        exercise_logs: true,
+      },
+    });
 
     return { data: workoutLog as WorkoutLogWithSets, error: null };
   } catch (error) {
@@ -143,12 +133,9 @@ export async function deleteWorkoutLog(
   id: string
 ): Promise<{ error: string | null }> {
   try {
-    const supabase = await createClient();
-    const { error } = await supabase.from("workout_logs").delete().eq("id", id);
-
-    if (error) {
-      return { error: error.message };
-    }
+    await db.workoutLog.delete({
+      where: { id },
+    });
 
     return { error: null };
   } catch {
@@ -160,21 +147,12 @@ export async function getWorkoutLog(
   id: string
 ): Promise<{ data: WorkoutLogWithSets | null; error: string | null }> {
   try {
-    const supabase = await createClient();
-    const { data: workoutLog, error } = await supabase
-      .from("workout_logs")
-      .select(
-        `
-        *,
-        exercise_logs:exercise_logs(*)
-      `
-      )
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      return { data: null, error: error.message };
-    }
+    const workoutLog = await db.workoutLog.findFirst({
+      where: { id },
+      include: {
+        exercise_logs: true,
+      },
+    });
 
     if (!workoutLog) {
       return { data: null, error: "Registro de entrenamiento no encontrado" };
@@ -193,25 +171,24 @@ export async function getWorkoutLogs(
   userId: string
 ): Promise<{ data: WorkoutLogWithSets[] | null; error: string | null }> {
   try {
-    const supabase = await createClient();
-    const { data: workoutLogs, error } = await supabase
-      .from("workout_logs")
-      .select(
-        `
-        *,
-        exercise_logs:exercise_logs(*),
-        session:training_sessions(name),
-        mesocycle:mesocycles(name)
-      `
-      )
-      .eq("user_id", userId)
-      .order("date", { ascending: false });
+    const workoutLogs = await db.workoutLog.findMany({
+      where: { user_id: userId },
+      include: {
+        exercise_logs: true,
+        training_session: { select: { name: true } },
+        mesocycle: { select: { name: true } },
+      },
+      orderBy: { date: "desc" },
+    });
 
-    if (error) {
-      return { data: null, error: error.message };
-    }
-
-    return { data: workoutLogs as WorkoutLogWithSets[], error: null };
+    return {
+      data: workoutLogs.map((log) => ({
+        ...log,
+        session: log.training_session,
+        mesocycle: log.mesocycle,
+      })) as unknown as WorkoutLogWithSets[],
+      error: null,
+    };
   } catch {
     return {
       data: null,
@@ -226,27 +203,30 @@ export async function getWorkoutLogsByDateRange(
   endDate: string
 ): Promise<{ data: WorkoutLogWithSets[] | null; error: string | null }> {
   try {
-    const supabase = await createClient();
-    const { data: workoutLogs, error } = await supabase
-      .from("workout_logs")
-      .select(
-        `
-        *,
-        exercise_logs:exercise_logs(*),
-        session:training_sessions(name),
-        mesocycle:mesocycles(name)
-      `
-      )
-      .eq("user_id", userId)
-      .gte("date", startDate)
-      .lte("date", endDate)
-      .order("date", { ascending: true });
+    const workoutLogs = await db.workoutLog.findMany({
+      where: {
+        user_id: userId,
+        date: {
+          gte: new Date(startDate),
+          lte: new Date(endDate),
+        },
+      },
+      include: {
+        exercise_logs: true,
+        training_session: { select: { name: true } },
+        mesocycle: { select: { name: true } },
+      },
+      orderBy: { date: "asc" },
+    });
 
-    if (error) {
-      return { data: null, error: error.message };
-    }
-
-    return { data: workoutLogs as WorkoutLogWithSets[], error: null };
+    return {
+      data: workoutLogs.map((log) => ({
+        ...log,
+        session: log.training_session,
+        mesocycle: log.mesocycle,
+      })) as unknown as WorkoutLogWithSets[],
+      error: null,
+    };
   } catch {
     return {
       data: null,
@@ -261,11 +241,9 @@ export async function createExerciseLogSet(formData: ExerciseLogSetFormData): Pr
 }> {
   try {
     const validatedData = ExerciseLogSetSchema.parse(formData);
-    const supabase = await createClient();
 
-    const { data: exerciseLog, error: setError } = await supabase
-      .from("exercise_logs")
-      .insert({
+    const exerciseLog = await db.exerciseLog.create({
+      data: {
         workout_log_id: validatedData.workout_log_id!,
         exercise_id: validatedData.exercise_id,
         set_number: validatedData.set_number,
@@ -273,13 +251,8 @@ export async function createExerciseLogSet(formData: ExerciseLogSetFormData): Pr
         weight: validatedData.weight || null,
         rir: validatedData.rir || null,
         notes: validatedData.notes || null,
-      })
-      .select()
-      .single();
-
-    if (setError) {
-      return { data: null, error: setError.message };
-    }
+      },
+    });
 
     return { data: exerciseLog, error: null };
   } catch (error) {
@@ -299,25 +272,18 @@ export async function updateExerciseLogSet(
 }> {
   try {
     const validatedData = ExerciseLogSetSchema.parse(formData);
-    const supabase = await createClient();
 
-    const { data: exerciseLog, error: setError } = await supabase
-      .from("exercise_logs")
-      .update({
+    const exerciseLog = await db.exerciseLog.update({
+      where: { id },
+      data: {
         exercise_id: validatedData.exercise_id,
         set_number: validatedData.set_number,
         reps: validatedData.reps,
         weight: validatedData.weight || null,
         rir: validatedData.rir || null,
         notes: validatedData.notes || null,
-      })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (setError) {
-      return { data: null, error: setError.message };
-    }
+      },
+    });
 
     return { data: exerciseLog, error: null };
   } catch (error) {
@@ -332,15 +298,9 @@ export async function deleteExerciseLogSet(
   id: string
 ): Promise<{ error: string | null }> {
   try {
-    const supabase = await createClient();
-    const { error } = await supabase
-      .from("exercise_logs")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      return { error: error.message };
-    }
+    await db.exerciseLog.delete({
+      where: { id },
+    });
 
     return { error: null };
   } catch {
@@ -353,43 +313,27 @@ export async function completeWorkoutLog(
   duration: number,
   notes?: string
 ) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("workout_logs")
-    .update({
-      end_time: new Date().toISOString(),
+  await db.workoutLog.update({
+    where: { id },
+    data: {
+      end_time: new Date(),
       duration_minutes: duration,
       notes: notes || null,
-    })
-    .eq("id", id);
-
-  if (error) {
-    return {
-      error: `Error completing workout log: ${error.message}`,
-    };
-  }
+    },
+  });
 
   revalidatePath("/dashboard/workout-logs");
   redirect("/dashboard/workout-logs");
 }
 
 export async function getWorkoutSets(workoutId: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("exercise_logs")
-    .select(
-      `
-      *,
-      exercise:exercises(*)
-    `
-    )
-    .eq("workout_log_id", workoutId)
-    .order("exercise_id")
-    .order("set_number");
-
-  if (error) {
-    throw new Error(`Error fetching workout sets: ${error.message}`);
-  }
+  const data = await db.exerciseLog.findMany({
+    where: { workout_log_id: workoutId },
+    include: {
+      exercise: true,
+    },
+    orderBy: [{ exercise_id: "asc" }, { set_number: "asc" }],
+  });
 
   return data;
 }
@@ -408,25 +352,20 @@ export async function getWorkoutStats(
     startDate.setFullYear(startDate.getFullYear() - 1);
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("workout_logs")
-    .select(
-      `
-      id,
-      date,
-      start_time,
-      end_time,
-      duration_minutes
-    `
-    )
-    .eq("user_id", userId)
-    .gte("date", startDate.toISOString().split("T")[0])
-    .order("date");
-
-  if (error) {
-    throw new Error(`Error fetching workout stats: ${error.message}`);
-  }
+  const data = await db.workoutLog.findMany({
+    where: {
+      user_id: userId,
+      date: { gte: startDate },
+    },
+    select: {
+      id: true,
+      date: true,
+      start_time: true,
+      end_time: true,
+      duration_minutes: true,
+    },
+    orderBy: { date: "asc" },
+  });
 
   return data;
 }

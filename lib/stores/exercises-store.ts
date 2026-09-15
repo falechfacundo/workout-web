@@ -103,7 +103,7 @@ export const useExercisesStore = create<ExercisesState>((set, get) => ({
       });
 
       set({
-        currentExercise: result.data as ExerciseWithRelations,
+        currentExercise: result.data as unknown as ExerciseWithRelations,
         isLoading: false,
       });
     } catch (error) {
@@ -198,7 +198,8 @@ export const useExercisesStore = create<ExercisesState>((set, get) => ({
 
       // Add the new exercise to the list
       set((state) => {
-        const newExercises = [...state.exercises, result.data];
+        const created = result.data as unknown as ExerciseWithRelations;
+        const newExercises = [...state.exercises, created];
         return {
           exercises: newExercises,
           filteredExercises:
@@ -248,19 +249,22 @@ export const useExercisesStore = create<ExercisesState>((set, get) => ({
       });
 
       // Update the exercise in both lists
-      set((state) => ({
-        exercises: state.exercises.map((ex) =>
-          ex.id === data.id ? { ...ex, ...result.data } : ex
-        ),
-        filteredExercises: state.filteredExercises.map((ex) =>
-          ex.id === data.id ? { ...ex, ...result.data } : ex
-        ),
-        currentExercise:
-          state.currentExercise?.id === data.id
-            ? { ...state.currentExercise, ...result.data }
-            : state.currentExercise,
-        isLoading: false,
-      }));
+      set((state) => {
+        const updated = result.data as unknown as ExerciseWithRelations;
+        return {
+          exercises: state.exercises.map((ex) =>
+            ex.id === updated.id ? { ...ex, ...updated } : ex
+          ),
+          filteredExercises: state.filteredExercises.map((ex) =>
+            ex.id === updated.id ? { ...ex, ...updated } : ex
+          ),
+          currentExercise:
+            state.currentExercise?.id === updated.id
+              ? { ...state.currentExercise, ...updated }
+              : state.currentExercise,
+          isLoading: false,
+        };
+      });
 
       return result;
     } catch (error) {

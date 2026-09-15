@@ -47,7 +47,9 @@ export const useWorkoutRemindersStore = create<WorkoutRemindersState>(
           return;
         }
 
-        const validReminders = Array.isArray(result.data) ? result.data : [];
+        const validReminders = (Array.isArray(result.data)
+          ? result.data
+          : []) as unknown as WorkoutReminder[];
         const elapsedTime = Math.round(performance.now() - startTime);
 
         logger.info("Workout reminders fetched successfully", {
@@ -101,7 +103,10 @@ export const useWorkoutRemindersStore = create<WorkoutRemindersState>(
         });
 
         set((state) => ({
-          reminders: [...state.reminders, result.data],
+          reminders: [
+            ...state.reminders,
+            result.data as unknown as WorkoutReminder,
+          ],
           isLoading: false,
         }));
 
@@ -147,7 +152,9 @@ export const useWorkoutRemindersStore = create<WorkoutRemindersState>(
 
         set((state) => ({
           reminders: state.reminders.map((r) =>
-            r.id === data.id ? { ...r, ...result.data } : r
+            r.id === data.id
+              ? { ...r, ...(result.data as unknown as WorkoutReminder) }
+              : r
           ),
           isLoading: false,
         }));

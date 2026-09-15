@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
 import { z } from "zod";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
@@ -46,27 +46,14 @@ export async function getTrainingSessions(userId: string) {
     logger.debug("Starting getTrainingSessions", { userId });
 
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("training_sessions")
-        .select("*")
-        .order("scheduled_date", { ascending: true });
+      const data = await db.trainingSession.findMany({
+        where: {
+          mesocycle: { user_id: userId },
+        },
+        orderBy: { scheduled_date: "asc" },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error fetching training sessions", {
-          userId,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error fetching training sessions: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully fetched training sessions", {
         userId,
@@ -99,28 +86,12 @@ export async function getTrainingSessionsByMesocycle(mesocycleId: string) {
     logger.debug("Starting getTrainingSessionsByMesocycle", { mesocycleId });
 
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("training_sessions")
-        .select("*")
-        .eq("mesocycle_id", mesocycleId)
-        .order("scheduled_date", { ascending: true });
+      const data = await db.trainingSession.findMany({
+        where: { mesocycle_id: mesocycleId },
+        orderBy: { scheduled_date: "asc" },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error fetching training sessions by mesocycle", {
-          mesocycleId,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error fetching training sessions: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully fetched training sessions by mesocycle", {
         mesocycleId,
@@ -153,28 +124,11 @@ export async function getTrainingSession(id: string) {
     logger.debug("Starting getTrainingSession", { sessionId: id });
 
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("training_sessions")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const data = await db.trainingSession.findUnique({
+        where: { id },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error fetching training session", {
-          sessionId: id,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error fetching training session: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully fetched training session", {
         sessionId: id,
@@ -238,39 +192,19 @@ export async function createTrainingSession(formData: TrainingSessionFormData) {
         scheduled_date,
       } = validatedFields.data;
 
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("training_sessions")
-        .insert([
-          {
-            mesocycle_id,
-            name,
-            description: description || null,
-            day_of_week: day_of_week ?? null,
-            duration_minutes: duration_minutes ?? null,
-            status,
-            scheduled_date: scheduled_date || null,
-          },
-        ])
-        .select()
-        .single();
+      const data = await db.trainingSession.create({
+        data: {
+          mesocycle_id,
+          name,
+          description: description || null,
+          day_of_week: day_of_week ?? null,
+          duration_minutes: duration_minutes ?? null,
+          status,
+          scheduled_date: scheduled_date ? new Date(scheduled_date) : null,
+        },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error creating training session", {
-          name,
-          mesocycleId: mesocycle_id,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error creating training session: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully created training session", {
         name,
@@ -343,38 +277,20 @@ export async function updateTrainingSession(formData: TrainingSessionFormData) {
         };
       }
 
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("training_sessions")
-        .update({
+      const data = await db.trainingSession.update({
+        where: { id },
+        data: {
           name,
           description: description || null,
           day_of_week: day_of_week ?? null,
           duration_minutes: duration_minutes ?? null,
           status,
-          scheduled_date: scheduled_date || null,
-          completed_date: completed_date || null,
-        })
-        .eq("id", id)
-        .select()
-        .single();
+          scheduled_date: scheduled_date ? new Date(scheduled_date) : null,
+          completed_date: completed_date ? new Date(completed_date) : null,
+        },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error updating training session", {
-          id,
-          name,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error updating training session: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully updated training session", {
         id,
@@ -411,27 +327,11 @@ export async function deleteTrainingSession(id: string) {
     logger.debug("Starting deleteTrainingSession", { sessionId: id });
 
     try {
-      const supabase = await createClient();
-      const { error } = await supabase
-        .from("training_sessions")
-        .delete()
-        .eq("id", id);
+      await db.trainingSession.delete({
+        where: { id },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error deleting training session", {
-          sessionId: id,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error deleting training session: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully deleted training session", {
         sessionId: id,
@@ -462,29 +362,15 @@ export async function getSessionExercises(sessionId: string) {
   logger.debug("Starting getSessionExercises", { sessionId });
 
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("session_exercises")
-      .select(
-        `
-        *,
-        exercise:exercises(*)
-      `
-      )
-      .eq("training_session_id", sessionId)
-      .order("order_index");
+    const data = await db.sessionExercise.findMany({
+      where: { training_session_id: sessionId },
+      include: {
+        exercise: true,
+      },
+      orderBy: { order_index: "asc" },
+    });
 
     const elapsedTime = Math.round(performance.now() - startTime);
-
-    if (error) {
-      logger.error("Error fetching session exercises", error as any, {
-        sessionId,
-        errorCode: error.code,
-        elapsedMs: elapsedTime,
-      });
-
-      throw new Error(`Error fetching session exercises: ${error.message}`);
-    }
 
     logger.info("Successfully fetched session exercises", {
       sessionId,
@@ -544,28 +430,17 @@ export async function addExerciseToSession(formData: SessionExerciseFormData) {
       };
     }
 
-    const supabase = await createClient();
-
     // Get the current highest order value
-    const { data: orderData, error: orderError } = await supabase
-      .from("session_exercises")
-      .select("order_index")
-      .eq("training_session_id", training_session_id)
-      .order("order_index", { ascending: false })
-      .limit(1);
+    const latest = await db.sessionExercise.findFirst({
+      where: { training_session_id },
+      orderBy: { order_index: "desc" },
+      select: { order_index: true },
+    });
 
-    if (orderError) {
-      logger.warn("Error fetching order data for exercise", {
-        trainingSessionId: training_session_id,
-        error: orderError.message,
-      });
-    }
+    const nextOrder = latest ? latest.order_index + 1 : 0;
 
-    const nextOrder =
-      orderData && orderData.length > 0 ? orderData[0].order_index + 1 : 0;
-
-    const { error } = await supabase.from("session_exercises").insert([
-      {
+    await db.sessionExercise.create({
+      data: {
         training_session_id,
         exercise_id,
         order_index: order_index ?? nextOrder,
@@ -576,48 +451,29 @@ export async function addExerciseToSession(formData: SessionExerciseFormData) {
         rest_after_exercise: rest_after_exercise ?? null,
         notes: notes || null,
       },
-    ]);
+    });
 
     const elapsedTime = Math.round(performance.now() - startTime);
 
-    if (error) {
-      logger.warn("Error adding exercise to session", {
-        trainingSessionId: training_session_id,
-        exerciseId: exercise_id,
-        error: error.message,
-        code: error.code,
-        elapsedMs: elapsedTime,
-      });
-
-      return {
-        error: `Error adding exercise to session: ${error.message}`,
-      };
-    }
-
     // Get the mesocycle ID for the revalidation
-    const { data: sessionData, error: sessionError } = await supabase
-      .from("training_sessions")
-      .select("mesocycle_id")
-      .eq("id", training_session_id)
-      .single();
-
-    if (sessionError) {
-      return {
-        error: `Error fetching session data: ${sessionError.message}`,
-      };
-    }
+    const sessionData = await db.trainingSession.findUnique({
+      where: { id: training_session_id },
+      select: { mesocycle_id: true },
+    });
 
     logger.info("Successfully added exercise to session", {
       trainingSessionId: training_session_id,
       exerciseId: exercise_id,
-      mesocycleId: sessionData.mesocycle_id,
+      mesocycleId: sessionData?.mesocycle_id,
       order: nextOrder,
       elapsedMs: elapsedTime,
     });
 
-    revalidatePath(
-      `/dashboard/mesocycles/${sessionData.mesocycle_id}/sessions/${training_session_id}`
-    );
+    if (sessionData) {
+      revalidatePath(
+        `/dashboard/mesocycles/${sessionData.mesocycle_id}/sessions/${training_session_id}`
+      );
+    }
 
     return { data: { success: true }, error: null };
   } catch (error) {
@@ -672,10 +528,9 @@ export async function updateSessionExercise(formData: SessionExerciseFormData) {
       };
     }
 
-    const supabase = await createClient();
-    const { error } = await supabase
-      .from("session_exercises")
-      .update({
+    await db.sessionExercise.update({
+      where: { id },
+      data: {
         exercise_id,
         order_index: order_index ?? 0,
         sets,
@@ -684,22 +539,15 @@ export async function updateSessionExercise(formData: SessionExerciseFormData) {
         rest_between_sets: rest_between_sets ?? null,
         rest_after_exercise: rest_after_exercise ?? null,
         notes: notes || null,
-      })
-      .eq("id", id);
-
-    if (error) {
-      return {
-        error: `Error updating session exercise: ${error.message}`,
-      };
-    }
+      },
+    });
 
     // Get the mesocycle ID for the revalidation
     if (training_session_id) {
-      const { data: sessionData } = await supabase
-        .from("training_sessions")
-        .select("mesocycle_id")
-        .eq("id", training_session_id)
-        .single();
+      const sessionData = await db.trainingSession.findUnique({
+        where: { id: training_session_id },
+        select: { mesocycle_id: true },
+      });
 
       if (sessionData) {
         revalidatePath(
@@ -739,19 +587,11 @@ export async function removeExerciseFromSession(
   });
 
   try {
-    const supabase = await createClient();
-    const { error } = await supabase
-      .from("session_exercises")
-      .delete()
-      .eq("id", id);
+    await db.sessionExercise.delete({
+      where: { id },
+    });
 
     const elapsedTime = Math.round(performance.now() - startTime);
-
-    if (error) {
-      return {
-        error: `Error removing exercise from session: ${error.message}`,
-      };
-    }
 
     logger.info("Successfully removed exercise from session", {
       id,
@@ -788,37 +628,24 @@ export async function reorderSessionExercises(
   });
 
   try {
-    const supabase = await createClient();
-
     for (let i = 0; i < exerciseIds.length; i++) {
-      const { error } = await supabase
-        .from("session_exercises")
-        .update({ order_index: i })
-        .eq("id", exerciseIds[i]);
-
-      if (error) {
-        return {
-          error: `Error reordering exercises: ${error.message}`,
-        };
-      }
+      await db.sessionExercise.update({
+        where: { id: exerciseIds[i] },
+        data: { order_index: i },
+      });
     }
 
     // Get the mesocycle ID for the revalidation
-    const { data: sessionData, error: sessionError } = await supabase
-      .from("training_sessions")
-      .select("mesocycle_id")
-      .eq("id", sessionId)
-      .single();
+    const sessionData = await db.trainingSession.findUnique({
+      where: { id: sessionId },
+      select: { mesocycle_id: true },
+    });
 
-    if (sessionError) {
-      return {
-        error: `Error fetching session data: ${sessionError.message}`,
-      };
+    if (sessionData) {
+      revalidatePath(
+        `/dashboard/mesocycles/${sessionData.mesocycle_id}/sessions/${sessionId}`
+      );
     }
-
-    revalidatePath(
-      `/dashboard/mesocycles/${sessionData.mesocycle_id}/sessions/${sessionId}`
-    );
 
     return { data: { success: true }, error: null };
   } catch (error) {
@@ -847,22 +674,12 @@ export async function updateTrainingSessionStatus(id: string, status: string) {
     });
 
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("training_sessions")
-        .update({ status })
-        .eq("id", id)
-        .select()
-        .single();
+      const data = await db.trainingSession.update({
+        where: { id },
+        data: { status },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        return {
-          data: null,
-          error: `Error updating training session status: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully updated training session status", {
         sessionId: id,
@@ -900,25 +717,18 @@ export async function getScheduledSessionsByDateRange(
 ) {
   return safeAction(async () => {
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("training_sessions")
-        .select(
-          `
-          *,
-          mesocycle:mesocycles(name, user_id)
-        `
-        )
-        .gte("scheduled_date", startDate)
-        .lte("scheduled_date", endDate)
-        .order("scheduled_date", { ascending: true });
-
-      if (error) {
-        return {
-          data: null,
-          error: `Error fetching scheduled sessions: ${error.message}`,
-        };
-      }
+      const data = await db.trainingSession.findMany({
+        where: {
+          scheduled_date: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+          },
+        },
+        include: {
+          mesocycle: { select: { name: true, user_id: true } },
+        },
+        orderBy: { scheduled_date: "asc" },
+      });
 
       // Filter to only sessions belonging to this user's mesocycles
       const userSessions = (data || []).filter(

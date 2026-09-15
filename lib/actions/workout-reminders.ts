@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
+import { getServerUser } from "@/lib/auth";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
 import {
@@ -16,34 +17,29 @@ export async function getWorkoutReminders(userId: string) {
     const startTime = performance.now();
     logger.debug("Starting getWorkoutReminders", { userId });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return {
+        data: null,
+        error: "Not authenticated",
+      };
+    }
+
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("workout_reminders")
-        .select(
-          `
-          *,
-          training_session:training_sessions(id, name)
-        `
-        )
-        .eq("user_id", userId)
-        .order("day_of_week", { ascending: true });
+      const data = await db.workoutReminder.findMany({
+        where: { user_id: userId },
+        orderBy: { day_of_week: "asc" },
+        include: {
+          training_session: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error fetching workout reminders", {
-          userId,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error fetching workout reminders: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully fetched workout reminders", {
         userId,
@@ -75,34 +71,28 @@ export async function getWorkoutReminder(id: string) {
     const startTime = performance.now();
     logger.debug("Starting getWorkoutReminder", { reminderId: id });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return {
+        data: null,
+        error: "Not authenticated",
+      };
+    }
+
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("workout_reminders")
-        .select(
-          `
-          *,
-          training_session:training_sessions(id, name)
-        `
-        )
-        .eq("id", id)
-        .single();
+      const data = await db.workoutReminder.findUnique({
+        where: { id },
+        include: {
+          training_session: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error fetching workout reminder", {
-          reminderId: id,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error fetching workout reminder: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully fetched workout reminder", {
         reminderId: id,
@@ -136,6 +126,14 @@ export async function createWorkoutReminder(formData: WorkoutReminderFormValues)
       dayOfWeek: formData.day_of_week,
     });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return {
+        data: null,
+        error: "Not authenticated",
+      };
+    }
+
     try {
       const validatedFields = workoutReminderFormSchema.safeParse(formData);
 
@@ -160,37 +158,18 @@ export async function createWorkoutReminder(formData: WorkoutReminderFormValues)
         notification_type,
       } = validatedFields.data;
 
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("workout_reminders")
-        .insert([
-          {
-            user_id,
-            training_session_id: training_session_id || null,
-            day_of_week: day_of_week ?? null,
-            time_of_day: time_of_day || null,
-            is_enabled,
-            notification_type,
-          },
-        ])
-        .select()
-        .single();
+      const data = await db.workoutReminder.create({
+        data: {
+          user_id,
+          training_session_id: training_session_id || null,
+          day_of_week: day_of_week ?? null,
+          time_of_day: time_of_day || null,
+          is_enabled,
+          notification_type,
+        },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        logger.warn("Error creating workout reminder", {
-          userId: user_id,
-          error: error.message,
-          code: error.code,
-          elapsedMs: elapsedTime,
-        });
-
-        return {
-          data: null,
-          error: `Error creating workout reminder: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully created workout reminder", {
         reminderId: data?.id,
@@ -227,6 +206,14 @@ export async function updateWorkoutReminder(formData: WorkoutReminderFormValues)
       reminderId: formData.id,
     });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return {
+        data: null,
+        error: "Not authenticated",
+      };
+    }
+
     try {
       const validatedFields = workoutReminderFormSchema.safeParse(formData);
 
@@ -253,28 +240,18 @@ export async function updateWorkoutReminder(formData: WorkoutReminderFormValues)
         };
       }
 
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("workout_reminders")
-        .update({
+      const data = await db.workoutReminder.update({
+        where: { id },
+        data: {
           training_session_id: training_session_id || null,
           day_of_week: day_of_week ?? null,
           time_of_day: time_of_day || null,
           is_enabled,
           notification_type,
-        })
-        .eq("id", id)
-        .select()
-        .single();
+        },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        return {
-          data: null,
-          error: `Error updating workout reminder: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully updated workout reminder", {
         reminderId: id,
@@ -307,21 +284,20 @@ export async function deleteWorkoutReminder(id: string) {
     const startTime = performance.now();
     logger.debug("Starting deleteWorkoutReminder", { reminderId: id });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return {
+        data: null,
+        error: "Not authenticated",
+      };
+    }
+
     try {
-      const supabase = await createClient();
-      const { error } = await supabase
-        .from("workout_reminders")
-        .delete()
-        .eq("id", id);
+      await db.workoutReminder.delete({
+        where: { id },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        return {
-          data: null,
-          error: `Error deleting workout reminder: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully deleted workout reminder", {
         reminderId: id,
@@ -351,23 +327,21 @@ export async function toggleWorkoutReminder(id: string, isEnabled: boolean) {
     const startTime = performance.now();
     logger.debug("Starting toggleWorkoutReminder", { reminderId: id, isEnabled });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return {
+        data: null,
+        error: "Not authenticated",
+      };
+    }
+
     try {
-      const supabase = await createClient();
-      const { data, error } = await supabase
-        .from("workout_reminders")
-        .update({ is_enabled: isEnabled })
-        .eq("id", id)
-        .select()
-        .single();
+      const data = await db.workoutReminder.update({
+        where: { id },
+        data: { is_enabled: isEnabled },
+      });
 
       const elapsedTime = Math.round(performance.now() - startTime);
-
-      if (error) {
-        return {
-          data: null,
-          error: `Error toggling workout reminder: ${error.message}`,
-        };
-      }
 
       logger.info("Successfully toggled workout reminder", {
         reminderId: id,

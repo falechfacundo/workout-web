@@ -1,82 +1,65 @@
 "use server";
 
-import { createClient } from "@/lib/utils/supabase/server";
-import { safeAction } from "@/lib/utils/safe-action";
-import { createLogger } from "@/lib/utils/logger";
+import { getServerUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { type Measurement } from "@/lib/schemas/measurement";
+import { createLogger } from "@/lib/utils/logger";
+import { safeAction } from "@/lib/utils/safe-action";
 
 const logger = createLogger("measurements-actions");
 
 export async function getMeasurements() {
   return safeAction(async () => {
-    const supabase = await createClient();
+    const user = await getServerUser();
 
-    const { data: authData } = await supabase.auth.getUser();
-    if (!authData.user) {
+    if (!user?.id) {
       return { data: null, error: "You must be logged in" };
     }
 
-    const { data, error } = await supabase
-      .from("profile_measurements" as any)
-      .select("*")
-      .eq("user_id", authData.user.id)
-      .order("created_at", { ascending: false });
+    const data = await db.profileMeasurement.findMany({
+      where: { user_id: user.id },
+      orderBy: { created_at: "desc" },
+    });
 
-    if (error) {
-      logger.warn("Error fetching measurements", { error: error.message });
-      return { data: null, error: error.message };
-    }
-
-    return { data: data as Measurement[], error: null };
+    return { data: data as any as Measurement[], error: null };
   });
 }
 
 export async function addMeasurement() {
   return safeAction(async () => {
-    const supabase = await createClient();
+    const user = await getServerUser();
 
-    const { data: authData } = await supabase.auth.getUser();
-    if (!authData.user) {
+    if (!user?.id) {
       return { data: null, error: "You must be logged in" };
     }
 
     const formattedData = {
-      user_id: authData.user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      user_id: user.id,
+      date: new Date(),
     };
 
-    const { data: newMeasurement, error } = await supabase
-      .from("profile_measurements" as any)
-      .insert([formattedData])
-      .select()
-      .single();
+    const newMeasurement = await db.profileMeasurement.create({
+      data: formattedData,
+    });
 
-    if (error) {
-      return { data: null, error: error.message };
-    }
-
-    return { data: newMeasurement, error: null };
+    return { data: newMeasurement as unknown as Measurement, error: null };
   });
 }
 
 export async function updateMeasurement() {
   return safeAction(async () => {
-    const supabase = await createClient();
+    const user = await getServerUser();
 
-    const formattedData = {
-      updated_at: new Date().toISOString(),
-    };
-
-    const { data: updatedMeasurement, error } = await supabase
-      .from("profile_measurements" as any)
-      .update(formattedData)
-      .select()
-      .single();
-
-    if (error) {
-      return { data: null, error: error.message };
+    if (!user?.id) {
+      return { data: null, error: "You must be logged in" };
     }
+
+    const formattedData = {};
+
+    const updatedMeasurement = await db.profileMeasurement.updateMany({
+      where: { user_id: user.id },
+      data: formattedData,
+    });
 
     return { data: updatedMeasurement, error: null };
   });
@@ -84,15 +67,15 @@ export async function updateMeasurement() {
 
 export async function deleteMeasurement() {
   return safeAction(async () => {
-    const supabase = await createClient();
+    const user = await getServerUser();
 
-    const { error } = await supabase
-      .from("profile_measurements" as any)
-      .delete();
-
-    if (error) {
-      return { error: error.message };
+    if (!user?.id) {
+      return { data: null, error: "You must be logged in" };
     }
+
+    await db.profileMeasurement.deleteMany({
+      where: { user_id: user.id },
+    });
 
     return { error: null };
   });

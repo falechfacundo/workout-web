@@ -2,7 +2,7 @@ import { z } from "zod";
 import { SafeActionResult } from "../types/server-actions";
 import { AppError, ErrorCode } from "../error";
 import { createLogger } from "./logger";
-import { getUser } from "../auth";
+import { getServerUser } from "../auth";
 
 const logger = createLogger("safe-action");
 
@@ -99,7 +99,7 @@ export async function safeAction<T>(
  * proper error handling, and comprehensive logging
  */
 export function createSafeAction<TInput, TOutput>(options: {
-  schema: z.ZodType<TInput>;
+  schema: z.ZodType<TInput, z.ZodTypeDef, any>;
   handler: (input: TInput) => Promise<SafeActionResult<TOutput>>;
   name?: string;
 }) {
@@ -212,7 +212,7 @@ export function createSafeAction<TInput, TOutput>(options: {
  * This variant requires the user to be authenticated first
  */
 export function createAuthenticatedAction<TInput, TOutput>(options: {
-  schema: z.ZodType<TInput>;
+  schema: z.ZodType<TInput, z.ZodTypeDef, any>;
   handler: (
     input: TInput,
     userId: string
@@ -232,7 +232,7 @@ export function createAuthenticatedAction<TInput, TOutput>(options: {
 
     try {
       // Check authentication
-      const user = await getUser();
+      const user = await getServerUser();
 
       if (!user?.id) {
         const error = AppError.unauthorized();

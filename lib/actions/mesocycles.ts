@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
+import { getServerUser } from "@/lib/auth";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
 import {
@@ -19,36 +20,35 @@ export async function getMesocycles(userId: string) {
     logger.debug("Obteniendo mesociclos para usuario", { userId });
     const startTime = performance.now();
 
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("mesocycles")
-      .select("*")
-      .eq("user_id", userId)
-      .order("start_date", { ascending: false });
+    try {
+      const data = await db.mesocycle.findMany({
+        where: { user_id: userId },
+        orderBy: { start_date: "desc" },
+      });
 
-    if (error) {
-      logger.error("Error al obtener mesociclos", error, {
+      const duration = Math.round(performance.now() - startTime);
+      logger.info("Mesociclos obtenidos exitosamente", {
         userId,
-        errorCode: error.code,
+        count: data.length,
+        duration,
       });
 
       return {
+        data: data as unknown as Mesocycle[],
+        error: null,
+      };
+    } catch (error) {
+      logger.error(
+        "Error al obtener mesociclos",
+        error instanceof Error ? error : new Error(String(error)),
+        { userId }
+      );
+
+      return {
         data: null,
-        error: `Error fetching mesocycles: ${error.message}`,
+        error: `Error fetching mesocycles: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const duration = Math.round(performance.now() - startTime);
-    logger.info("Mesociclos obtenidos exitosamente", {
-      userId,
-      count: data.length,
-      duration,
-    });
-
-    return {
-      data,
-      error: null,
-    };
   });
 }
 
@@ -57,37 +57,35 @@ export async function getActiveMesocycles(userId: string) {
     logger.debug("Obteniendo mesociclos activos para usuario", { userId });
     const startTime = performance.now();
 
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("mesocycles")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("status", "in_progress")
-      .order("start_date");
+    try {
+      const data = await db.mesocycle.findMany({
+        where: { user_id: userId, status: "in_progress" },
+        orderBy: { start_date: "asc" },
+      });
 
-    if (error) {
-      logger.error("Error al obtener mesociclos activos", error, {
+      const duration = Math.round(performance.now() - startTime);
+      logger.info("Mesociclos activos obtenidos exitosamente", {
         userId,
-        errorCode: error.code,
+        count: data.length,
+        duration,
       });
 
       return {
+        data: data as unknown as Mesocycle[],
+        error: null,
+      };
+    } catch (error) {
+      logger.error(
+        "Error al obtener mesociclos activos",
+        error instanceof Error ? error : new Error(String(error)),
+        { userId }
+      );
+
+      return {
         data: null,
-        error: `Error fetching active mesocycles: ${error.message}`,
+        error: `Error fetching active mesocycles: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const duration = Math.round(performance.now() - startTime);
-    logger.info("Mesociclos activos obtenidos exitosamente", {
-      userId,
-      count: data.length,
-      duration,
-    });
-
-    return {
-      data,
-      error: null,
-    };
   });
 }
 
@@ -96,74 +94,65 @@ export async function getMesocycle(id: string) {
     logger.debug("Obteniendo mesociclo por ID", { mesocycleId: id });
     const startTime = performance.now();
 
-    const supabase = await createClient();
-    // Fetch the main mesocycle data
-    const { data: mesocycleData, error: mesocycleError } = await supabase
-      .from("mesocycles")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (mesocycleError) {
-      logger.error("Error al obtener mesociclo", mesocycleError, {
-        mesocycleId: id,
-        errorCode: mesocycleError.code,
-      });
-
+    const user = await getServerUser();
+    if (!user) {
       return {
         data: null,
-        error: `Error fetching mesocycle: ${mesocycleError.message}`,
+        error: "You must be logged in to view this mesocycle",
       };
     }
 
-    // Fetch goals for this mesocycle
-    const { data: goalsData, error: goalsError } = await supabase
-      .from("mesocycle_goals")
-      .select("*")
-      .eq("mesocycle_id", id);
+    try {
+      const mesocycle = await db.mesocycle.findUnique({
+        where: { id, user_id: user.id },
+        include: {
+          mesocycle_goals: true,
+          mesocycle_muscle_group_focus: {
+            include: { muscle_group: true },
+          },
+        },
+      });
 
-    // Fetch muscle group focus for this mesocycle
-    const { data: focusData, error: focusError } = await supabase
-      .from("mesocycle_muscle_group_focus")
-      .select("muscle_group_id")
-      .eq("mesocycle_id", id);
+      if (!mesocycle) {
+        return {
+          data: null,
+          error: "Error fetching mesocycle: not found",
+        };
+      }
 
-    if (goalsError) {
-      logger.warn("Error al obtener objetivos del mesociclo", {
+      const fullMesocycleData = {
+        ...mesocycle,
+        goals: mesocycle.mesocycle_goals,
+        focus_muscle_groups: mesocycle.mesocycle_muscle_group_focus.map(
+          (item) => item.muscle_group_id
+        ),
+      };
+
+      const duration = Math.round(performance.now() - startTime);
+      logger.info("Mesociclo obtenido exitosamente", {
         mesocycleId: id,
-        errorCode: goalsError.code,
-      }, goalsError);
+        mesocycleName: mesocycle.name,
+        goalsCount: mesocycle.mesocycle_goals.length,
+        focusCount: mesocycle.mesocycle_muscle_group_focus.length,
+        duration,
+      });
+
+      return {
+        data: fullMesocycleData as unknown as MesocycleWithRelations,
+        error: null,
+      };
+    } catch (error) {
+      logger.error(
+        "Error al obtener mesociclo",
+        error instanceof Error ? error : new Error(String(error)),
+        { mesocycleId: id }
+      );
+
+      return {
+        data: null,
+        error: `Error fetching mesocycle: ${error instanceof Error ? error.message : String(error)}`,
+      };
     }
-
-    if (focusError) {
-      logger.warn("Error al obtener grupos musculares enfocados", {
-        mesocycleId: id,
-        errorCode: focusError.code,
-      }, focusError);
-    }
-
-    // Format the data for the frontend
-    const fullMesocycleData = {
-      ...mesocycleData,
-      goals: goalsData || [],
-      focus_muscle_groups: focusData
-        ? focusData.map((item) => item.muscle_group_id)
-        : [],
-    };
-
-    const duration = Math.round(performance.now() - startTime);
-    logger.info("Mesociclo obtenido exitosamente", {
-      mesocycleId: id,
-      mesocycleName: mesocycleData.name,
-      goalsCount: (goalsData || []).length,
-      focusCount: (focusData || []).length,
-      duration,
-    });
-
-    return {
-      data: fullMesocycleData as MesocycleWithRelations,
-      error: null,
-    };
   });
 }
 
@@ -175,7 +164,7 @@ export async function createMesocycle(formData: Mesocycle) {
     });
     const startTime = performance.now();
 
-    // Validate form data
+    // Validar datos del formulario
     const validatedFields = mesocycleSchema.safeParse(formData);
 
     if (!validatedFields.success) {
@@ -191,8 +180,15 @@ export async function createMesocycle(formData: Mesocycle) {
       };
     }
 
+    const user = await getServerUser();
+    if (!user) {
+      return {
+        data: null,
+        error: "You must be logged in to create a mesocycle",
+      };
+    }
+
     const {
-      user_id,
       name,
       start_date,
       end_date,
@@ -202,9 +198,8 @@ export async function createMesocycle(formData: Mesocycle) {
       focus_muscle_groups,
     } = validatedFields.data;
 
-    // Start a supabase transaction
     logger.info("Creando nuevo mesociclo", {
-      userId: user_id,
+      userId: user.id,
       name,
       status,
       startDate: start_date,
@@ -213,115 +208,70 @@ export async function createMesocycle(formData: Mesocycle) {
       focusMuscleGroupsCount: focus_muscle_groups?.length || 0,
     });
 
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("mesocycles")
-      .insert([
-        {
-          user_id,
+    try {
+      const data = await db.mesocycle.create({
+        data: {
+          user_id: user.id,
           name,
-          start_date,
-          end_date,
           description: description || null,
+          start_date: new Date(start_date),
+          end_date: new Date(end_date),
           status,
+          mesocycle_goals: {
+            create:
+              goals?.map((goal) => ({
+                goal_type: goal.goal_type,
+                target_value: goal.target_value || null,
+                unit: goal.unit || null,
+                notes: goal.notes || null,
+              })) ?? [],
+          },
+          mesocycle_muscle_group_focus: {
+            create:
+              focus_muscle_groups?.map((muscleGroupId) => ({
+                muscle_group_id: muscleGroupId,
+              })) ?? [],
+          },
         },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      logger.error("Error al crear mesociclo en la base de datos", error, {
-        userId: user_id,
-        name,
-        errorCode: error.code,
       });
+
+      const duration = Math.round(performance.now() - startTime);
+      logger.info("Mesociclo creado exitosamente", {
+        mesocycleId: data.id,
+        name,
+        userId: user.id,
+        duration,
+        status,
+      });
+
+      revalidatePath("/dashboard/mesocycles");
+      redirect("/dashboard/mesocycles");
+
+      return {
+        data: data as unknown as Mesocycle,
+        error: null,
+      };
+    } catch (error) {
+      logger.error(
+        "Error al crear mesociclo en la base de datos",
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          userId: user.id,
+          name,
+        }
+      );
 
       return {
         data: null,
-        error: `Error creating mesocycle: ${error.message}`,
+        error: `Error creating mesocycle: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    const mesocycleId = data.id;
-
-    // Insert goals if provided
-    if (goals && goals.length > 0) {
-      logger.debug("Añadiendo objetivos al mesociclo", {
-        mesocycleId,
-        goalsCount: goals.length,
-      });
-
-      const goalsToInsert = goals.map((goal) => ({
-        mesocycle_id: mesocycleId,
-        goal_type: goal.goal_type,
-        target_value: goal.target_value || null,
-        unit: goal.unit || null,
-        notes: goal.notes || null,
-      }));
-
-      const { error: goalsError } = await supabase
-        .from("mesocycle_goals")
-        .insert(goalsToInsert);
-
-      if (goalsError) {
-        logger.warn("Error al añadir objetivos al mesociclo", {
-          mesocycleId,
-          userId: user_id,
-          goalsCount: goals.length,
-          errorCode: goalsError.code,
-        }, goalsError);
-      }
-    }
-
-    // Insert muscle group focus if provided
-    if (focus_muscle_groups && focus_muscle_groups.length > 0) {
-      logger.debug("Añadiendo grupos musculares enfocados", {
-        mesocycleId,
-        focusCount: focus_muscle_groups.length,
-        muscleGroups: focus_muscle_groups,
-      });
-
-      const focusToInsert = focus_muscle_groups.map((muscleGroupId) => ({
-        mesocycle_id: mesocycleId,
-        muscle_group_id: muscleGroupId,
-      }));
-
-      const { error: focusError } = await supabase
-        .from("mesocycle_muscle_group_focus")
-        .insert(focusToInsert);
-
-      if (focusError) {
-        logger.warn("Error al añadir grupos musculares enfocados", {
-          mesocycleId,
-          userId: user_id,
-          focusCount: focus_muscle_groups.length,
-          errorCode: focusError.code,
-        }, focusError);
-      }
-    }
-
-    const duration = Math.round(performance.now() - startTime);
-    logger.info("Mesociclo creado exitosamente", {
-      mesocycleId,
-      name,
-      userId: user_id,
-      duration,
-      status,
-    });
-
-    revalidatePath("/dashboard/mesocycles");
-    redirect("/dashboard/mesocycles");
-
-    return {
-      data,
-      error: null,
-    };
   });
 }
 
 export async function updateMesocycle(formData: Mesocycle) {
   return safeAction(async () => {
-    // Validate form data
+    // Validar datos del formulario
     const validatedFields = mesocycleSchema.safeParse(formData);
 
     if (!validatedFields.success) {
@@ -333,7 +283,6 @@ export async function updateMesocycle(formData: Mesocycle) {
 
     const {
       id,
-      user_id,
       name,
       start_date,
       end_date,
@@ -350,198 +299,155 @@ export async function updateMesocycle(formData: Mesocycle) {
       };
     }
 
-    // Update the main mesocycle data
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("mesocycles")
-      .update({
-        user_id,
-        name,
-        start_date,
-        end_date,
-        description: description || null,
-        status,
-      })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
+    const user = await getServerUser();
+    if (!user) {
       return {
         data: null,
-        error: `Error updating mesocycle: ${error.message}`,
+        error: "You must be logged in to update a mesocycle",
       };
     }
 
-    // Delete existing goals and insert new ones
-    const { error: deleteGoalsError } = await supabase
-      .from("mesocycle_goals")
-      .delete()
-      .eq("mesocycle_id", id);
+    try {
+      const data = await db.mesocycle.update({
+        where: { id, user_id: user.id },
+        data: {
+          user_id: user.id,
+          name,
+          description: description || null,
+          start_date: new Date(start_date),
+          end_date: new Date(end_date),
+          status,
+        },
+      });
 
-    if (deleteGoalsError) {
-      console.error("Error deleting existing goals:", deleteGoalsError);
-    }
+      await db.mesocycleGoal.deleteMany({ where: { mesocycle_id: id } });
 
-    // Insert updated goals if provided
-    if (goals && goals.length > 0) {
-      const goalsToInsert = goals.map((goal) => ({
-        mesocycle_id: id,
-        goal_type: goal.goal_type,
-        target_value: goal.target_value || null,
-        unit: goal.unit || null,
-        notes: goal.notes || null,
-      }));
-
-      const { error: goalsError } = await supabase
-        .from("mesocycle_goals")
-        .insert(goalsToInsert);
-
-      if (goalsError) {
-        console.error("Error updating mesocycle goals:", goalsError);
+      if (goals && goals.length > 0) {
+        await db.mesocycleGoal.createMany({
+          data: goals.map((goal) => ({
+            mesocycle_id: id,
+            goal_type: goal.goal_type,
+            target_value: goal.target_value || null,
+            unit: goal.unit || null,
+            notes: goal.notes || null,
+          })),
+        });
       }
-    }
 
-    // Delete existing muscle group focus and insert new ones
-    const { error: deleteFocusError } = await supabase
-      .from("mesocycle_muscle_group_focus")
-      .delete()
-      .eq("mesocycle_id", id);
+      await db.mesocycleMuscleGroupFocus.deleteMany({
+        where: { mesocycle_id: id },
+      });
 
-    if (deleteFocusError) {
-      console.error(
-        "Error deleting existing muscle group focus:",
-        deleteFocusError
-      );
-    }
-
-    // Insert updated muscle group focus if provided
-    if (focus_muscle_groups && focus_muscle_groups.length > 0) {
-      const focusToInsert = focus_muscle_groups.map((muscleGroupId) => ({
-        mesocycle_id: id,
-        muscle_group_id: muscleGroupId,
-      }));
-
-      const { error: focusError } = await supabase
-        .from("mesocycle_muscle_group_focus")
-        .insert(focusToInsert);
-
-      if (focusError) {
-        console.error("Error updating muscle group focus:", focusError);
+      if (focus_muscle_groups && focus_muscle_groups.length > 0) {
+        await db.mesocycleMuscleGroupFocus.createMany({
+          data: focus_muscle_groups.map((muscleGroupId) => ({
+            mesocycle_id: id,
+            muscle_group_id: muscleGroupId,
+          })),
+        });
       }
+
+      revalidatePath("/dashboard/mesocycles");
+      redirect("/dashboard/mesocycles");
+
+      return {
+        data: data as unknown as Mesocycle,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: `Error updating mesocycle: ${error instanceof Error ? error.message : String(error)}`,
+      };
     }
-
-    revalidatePath("/dashboard/mesocycles");
-    redirect("/dashboard/mesocycles");
-
-    return {
-      data,
-      error: null,
-    };
   });
 }
 
 export async function deleteMesocycle(id: string) {
   return safeAction(async () => {
-    const supabase = await createClient();
-    // Delete goals associated with this mesocycle
-    const { error: goalsError } = await supabase
-      .from("mesocycle_goals")
-      .delete()
-      .eq("mesocycle_id", id);
-
-    if (goalsError) {
-      console.error("Error deleting mesocycle goals:", goalsError);
-    }
-
-    // Delete muscle group focus associated with this mesocycle
-    const { error: focusError } = await supabase
-      .from("mesocycle_muscle_group_focus")
-      .delete()
-      .eq("mesocycle_id", id);
-
-    if (focusError) {
-      console.error("Error deleting muscle group focus:", focusError);
-    }
-
-    // First delete all training sessions associated with this mesocycle
-    const { error: sessionsError } = await supabase
-      .from("training_sessions")
-      .delete()
-      .eq("mesocycle_id", id);
-
-    if (sessionsError) {
+    const user = await getServerUser();
+    if (!user) {
       return {
         data: null,
-        error: `Error deleting training sessions: ${sessionsError.message}`,
+        error: "You must be logged in to delete a mesocycle",
       };
     }
 
-    // Then delete the mesocycle
-    const { error } = await supabase.from("mesocycles").delete().eq("id", id);
+    try {
+      await db.mesocycle.delete({ where: { id, user_id: user.id } });
 
-    if (error) {
+      revalidatePath("/dashboard/mesocycles");
+
+      return {
+        data: { success: true },
+        error: null,
+      };
+    } catch (error) {
       return {
         data: null,
-        error: `Error deleting mesocycle: ${error.message}`,
+        error: `Error deleting mesocycle: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
-
-    revalidatePath("/dashboard/mesocycles");
-
-    return {
-      data: { success: true },
-      error: null,
-    };
   });
 }
 
 export async function getSessionCountByMesocycle(id: string) {
   return safeAction(async () => {
-    const supabase = await createClient();
-    const { count, error } = await supabase
-      .from("training_sessions")
-      .select("*", { count: "exact" })
-      .eq("mesocycle_id", id);
-
-    if (error) {
+    const user = await getServerUser();
+    if (!user) {
       return {
         data: null,
-        error: `Error counting sessions: ${error.message}`,
+        error: "You must be logged in to view this mesocycle",
       };
     }
 
-    return {
-      data: count || 0,
-      error: null,
-    };
+    try {
+      const count = await db.trainingSession.count({
+        where: { mesocycle_id: id, mesocycle: { user_id: user.id } },
+      });
+
+      return {
+        data: count,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: `Error counting sessions: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   });
 }
 
 export async function updateMesocycleStatus(id: string, status: string) {
   return safeAction(async () => {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("mesocycles")
-      .update({ status })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
+    const user = await getServerUser();
+    if (!user) {
       return {
         data: null,
-        error: `Error updating mesocycle status: ${error.message}`,
+        error: "You must be logged in to update a mesocycle",
       };
     }
 
-    revalidatePath("/dashboard/mesocycles");
-    revalidatePath(`/dashboard/mesocycles/${id}`);
+    try {
+      const data = await db.mesocycle.update({
+        where: { id, user_id: user.id },
+        data: { status },
+      });
 
-    return {
-      data,
-      error: null,
-    };
+      revalidatePath("/dashboard/mesocycles");
+      revalidatePath(`/dashboard/mesocycles/${id}`);
+
+      return {
+        data: data as unknown as Mesocycle,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        data: null,
+        error: `Error updating mesocycle status: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   });
 }
 

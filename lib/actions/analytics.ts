@@ -1,22 +1,10 @@
 "use server";
 
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("analytics-actions");
-
-type ExerciseLogSet = {
-  id: string;
-  workout_log_id: string;
-  exercise_id: string;
-  reps: number;
-  weight: number;
-  rir?: number;
-  workout_logs: {
-    date: string;
-  };
-};
 
 export async function getVolumeByMuscleGroup(
   userId: string,
@@ -35,28 +23,13 @@ export async function getVolumeByMuscleGroup(
       startDate.setFullYear(startDate.getFullYear() - 1);
     }
 
-    const supabase = await createClient();
-    const { data: workouts, error: workoutsError } = await (supabase as any)
-      .from("workout_logs")
-      .select("id")
-      .eq("user_id", userId)
-      .gte("date", startDate.toISOString().split("T")[0]);
-
-    if (workoutsError) {
-      logger.error(
-        "Error al obtener registros de entrenamiento",
-        workoutsError,
-        {
-          userId,
-          period,
-          errorCode: workoutsError.code,
-        }
-      );
-      return {
-        data: null,
-        error: "No se pudo obtener los registros de entrenamiento.",
-      };
-    }
+    const workouts = await db.workoutLog.findMany({
+      where: {
+        user_id: userId,
+        date: { gte: startDate },
+      },
+      select: { id: true },
+    });
 
     if (!workouts?.length) {
       logger.info("No se encontraron entrenamientos en el período", {
@@ -66,63 +39,48 @@ export async function getVolumeByMuscleGroup(
       return [];
     }
 
-    const workoutIds = workouts.map((w: any) => w.id);
+    const workoutIds = workouts.map((w) => w.id);
 
-    const { data: sets, error: setsError } = await (supabase as any)
-      .from("exercise_logs")
-      .select(
-        `
-        id,
-        workout_log_id,
-        exercise_id,
-        reps
-      `
-      )
-      .in("workout_log_id", workoutIds);
-
-    if (setsError) {
-      logger.error("Error al obtener sets de entrenamiento", setsError, {
-        workoutCount: workoutIds.length,
-        errorCode: setsError.code,
-      });
-      return {
-        data: null,
-        error: "No se pudo obtener los datos de los ejercicios.",
-      };
-    }
+    const sets = await db.exerciseLog.findMany({
+      where: {
+        workout_log_id: { in: workoutIds },
+      },
+      select: {
+        id: true,
+        workout_log_id: true,
+        exercise_id: true,
+        reps: true,
+      },
+    });
 
     if (!sets?.length) {
       return [];
     }
 
-    const exerciseIds = [...new Set(sets.map((s: any) => s.exercise_id))];
+    const exerciseIds = [...new Set(sets.map((s) => s.exercise_id))];
 
-    const { data: exerciseMuscleGroups, error: emgError } = await (supabase as any)
-      .from("exercise_muscle_groups")
-      .select(
-        `
-        exercise_id,
-        muscle_group_id,
-        is_primary,
-        muscle_groups(name)
-      `
-      )
-      .in("exercise_id", exerciseIds);
-
-    if (emgError) {
-      return { data: null, error: "No se pudo obtener los grupos musculares." };
-    }
+    const exerciseMuscleGroups = await db.exerciseMuscleGroup.findMany({
+      where: {
+        exercise_id: { in: exerciseIds },
+      },
+      select: {
+        exercise_id: true,
+        muscle_group_id: true,
+        is_primary: true,
+        muscle_group: { select: { name: true } },
+      },
+    });
 
     const volumeByMuscleGroup = new Map();
 
     for (const set of sets) {
-      const muscleGroups = (
-        exerciseMuscleGroups as any[]
-      ).filter((emg) => emg.exercise_id === set.exercise_id);
+      const muscleGroups = exerciseMuscleGroups.filter(
+        (emg) => emg.exercise_id === set.exercise_id
+      );
 
       for (const mg of muscleGroups) {
         const mgId = mg.muscle_group_id;
-        const mgName = Array.isArray(mg.muscle_groups) ? mg.muscle_groups[0]?.name : mg.muscle_groups?.name;
+        const mgName = mg.muscle_group?.name || "Unknown";
         const isPrimary = mg.is_primary;
 
         const volumeMultiplier = isPrimary ? 1 : 0.5;
@@ -156,57 +114,44 @@ export async function getExerciseProgress(
   limit = 10
 ) {
   return safeAction(async () => {
-    const supabase = await createClient();
-    const { data: workouts, error: workoutsError } = await (supabase as any)
-      .from("workout_logs")
-      .select("id, date")
-      .eq("user_id", userId)
-      .order("date", { ascending: false })
-      .limit(50);
-
-    if (workoutsError) {
-      return {
-        data: null,
-        error: "No se pudo obtener los registros de entrenamiento.",
-      };
-    }
+    const workouts = await db.workoutLog.findMany({
+      where: {
+        user_id: userId,
+      },
+      select: { id: true, date: true },
+      orderBy: { date: "desc" },
+      take: 50,
+    });
 
     if (!workouts?.length) {
       return [];
     }
 
-    const workoutIds = workouts.map((w: any) => w.id);
+    const workoutIds = workouts.map((w) => w.id);
 
-    const { data: sets, error: setsError } = await (supabase as any)
-      .from("exercise_logs")
-      .select(
-        `
-        id,
-        workout_log_id,
-        set_number,
-        reps,
-        weight,
-        rir,
-        workout_logs(date)
-      `
-      )
-      .eq("exercise_id", exerciseId)
-      .in("workout_log_id", workoutIds)
-      .order("workout_logs.date", { ascending: false });
-
-    if (setsError) {
-      return {
-        data: null,
-        error: "No se pudo obtener los datos de los ejercicios.",
-      };
-    }
+    const sets = await db.exerciseLog.findMany({
+      where: {
+        exercise_id: exerciseId,
+        workout_log_id: { in: workoutIds },
+      },
+      select: {
+        id: true,
+        workout_log_id: true,
+        set_number: true,
+        reps: true,
+        weight: true,
+        rir: true,
+        workout_log: { select: { date: true } },
+      },
+      orderBy: { workout_log: { date: "desc" } },
+    });
 
     const workoutMap = new Map();
 
-    for (const set of sets as ExerciseLogSet[]) {
+    for (const set of sets as any[]) {
       const workoutId = set.workout_log_id;
-      const date = set.workout_logs.date;
-      const volume = set.weight * set.reps;
+      const date = set.workout_log.date;
+      const volume = (Number(set.weight) || 0) * set.reps;
 
       if (
         !workoutMap.has(workoutId) ||
@@ -214,7 +159,7 @@ export async function getExerciseProgress(
       ) {
         workoutMap.set(workoutId, {
           date,
-          weight: set.weight,
+          weight: Number(set.weight) || 0,
           reps: set.reps,
           volume,
         });
@@ -222,7 +167,10 @@ export async function getExerciseProgress(
     }
 
     return Array.from(workoutMap.values())
-      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+      )
       .slice(0, limit)
       .reverse();
   });
@@ -245,34 +193,27 @@ export async function getWorkoutFrequency(
       intervalType = "month";
     }
 
-    const supabase = await createClient();
-    const { data, error } = await (supabase as any)
-      .from("workout_logs")
-      .select(
-        `
-        id,
-        date
-      `
-      )
-      .eq("user_id", userId)
-      .gte("date", startDate.toISOString().split("T")[0])
-      .order("date");
-
-    if (error) {
-      return {
-        data: null,
-        error: "No se pudo obtener la frecuencia de entrenamientos.",
-      };
-    }
+    const data = await db.workoutLog.findMany({
+      where: {
+        user_id: userId,
+        date: { gte: startDate },
+      },
+      select: { id: true, date: true },
+      orderBy: { date: "asc" },
+    });
 
     const frequencyMap = new Map();
 
-    for (const workout of data) {
+    for (const workout of data as any[]) {
       const date = new Date(workout.date);
       let key: string;
 
       if (intervalType === "day") {
-        key = workout.date;
+        const dateStr =
+          typeof workout.date === "string"
+            ? workout.date
+            : workout.date.toISOString().split("T")[0];
+        key = dateStr;
       } else {
         key = `${date.getFullYear()}-${date.getMonth() + 1}`;
       }
@@ -289,67 +230,46 @@ export async function getWorkoutFrequency(
 
 export async function getPerformanceMetrics(userId: string) {
   return safeAction(async () => {
-    const supabase = await createClient();
-    const { count: totalWorkouts, error: workoutsError } = await (supabase as any)
-      .from("workout_logs")
-      .select("*", { count: "exact" })
-      .eq("user_id", userId);
+    const totalWorkouts = await db.workoutLog.count({
+      where: { user_id: userId },
+    });
 
-    if (workoutsError) {
-      return {
-        data: null,
-        error: "No se pudo obtener el total de entrenamientos.",
-      };
-    }
-
-    const { data: workoutIds, error: idsError } = await (supabase as any)
-      .from("workout_logs")
-      .select("id")
-      .eq("user_id", userId);
-
-    if (idsError) {
-      return {
-        data: null,
-        error: "No se pudo obtener los registros de entrenamiento.",
-      };
-    }
+    const workoutIds = await db.workoutLog.findMany({
+      where: { user_id: userId },
+      select: { id: true },
+    });
 
     let totalVolume = 0;
     let totalSets = 0;
 
     if (workoutIds?.length > 0) {
-      const ids = workoutIds.map((w: any) => w.id);
+      const ids = workoutIds.map((w) => w.id);
 
-    const { data: sets, error: setsError } = await (supabase as any)
-        .from("exercise_logs")
-        .select("weight, reps")
-        .in("workout_log_id", ids);
-
-      if (setsError) {
-        return {
-          data: null,
-          error: "No se pudo obtener los datos de los ejercicios.",
-        };
-      }
+      const sets = await db.exerciseLog.findMany({
+        where: { workout_log_id: { in: ids } },
+        select: { weight: true, reps: true },
+      });
 
       totalSets = sets.length;
       totalVolume = sets.reduce(
-        (sum: number, set: any) => sum + (set.weight || 0) * set.reps,
+        (sum, set) => sum + (Number(set.weight) || 0) * set.reps,
         0
       );
     }
 
     try {
-      const { data: durations, error: durationsError } = await (supabase as any)
-        .from("workout_logs")
-        .select("duration_minutes")
-        .eq("user_id", userId)
-        .not("duration_minutes", "is", null);
+      const durations = await db.workoutLog.findMany({
+        where: {
+          user_id: userId,
+          duration_minutes: { not: null },
+        },
+        select: { duration_minutes: true },
+      });
 
-      if (durationsError || !durations || durations.length === 0) {
+      if (!durations || durations.length === 0) {
         return {
           data: {
-            totalWorkouts: totalWorkouts || 0,
+            totalWorkouts,
             totalVolume,
             totalSets,
             avgDuration: 0,
@@ -359,12 +279,14 @@ export async function getPerformanceMetrics(userId: string) {
       }
 
       const avgDuration =
-        durations.reduce((sum: number, log: any) => sum + log.duration_minutes, 0) /
-        durations.length;
+        durations.reduce(
+          (sum, log) => sum + (log.duration_minutes || 0),
+          0
+        ) / durations.length;
 
       return {
         data: {
-          totalWorkouts: totalWorkouts || 0,
+          totalWorkouts,
           totalVolume,
           totalSets,
           avgDuration: Math.round(avgDuration),
@@ -375,7 +297,7 @@ export async function getPerformanceMetrics(userId: string) {
       console.error("Error al calcular la duración promedio:", e);
       return {
         data: {
-          totalWorkouts: totalWorkouts || 0,
+          totalWorkouts,
           totalVolume,
           totalSets,
           avgDuration: 0,

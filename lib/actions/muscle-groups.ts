@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
+import { getServerUser } from "@/lib/auth";
 import { safeAction } from "@/lib/utils/safe-action";
 import {
   type MuscleGroup,
@@ -13,45 +14,38 @@ export type MuscleGroupFormData = {
 
 export async function getMuscleGroups() {
   return safeAction(async () => {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("muscle_groups")
-      .select("*")
-      .order("name", { ascending: true });
+    const user = await getServerUser();
 
-    if (error) {
-      return {
-        data: null,
-        error: `Error fetching muscle groups: ${error.message}`,
-      };
-    }
+    const data = await db.muscleGroup.findMany({
+      where: user
+        ? { OR: [{ user_id: user.id }, { is_default: true }] }
+        : { is_default: true },
+      orderBy: { name: "asc" },
+    });
 
     if (!data || data.length === 0) {
       return { data: [], error: null };
     }
 
-    return { data: data as MuscleGroup[], error: null };
+    return { data: data as any as MuscleGroup[], error: null };
   });
 }
 
 export async function getMuscleGroup(id: string) {
   return safeAction(async () => {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("muscle_groups")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const data = await db.muscleGroup.findUnique({
+      where: { id },
+    });
 
-    if (error) {
+    if (!data) {
       return {
         data: null,
-        error: `Error fetching muscle group: ${error.message}`,
+        error: "Muscle group not found",
       };
     }
 
     return {
-      data: data as MuscleGroup,
+      data: data as any as MuscleGroup,
       error: null,
     };
   });
@@ -59,21 +53,12 @@ export async function getMuscleGroup(id: string) {
 
 export async function getExerciseCountByMuscleGroup(id: string) {
   return safeAction(async () => {
-    const supabase = await createClient();
-    const { count, error } = await supabase
-      .from("exercise_muscle_groups")
-      .select("*", { count: "exact" })
-      .eq("muscle_group_id", id);
-
-    if (error) {
-      return {
-        data: null,
-        error: `Error counting exercises: ${error.message}`,
-      };
-    }
+    const count = await db.exerciseMuscleGroup.count({
+      where: { muscle_group_id: id },
+    });
 
     return {
-      data: count || 0,
+      data: count,
       error: null,
     };
   });
@@ -81,39 +66,24 @@ export async function getExerciseCountByMuscleGroup(id: string) {
 
 export async function createMuscleGroup(data: MuscleGroupFormData) {
   return safeAction(async () => {
-    const supabase = await createClient();
-
-    const { data: authData } = await supabase.auth.getUser();
-    if (!authData.user) {
+    const user = await getServerUser();
+    if (!user) {
       return {
         data: null,
         error: "You must be logged in to create muscle groups",
       };
     }
 
-    const muscleGroupData = {
-      name: data.name,
-      user_id: authData.user.id,
-      is_default: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    const { data: newMuscleGroup, error } = await supabase
-      .from("muscle_groups")
-      .insert([muscleGroupData])
-      .select()
-      .single();
-
-    if (error) {
-      return {
-        data: null,
-        error: `Error creating muscle group: ${error.message}`,
-      };
-    }
+    const newMuscleGroup = await db.muscleGroup.create({
+      data: {
+        name: data.name,
+        user_id: user.id,
+        is_default: false,
+      },
+    });
 
     return {
-      data: newMuscleGroup as MuscleGroup,
+      data: newMuscleGroup as any as MuscleGroup,
       error: null,
     };
   });
@@ -121,47 +91,31 @@ export async function createMuscleGroup(data: MuscleGroupFormData) {
 
 export async function updateMuscleGroup(data: { id: string; name: string }) {
   return safeAction(async () => {
-    const supabase = await createClient();
+    const existingGroup = await db.muscleGroup.findUnique({
+      where: { id: data.id },
+    });
 
-    const { data: existingGroup, error: fetchError } = await supabase
-      .from("muscle_groups")
-      .select("*")
-      .eq("id", data.id)
-      .single();
-
-    if (fetchError) {
+    if (!existingGroup) {
       return {
         data: null,
-        error: `Muscle group not found: ${fetchError.message}`,
+        error: "Muscle group not found",
       };
     }
 
-    if ((existingGroup as any).is_default) {
+    if (existingGroup.is_default) {
       return {
         data: null,
         error: "Default muscle groups cannot be modified",
       };
     }
 
-    const { data: updatedMuscleGroup, error } = await supabase
-      .from("muscle_groups")
-      .update({
-        name: data.name,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", data.id)
-      .select()
-      .single();
-
-    if (error) {
-      return {
-        data: null,
-        error: `Error updating muscle group: ${error.message}`,
-      };
-    }
+    const updatedMuscleGroup = await db.muscleGroup.update({
+      where: { id: data.id },
+      data: { name: data.name },
+    });
 
     return {
-      data: updatedMuscleGroup as MuscleGroup,
+      data: updatedMuscleGroup as any as MuscleGroup,
       error: null,
     };
   });
@@ -176,58 +130,38 @@ export async function deleteMuscleGroup(id: string) {
       };
     }
 
-    const supabase = await createClient();
+    const existingGroup = await db.muscleGroup.findUnique({
+      where: { id },
+    });
 
-    const { data: existingGroup, error: fetchError } = await supabase
-      .from("muscle_groups")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (fetchError) {
+    if (!existingGroup) {
       return {
         data: null,
-        error: `Muscle group not found: ${fetchError.message}`,
+        error: "Muscle group not found",
       };
     }
 
-    if ((existingGroup as any).is_default) {
+    if (existingGroup.is_default) {
       return {
         data: null,
         error: "Default muscle groups cannot be deleted",
       };
     }
 
-    const { count, error: countError } = await supabase
-      .from("exercise_muscle_groups")
-      .select("*", { count: "exact" })
-      .eq("muscle_group_id", id);
+    const count = await db.exerciseMuscleGroup.count({
+      where: { muscle_group_id: id },
+    });
 
-    if (countError) {
-      return {
-        data: null,
-        error: `Error checking muscle group usage: ${countError.message}`,
-      };
-    }
-
-    if (count && count > 0) {
+    if (count > 0) {
       return {
         data: null,
         error: `Cannot delete muscle group: it is used by ${count} exercises`,
       };
     }
 
-    const { error: deleteError } = await supabase
-      .from("muscle_groups")
-      .delete()
-      .eq("id", id);
-
-    if (deleteError) {
-      return {
-        data: null,
-        error: `Error deleting muscle group: ${deleteError.message}`,
-      };
-    }
+    await db.muscleGroup.delete({
+      where: { id },
+    });
 
     return {
       data: { id },

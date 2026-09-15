@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/utils/supabase/server";
+import { db } from "@/lib/db";
+import { getServerUser } from "@/lib/auth";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
 import {
@@ -22,97 +23,75 @@ export async function getMesocycleTemplates(userId: string) {
     logger.debug("Iniciando getMesocycleTemplates", { userId });
     const startTime = performance.now();
 
-    const supabase = await createClient();
-
     try {
       // Obtener plantillas del usuario
-      const { data: userTemplates, error: userTemplatesError } = await supabase
-        .from("mesocycle_templates")
-        .select(
-          `
-          *,
-          mesocycle_template_goals (*),
-          mesocycle_template_muscle_focus (*, muscle_groups (*)),
-          training_session_templates (
-            *,
-            template_session_exercises (
-              *,
-              exercises (*)
-            )
-          )
-        `
-        )
-        .eq("user_id", userId) // Solo las plantillas del usuario actual
-        .order("name");
+      const userTemplates = await db.mesocycleTemplate.findMany({
+        where: { user_id: userId },
+        include: {
+          goals: true,
+          muscle_focus: { include: { muscle_group: true } },
+          sessions: {
+            include: {
+              template_session_exercises: {
+                include: { exercise: true },
+              },
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+      });
       logger.debug("Plantillas de usuario obtenidas", {
         count: userTemplates?.length || 0,
-        hasError: !!userTemplatesError,
       });
 
-      if (userTemplatesError) {
-        logger.error(
-          "Error al obtener plantillas de usuario",
-          userTemplatesError,
-          {
-            userId,
-            errorCode: userTemplatesError.code,
-          }
-        );
-      }
-
-      // Obtener plantillas por defecto (creadas en seed.sql con is_default = true)
-      const { data: defaultTemplates, error: defaultTemplatesError } =
-        await supabase
-          .from("mesocycle_templates")
-          .select(
-            `
-          *,
-          mesocycle_template_goals (*),
-          mesocycle_template_muscle_focus (*, muscle_groups (*)),
-          training_session_templates (
-            *,
-            template_session_exercises (
-              *,
-              exercises (*)
-            )
-          )
-          `
-          )
-          // .eq("is_default", true)
-          .order("name");
+      // Obtener plantillas por defecto (creadas en seed con is_default = true)
+      const defaultTemplates = await db.mesocycleTemplate.findMany({
+        where: { is_default: true },
+        include: {
+          goals: true,
+          muscle_focus: { include: { muscle_group: true } },
+          sessions: {
+            include: {
+              template_session_exercises: {
+                include: { exercise: true },
+              },
+            },
+          },
+          created_by_profile: true,
+        },
+        orderBy: { name: "asc" },
+      });
 
       logger.debug("Plantillas por defecto obtenidas", {
         count: defaultTemplates?.length || 0,
-        hasError: !!defaultTemplatesError,
       });
 
-      if (defaultTemplatesError) {
-        logger.error(
-          "Error al obtener plantillas por defecto",
-          defaultTemplatesError,
-          {
-            errorCode: defaultTemplatesError.code,
-          }
-        );
-      }
+      const formatTemplate = (template: any, isDefault = false) => ({
+        ...template,
+        goals: template.goals || [],
+        muscleFocus: (template.muscle_focus || []).map((focus: any) => ({
+          ...focus,
+          muscle_groups: focus.muscle_group || null,
+        })),
+        sessions: (template.sessions || []).map((session: any) => ({
+          ...session,
+          template_session_exercises: (session.template_session_exercises || []).map(
+            (tse: any) => ({
+              ...tse,
+              exercises: tse.exercise || null,
+            })
+          ),
+        })),
+        creator: template.created_by_profile || null,
+        is_default: isDefault || template.is_default,
+      });
 
-      // Format data to match our schema
-      const formattedUserTemplates =
-        userTemplates?.map((template) => ({
-          ...template,
-          goals: template.mesocycle_template_goals || [],
-          muscleFocus: template.mesocycle_template_muscle_focus || [],
-          sessions: template.training_session_templates || [],
-        })) || [];
-      const formattedDefaultTemplates =
-        defaultTemplates?.map((template) => ({
-          ...template,
-          goals: template.mesocycle_template_goals || [],
-          muscleFocus: template.mesocycle_template_muscle_focus || [],
-          sessions: template.training_session_templates || [],
-          creator: template.profiles || null,
-          is_default: true,
-        })) || [];
+      const formattedUserTemplates = userTemplates.map((t) =>
+        formatTemplate(t)
+      );
+      const formattedDefaultTemplates = defaultTemplates.map((t) =>
+        formatTemplate(t, true)
+      );
 
       const duration = Math.round(performance.now() - startTime);
       logger.info("Plantillas de mesociclo obtenidas con éxito", {
@@ -153,47 +132,47 @@ export async function getMesocycleTemplate(templateId: string) {
   return safeAction(async () => {
     logger.debug("Obteniendo plantilla de mesociclo por ID", { templateId });
 
-    const supabase = await createClient();
-
     try {
-      const { data: template, error } = await supabase
-        .from("mesocycle_templates")
-        .select(
-          `
-          *,
-          mesocycle_template_goals (*),
-          mesocycle_template_muscle_focus (*, muscle_groups (*)),
-          training_session_templates (
-            *,
-            template_session_exercises (
-              *,
-              exercises (*)
-            )
-          ),
-          profiles!mesocycle_templates_created_by_fkey (
-            id,
-            username,
-            full_name,
-            avatar_url
-          )
-        `
-        )
-        .eq("id", templateId)
-        .single();
+      const template = await db.mesocycleTemplate.findUnique({
+        where: { id: templateId },
+        include: {
+          goals: true,
+          muscle_focus: { include: { muscle_group: true } },
+          sessions: {
+            include: {
+              template_session_exercises: {
+                include: { exercise: true },
+              },
+            },
+          },
+          created_by_profile: true,
+        },
+      });
 
-      if (error) throw error;
+      if (!template) throw new Error("Plantilla no encontrada");
 
       // Format the template to match our schema
       const formattedTemplate = {
         ...template,
-        goals: template.mesocycle_template_goals || [],
-        muscleFocus: template.mesocycle_template_muscle_focus || [],
-        sessions: template.training_session_templates || [],
-        creator: template.profiles || null,
+        goals: template.goals || [],
+        muscleFocus: (template.muscle_focus || []).map((focus) => ({
+          ...focus,
+          muscle_groups: focus.muscle_group || null,
+        })),
+        sessions: (template.sessions || []).map((session) => ({
+          ...session,
+          template_session_exercises: (session.template_session_exercises || []).map(
+            (tse) => ({
+              ...tse,
+              exercises: tse.exercise || null,
+            })
+          ),
+        })),
+        creator: template.created_by_profile || null,
       };
 
       return {
-        data: formattedTemplate as MesocycleTemplateWithRelations,
+        data: formattedTemplate as unknown as MesocycleTemplateWithRelations,
         error: null,
       };
     } catch (error: any) {
@@ -210,72 +189,51 @@ export async function createMesocycleTemplate(
   formData: MesocycleTemplateFormData
 ) {
   return safeAction(async () => {
-    const supabase = await createClient();
-
     try {
       // Validamos los datos del formulario
       const validatedFields = mesocycleTemplateSchema.parse(formData);
-      const timestamp = new Date().toISOString();
 
-      // Insertamos la plantilla principal
-      const { data, error } = await supabase
-        .from("mesocycle_templates")
-        .insert({
+      const user = await getServerUser();
+      if (!user?.id) {
+        return {
+          data: null,
+          error: "Debes iniciar sesión para crear plantillas.",
+        };
+      }
+
+      const profile = await db.profile.findUnique({
+        where: { user_id: user.id },
+        select: { id: true },
+      });
+
+      // Insertamos la plantilla principal con sus relaciones
+      const template = await db.mesocycleTemplate.create({
+        data: {
+          user_id: user.id,
           name: validatedFields.name,
           description: validatedFields.description,
           duration_weeks: validatedFields.duration_weeks,
           is_public: validatedFields.is_public,
-          created_by: validatedFields.created_by,
-          created_at: timestamp,
-          updated_at: timestamp,
-        })
-        .select()
-        .single();
+          created_by: profile?.id ?? null,
+          goals: {
+            create:
+              validatedFields.goals?.map((goal, index) => ({
+                goal_type: goal.goal_type,
+                priority: goal.priority || index + 1,
+              })) || [],
+          },
+          muscle_focus: {
+            create:
+              validatedFields.muscleFocus?.map((focus) => ({
+                muscle_group_id: focus.muscle_group_id,
+                focus_level: focus.focus_level,
+              })) || [],
+          },
+        },
+        select: { id: true },
+      });
 
-      if (error) throw error;
-
-      const templateId = data.id;
-
-      // Insertamos los objetivos
-      if (validatedFields.goals && validatedFields.goals.length > 0) {
-        const goals = validatedFields.goals.map((goal, index) => ({
-          mesocycle_template_id: templateId,
-          goal_type: goal.goal_type,
-          priority: goal.priority || index + 1,
-          created_at: timestamp,
-          updated_at: timestamp,
-        }));
-
-        const { error: goalsError } = await supabase
-          .from("mesocycle_template_goals")
-          .insert(goals);
-
-        if (goalsError) {
-          console.error("Error al insertar objetivos:", goalsError);
-        }
-      }
-
-      // Insertamos el enfoque muscular
-      if (
-        validatedFields.muscleFocus &&
-        validatedFields.muscleFocus.length > 0
-      ) {
-        const muscleFocus = validatedFields.muscleFocus.map((focus) => ({
-          mesocycle_template_id: templateId,
-          muscle_group_id: focus.muscle_group_id,
-          focus_level: focus.focus_level,
-          created_at: timestamp,
-          updated_at: timestamp,
-        }));
-
-        const { error: focusError } = await supabase
-          .from("mesocycle_template_muscle_focus")
-          .insert(muscleFocus);
-
-        if (focusError) {
-          console.error("Error al insertar enfoque muscular:", focusError);
-        }
-      }
+      const templateId = template.id;
 
       // Revalidamos la ruta para actualizar los datos
       revalidatePath("/dashboard/mesocycles/templates");
@@ -299,104 +257,64 @@ export async function updateMesocycleTemplate(
   formData: MesocycleTemplateFormData
 ) {
   return safeAction(async () => {
-    const supabase = await createClient();
-
     try {
       // Validamos los datos del formulario
       const validatedFields = mesocycleTemplateSchema.parse(formData);
-      const timestamp = new Date().toISOString();
 
       if (!validatedFields.id) {
         throw new Error("ID de plantilla requerido para actualizar");
       }
 
+      const user = await getServerUser();
+      if (!user?.id) {
+        return {
+          data: null,
+          error: "Debes iniciar sesión para actualizar plantillas.",
+        };
+      }
+
       // Actualizamos la plantilla principal
-      const { error } = await supabase
-        .from("mesocycle_templates")
-        .update({
+      await db.mesocycleTemplate.update({
+        where: { id: validatedFields.id },
+        data: {
           name: validatedFields.name,
           description: validatedFields.description,
           duration_weeks: validatedFields.duration_weeks,
           is_public: validatedFields.is_public,
-          updated_at: timestamp,
-        })
-        .eq("id", validatedFields.id)
-        .select()
-        .single();
+        },
+      });
 
-      if (error) throw error;
+      // Eliminamos los objetivos anteriores e insertamos los nuevos
+      await db.mesocycleTemplateGoal.deleteMany({
+        where: { mesocycle_template_id: validatedFields.id },
+      });
 
-      // Eliminamos los objetivos anteriores
-      const { error: deleteGoalsError } = await supabase
-        .from("mesocycle_template_goals")
-        .delete()
-        .eq("mesocycle_template_id", validatedFields.id);
-
-      if (deleteGoalsError) {
-        console.error(
-          "Error al eliminar objetivos existentes:",
-          deleteGoalsError
-        );
-      }
-
-      // Insertamos los nuevos objetivos
       if (validatedFields.goals && validatedFields.goals.length > 0) {
-        const goals = validatedFields.goals.map((goal, index) => ({
-          mesocycle_template_id: validatedFields.id!,
-          goal_type: goal.goal_type,
-          priority: goal.priority || index + 1,
-          created_at: timestamp,
-          updated_at: timestamp,
-        }));
-
-        const { error: goalsError } = await supabase
-          .from("mesocycle_template_goals")
-          .insert(goals);
-
-        if (goalsError) {
-          console.error(
-            "Error al insertar objetivos actualizados:",
-            goalsError
-          );
-        }
+        await db.mesocycleTemplateGoal.createMany({
+          data: validatedFields.goals.map((goal, index) => ({
+            mesocycle_template_id: validatedFields.id!,
+            goal_type: goal.goal_type,
+            priority: goal.priority || index + 1,
+          })),
+        });
       }
 
-      // Eliminamos el enfoque muscular anterior
-      const { error: deleteFocusError } = await supabase
-        .from("mesocycle_template_muscle_focus")
-        .delete()
-        .eq("mesocycle_template_id", validatedFields.id);
+      // Eliminamos el enfoque muscular anterior e insertamos el nuevo
+      await db.mesocycleTemplateMuscleFocus.deleteMany({
+        where: { mesocycle_template_id: validatedFields.id },
+      });
 
-      if (deleteFocusError) {
-        console.error(
-          "Error al eliminar enfoque muscular existente:",
-          deleteFocusError
-        );
-      }
-
-      // Insertamos el nuevo enfoque muscular
       if (
         validatedFields.muscleFocus &&
         validatedFields.muscleFocus.length > 0
       ) {
-        const muscleFocus = validatedFields.muscleFocus.map((focus) => ({
-          mesocycle_template_id: validatedFields.id!,
-          muscle_group_id: focus.muscle_group_id,
-          focus_level: focus.focus_level,
-          created_at: timestamp,
-          updated_at: timestamp,
-        }));
-
-        const { error: focusError } = await supabase
-          .from("mesocycle_template_muscle_focus")
-          .insert(muscleFocus);
-
-        if (focusError) {
-          console.error(
-            "Error al insertar enfoque muscular actualizado:",
-            focusError
-          );
-        }
+        await db.mesocycleTemplateMuscleFocus.createMany({
+          data: validatedFields.muscleFocus.map((focus) => ({
+            mesocycle_template_id: validatedFields.id!,
+            muscle_group_id: focus.muscle_group_id,
+            focus_level: focus.focus_level,
+          })),
+        });
       }
 
       // Revalidamos la ruta para actualizar los datos
@@ -420,51 +338,11 @@ export async function updateMesocycleTemplate(
 // Eliminar una plantilla
 export async function deleteMesocycleTemplate(templateId: string) {
   return safeAction(async () => {
-    const supabase = await createClient();
-
     try {
-      // Primero eliminamos todas las relaciones para mantener la consistencia
-
-      // 1. Eliminar sesiones de entrenamiento relacionadas
-      const { data: sessions } = await supabase
-        .from("training_session_templates")
-        .select("id")
-        .eq("mesocycle_template_id", templateId);
-
-      if (sessions && sessions.length > 0) {
-        const sessionIds = sessions.map((s) => s.id);
-
-        // Eliminar ejercicios de las sesiones
-        await supabase
-          .from("template_session_exercises")
-          .delete()
-          .in("training_session_template_id", sessionIds);
-
-        // Eliminar las sesiones
-        await supabase
-          .from("training_session_templates")
-          .delete()
-          .eq("mesocycle_template_id", templateId);
-      }
-
-      // 2. Eliminar objetivos y enfoques musculares
-      await supabase
-        .from("mesocycle_template_goals")
-        .delete()
-        .eq("mesocycle_template_id", templateId);
-
-      await supabase
-        .from("mesocycle_template_muscle_focus")
-        .delete()
-        .eq("mesocycle_template_id", templateId);
-
-      // 3. Finalmente eliminamos la plantilla
-      const { error } = await supabase
-        .from("mesocycle_templates")
-        .delete()
-        .eq("id", templateId);
-
-      if (error) throw error;
+      // Las relaciones se eliminan en cascada desde el esquema de Prisma
+      await db.mesocycleTemplate.delete({
+        where: { id: templateId },
+      });
 
       // Revalidamos la ruta para actualizar los datos
       revalidatePath("/dashboard/mesocycles/templates");

@@ -129,7 +129,10 @@ export const useWorkoutLogsStore = create<WorkoutLogsState>((set) => ({
           workoutId,
           count: data?.length || 0,
         });
-        set({ workoutSets: data || [], isLoading: false });
+        set({
+          workoutSets: (data || []) as unknown as ExerciseLogSet[],
+          isLoading: false,
+        });
       } catch (error) {
         logger.error(
           "Error fetching workout sets",

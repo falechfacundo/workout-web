@@ -54,7 +54,9 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
           return;
         }
 
-        const validSessions = Array.isArray(result.data) ? result.data : [];
+        const validSessions = (Array.isArray(result.data)
+          ? result.data
+          : []) as unknown as TrainingSession[];
         const elapsedTime = Math.round(performance.now() - startTime);
 
         logger.info("Training sessions fetched successfully", {
@@ -99,7 +101,9 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
           return;
         }
 
-        const validSessions = Array.isArray(result.data) ? result.data : [];
+        const validSessions = (Array.isArray(result.data)
+          ? result.data
+          : []) as unknown as TrainingSession[];
         const elapsedTime = Math.round(performance.now() - startTime);
 
         logger.info("Training sessions for mesocycle fetched successfully", {
@@ -149,7 +153,7 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
         });
 
         set({
-          currentSession: result.data as TrainingSession,
+          currentSession: result.data as unknown as TrainingSession,
           isLoading: false,
         });
       } catch (error) {
@@ -182,7 +186,10 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
             elapsedMs: elapsedTime,
           });
 
-          set({ sessionExercises: data || [], isLoading: false });
+          set({
+            sessionExercises: (data || []) as unknown as SessionExercise[],
+            isLoading: false,
+          });
         } catch (error) {
           logger.error(
             "Error fetching session exercises",
