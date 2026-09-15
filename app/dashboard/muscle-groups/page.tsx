@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Plus } from "lucide-react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { ErrorMessage } from "@/components/error-message";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
@@ -78,12 +75,8 @@ export default function MuscleGroupsPage() {
                 Manage your muscle groups for exercise categorization.
               </p>
             </div>
-            <Button asChild>
-              <Link href="/dashboard/muscle-groups/new">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Muscle Group
-              </Link>
-            </Button>
+            {/* BL-2: botón "Add Muscle Group" removido — la ruta /new no existe;
+                los grupos vienen del seed (post-MVP: crear ruta + form) */}
           </div>
           <ErrorMessage message={error} />
         </div>
@@ -101,12 +94,7 @@ export default function MuscleGroupsPage() {
               Manage your muscle groups for exercise categorization.
             </p>
           </div>
-          <Button asChild>
-            <Link href="/dashboard/muscle-groups/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Muscle Group
-            </Link>
-          </Button>
+          {/* BL-2: botón "Add Muscle Group" removido — ver nota arriba */}
         </div>
         <div className="flex items-center gap-2">
           <SearchBar onSearch={handleSearch} />

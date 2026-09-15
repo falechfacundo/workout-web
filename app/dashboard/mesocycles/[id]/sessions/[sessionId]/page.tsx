@@ -229,15 +229,7 @@ export default function TrainingSessionDetailPage() {
                     </div>
                   )}
 
-                  <div className="mt-4 flex justify-end gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link
-                        href={`/dashboard/mesocycles/${id}/sessions/${sessionId}/exercises/${exercise.id}/edit`}
-                      >
-                        Edit
-                      </Link>
-                    </Button>
-                  </div>
+                  {/* BL-2: botón Edit removido — la ruta exercises/[id]/edit no existe (post-MVP) */}
                 </CardContent>
               </Card>
             ))
