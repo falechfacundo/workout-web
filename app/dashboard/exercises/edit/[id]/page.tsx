@@ -45,7 +45,7 @@ export default async function EditExercisePage({
         </div>
 
         <div className="mx-auto max-w-2xl">
-          <ExerciseForm initialData={exercise.data ?? undefined} />
+          <ExerciseForm initialData={(exercise.data as any) ?? undefined} />
         </div>
       </div>
     </DashboardLayout>

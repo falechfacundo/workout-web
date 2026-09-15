@@ -16,18 +16,16 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MuscleGroupVolumeChart } from "@/components/dashboard/workout/muscle-group-volume-chart";
 import { WorkoutFrequencyChart } from "@/components/dashboard/analytics/workout-frequency-chart";
-import { createClient } from "@/lib/utils/supabase/client";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useWorkoutLogsStore } from "@/lib/stores/workout-logs-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
-import { getPerformanceMetrics } from "@/lib/actions/analytics";
+import { getPerformanceMetrics, getVolumeByMuscleGroup } from "@/lib/actions/analytics";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [muscleGroupVolume, setMuscleGroupVolume] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any>(null);
-  const supabase = createClient();
 
   const { user, isLoading: authLoading } = useRequireAuth();
 
@@ -64,10 +62,8 @@ export default function DashboardPage() {
         }
 
         // Obtener volumen por grupo muscular
-        const { data: volumeData, error: volumeError } = await supabase.rpc(
-          "get_volume_by_muscle_group",
-          { user_id_param: user.id, period_param: "month" }
-        );
+        const { data: volumeData, error: volumeError } =
+          await getVolumeByMuscleGroup(user.id, "month");
 
         if (volumeError) {
           console.error("Error loading muscle group volume:", volumeError);
@@ -83,7 +79,7 @@ export default function DashboardPage() {
     }
 
     loadData();
-  }, [authLoading, user, supabase, fetchActiveMesocycles, fetchWorkoutStats]);
+  }, [authLoading, user, fetchActiveMesocycles, fetchWorkoutStats]);
 
   // Muestra loading durante la carga
   if (authLoading || loading) {

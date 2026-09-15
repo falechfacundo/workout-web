@@ -1,8 +1,8 @@
-import { Database } from "@/lib/database.types";
 import { MuscleGroupCard } from "./muscle-group-card";
 import { MuscleGroupSkeleton } from "./muscle-group-skeleton";
+import type { MuscleGroup as MuscleGroupRow } from "@/lib/schemas/muscle-group";
 
-type MuscleGroup = Database["public"]["Tables"]["muscle_groups"]["Row"];
+type MuscleGroup = MuscleGroupRow;
 
 interface MuscleGroupListProps {
   muscleGroups: MuscleGroup[];

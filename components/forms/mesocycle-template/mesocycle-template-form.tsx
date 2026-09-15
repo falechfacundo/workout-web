@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
-import { createClient } from "@/lib/utils/supabase/client";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export function MesocycleTemplateForm({
   onCancel,
 }: MesocycleTemplateFormProps) {
   const router = useRouter();
-  const supabase = createClient();
+  const { data: session } = useSession();
 
   // Get actions from store
   const { createTemplate, updateTemplate, isLoading, error } =
@@ -90,8 +90,7 @@ export function MesocycleTemplateForm({
 
     try {
       // Get authenticated user ID
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData.user?.id;
+      const userId = session?.user?.id;
 
       if (!userId) {
         logger.warn("Authentication error - missing user ID");

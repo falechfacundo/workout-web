@@ -5,9 +5,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Database } from "@/lib/database.types";
+import type { MuscleGroup as MuscleGroupRow } from "@/lib/schemas/muscle-group";
 
-type MuscleGroup = Database["public"]["Tables"]["muscle_groups"]["Row"];
+type MuscleGroup = MuscleGroupRow;
 
 export function MuscleGroupCard({ muscleGroup }: { muscleGroup: MuscleGroup }) {
   return (

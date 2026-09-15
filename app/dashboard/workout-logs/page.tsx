@@ -34,12 +34,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MuscleGroupVolumeChart } from "@/components/dashboard/workout/muscle-group-volume-chart";
 import { useWorkoutLogsStore } from "@/lib/stores/workout-logs-store";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/utils/supabase/client";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 
 export default function WorkoutLogsPage() {
-  const router = useRouter();
-  const supabase = createClient();
+  const { user } = useRequireAuth();
   const [, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -112,18 +110,10 @@ export default function WorkoutLogsPage() {
   // Verificar autenticación y cargar datos
   useEffect(() => {
     async function loadData() {
+      if (!user) return;
+
       setLoading(true);
       try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
-
-        if (error || !user) {
-          router.push("/auth/login");
-          return;
-        }
-
         setUser(user);
         await Promise.all([
           fetchWorkoutLogs(user.id),
@@ -137,7 +127,7 @@ export default function WorkoutLogsPage() {
     }
 
     loadData();
-  }, [router, supabase.auth, fetchWorkoutLogs, fetchMesocycles]);
+  }, [user, fetchWorkoutLogs, fetchMesocycles]);
 
   // Efecto para cargar los sets de cada workout cuando los logs cambian
   useEffect(() => {

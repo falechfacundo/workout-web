@@ -3,16 +3,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
-import { createClient } from "@/lib/utils/supabase/client";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { PageHeader } from "@/components/dashboard/mesocycles/page-header";
 import { SearchAndFilterBar } from "@/components/dashboard/mesocycles/search-and-filter-bar";
 import { MesocycleCard } from "@/components/dashboard/mesocycles/mesocycle-card";
 import { EmptyState } from "@/components/dashboard/mesocycles/empty-state";
-import { useRouter } from "next/navigation";
 
 export default function MesocyclesPage() {
-  const router = useRouter();
-  const supabase = createClient();
+  const { user } = useRequireAuth();
   const [loading, setLoading] = useState(true);
   const [, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,18 +49,10 @@ export default function MesocyclesPage() {
   // Verificar autenticación y cargar mesociclos
   useEffect(() => {
     async function loadData() {
+      if (!user) return;
+
       setLoading(true);
       try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
-
-        if (error || !user) {
-          router.push("/auth/login");
-          return;
-        }
-
         setUserId(user.id);
         await fetchMesocycles(user.id);
       } catch (err) {
@@ -73,7 +63,7 @@ export default function MesocyclesPage() {
     }
 
     loadData();
-  }, [router, supabase.auth, fetchMesocycles]);
+  }, [user, fetchMesocycles]);
 
   // Maneja la búsqueda
   const handleSearch = (query: string) => {

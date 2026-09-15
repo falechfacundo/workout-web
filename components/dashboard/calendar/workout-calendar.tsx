@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Clock, CheckCircle2, Dumbbell } from "lucide-react";
-import { createClient } from "@/lib/utils/supabase/client";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { getScheduledSessionsByDateRange } from "@/lib/actions/training-sessions";
+import { getWorkoutLogsByDateRange } from "@/lib/actions/workout-logs";
 import Link from "next/link";
 
 interface ScheduledSession {
@@ -52,32 +53,16 @@ export function WorkoutCalendar() {
 
       setIsLoading(true);
       try {
-        const supabase = createClient();
-        const startDate = startOfMonth(currentMonth);
-        const endDate = endOfMonth(currentMonth);
+        const startDate = format(startOfMonth(currentMonth), "yyyy-MM-dd");
+        const endDate = format(endOfMonth(currentMonth), "yyyy-MM-dd");
 
         const [sessionsResult, logsResult] = await Promise.all([
-          supabase
-            .from("training_sessions")
-            .select("id, name, scheduled_date, status, mesocycle:mesocycles(name)")
-            .gte("scheduled_date", format(startDate, "yyyy-MM-dd"))
-            .lte("scheduled_date", format(endDate, "yyyy-MM-dd"))
-            .order("scheduled_date") as any,
-          supabase
-            .from("workout_logs")
-            .select("id, date, training_session_id, session:training_sessions(name), exercise_logs(id)")
-            .gte("date", format(startDate, "yyyy-MM-dd"))
-            .lte("date", format(endDate, "yyyy-MM-dd"))
-            .order("date") as any,
+          getScheduledSessionsByDateRange(user.id, startDate, endDate),
+          getWorkoutLogsByDateRange(user.id, startDate, endDate),
         ]);
 
-        // Filter sessions to only user's mesocycles
-        const userSessions = (sessionsResult.data || []).filter(
-          (s: any) => s.mesocycle?.user_id === user.id
-        );
-
-        setScheduledSessions(userSessions);
-        setWorkoutLogs(logsResult.data || []);
+        setScheduledSessions(sessionsResult.data as any[]);
+        setWorkoutLogs(logsResult.data as any[]);
       } catch (error) {
         console.error("Error fetching calendar data:", error);
       } finally {
