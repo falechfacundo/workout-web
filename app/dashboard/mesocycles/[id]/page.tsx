@@ -73,8 +73,8 @@ export default function MesocycleDetailPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <div className="p-4 border border-red-200 bg-red-50 rounded-md">
-          <h3 className="font-semibold text-red-600">Error</h3>
+        <div className="p-4 border border-destructive/50 bg-destructive/10 rounded-md">
+          <h3 className="font-semibold text-destructive">Error</h3>
           <p>{error}</p>
         </div>
       </DashboardLayout>

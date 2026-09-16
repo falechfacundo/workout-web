@@ -96,7 +96,7 @@ export default function ChangePasswordPage() {
           </CardHeader>
           <CardContent>
             {success ? (
-              <p className="py-4 text-center font-semibold text-emerald-500">
+              <p className="py-4 text-center font-semibold text-primary">
                 Contraseña actualizada. Redirigiendo...
               </p>
             ) : (
@@ -140,7 +140,7 @@ export default function ChangePasswordPage() {
                 </div>
 
                 {error && (
-                  <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <p className="rounded-lg border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                     {error}
                   </p>
                 )}

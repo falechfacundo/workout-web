@@ -52,7 +52,7 @@ export default function MesocycleTemplatesPage() {
     return (
       <div className="container py-6 space-y-6">
         <TemplatePageHeader />
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
+        <div className="bg-destructive/10 border border-destructive/50 text-destructive p-4 rounded-md">
           Error al cargar las plantillas: {templatesError}
         </div>
       </div>

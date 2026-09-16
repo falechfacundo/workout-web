@@ -67,7 +67,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 bg-card px-4 md:px-6">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden">
@@ -113,7 +113,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </Button>
       </header>
       <div className="grid flex-1 md:grid-cols-[220px_1fr]">
-        <aside className="hidden border-r bg-muted/40 md:block">
+        <aside className="hidden bg-card md:block">
           <nav className="grid gap-2 p-4 text-sm">
             {navItems.map((item) => (
               <Link
