@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { MesocycleTemplateForm } from "@/components/forms/mesocycle-template/mesocycle-template-form";
 import { useMesocycleTemplatesStore } from "@/lib/stores/mesocycle-templates-store";
+import { ChartSkeleton } from "@/components/ui/data-skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { MesocycleTemplateWithRelations } from "@/lib/schemas/mesocycle-template";
 
 /**
@@ -34,7 +36,13 @@ export default function EditMesocycleTemplatePage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <p className="text-muted-foreground">Cargando…</p>
+        <div className="grid gap-4 md:gap-8">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-80 max-w-full" />
+          </div>
+          <ChartSkeleton height={400} />
+        </div>
       </DashboardLayout>
     );
   }

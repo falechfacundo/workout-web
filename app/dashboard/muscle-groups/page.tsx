@@ -36,33 +36,7 @@ export default function MuscleGroupsPage() {
     setSearchQuery(query);
   };
 
-  if (authLoading || isLoading) {
-    return (
-      <DashboardLayout>
-        <div className="grid gap-4 md:gap-8">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Muscle Groups
-              </h1>
-              <p className="text-muted-foreground">
-                Manage your muscle groups for exercise categorization.
-              </p>
-            </div>
-          </div>
-          <div className="flex justify-center p-8">
-            Loading muscle groups...
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (!user) {
-    return null; // Will be redirected by useRequireAuth
-  }
-
-  if (error) {
+  if (error && !authLoading) {
     return (
       <DashboardLayout>
         <div className="grid gap-4 md:gap-8">
@@ -101,7 +75,7 @@ export default function MuscleGroupsPage() {
         </div>
         <MuscleGroupList
           muscleGroups={filteredMuscleGroups as any}
-          isLoading={isLoading}
+          isLoading={authLoading || isLoading}
         />
       </div>
     </DashboardLayout>

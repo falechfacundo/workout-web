@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, Clock, CheckCircle2, Dumbbell } from "lucide
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { getScheduledSessionsByDateRange } from "@/lib/actions/training-sessions";
 import { getWorkoutLogsByDateRange } from "@/lib/actions/workout-logs";
+import { RowListSkeleton } from "@/components/ui/data-skeletons";
 import Link from "next/link";
 
 interface ScheduledSession {
@@ -155,7 +156,7 @@ export function WorkoutCalendar() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
+            <RowListSkeleton rows={2} />
           ) : selectedDay ? (
             <div className="space-y-4">
               {selectedDay.scheduledSessions.length > 0 && (

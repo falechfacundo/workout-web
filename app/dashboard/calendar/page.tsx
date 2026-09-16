@@ -3,19 +3,8 @@
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { WorkoutCalendar } from "@/components/dashboard/calendar/workout-calendar";
 import { ReminderList } from "@/components/dashboard/reminders/reminder-list";
-import { useRequireAuth } from "@/hooks/use-require-auth";
 
 export default function CalendarPage() {
-  const { isLoading: authLoading } = useRequireAuth();
-
-  if (authLoading) {
-    return (
-      <DashboardLayout>
-        <div className="flex justify-center p-8">Loading...</div>
-      </DashboardLayout>
-    );
-  }
-
   return (
     <DashboardLayout>
       <div className="grid gap-4 md:gap-8">

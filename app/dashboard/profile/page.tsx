@@ -14,6 +14,7 @@ import { ProfileForm } from "@/components/forms/profile/profile-form";
 import { MeasurementHistory } from "@/components/dashboard/profile/measurement-history";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useProfileStore } from "@/lib/stores/profile-store";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfilePage() {
   const { profile, isLoading, error, fetchProfile } = useProfileStore();
@@ -30,8 +31,21 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center p-8">
-          Loading profile information...
+        <div className="container py-10 max-w-5xl mx-auto">
+          <Skeleton className="h-8 w-64 mb-8" />
+          <Skeleton className="h-10 w-72 mb-6" />
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-72" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-32" />
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     );

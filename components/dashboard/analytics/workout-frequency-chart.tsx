@@ -6,6 +6,7 @@ import { getWorkoutFrequency } from "@/lib/actions/analytics"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface WorkoutFrequencyChartProps {
   userId: string
@@ -56,7 +57,7 @@ export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="flex h-[300px] items-center justify-center">Loading...</div>
+          <Skeleton className="h-[300px] w-full rounded-lg" />
         ) : data.length === 0 ? (
           <div className="flex h-[300px] items-center justify-center text-muted-foreground">
             No data available for this period

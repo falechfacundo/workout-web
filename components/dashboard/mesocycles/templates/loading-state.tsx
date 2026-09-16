@@ -1,13 +1,12 @@
 import React from "react";
 import { TemplatePageHeader } from "./template-page-header";
+import { CardGridSkeleton } from "@/components/ui/data-skeletons";
 
 export function LoadingState() {
   return (
-    <div className="container py-6 space-y-6">
+    <div className="container py-6 space-y-10">
       <TemplatePageHeader />
-      <div className="flex justify-center p-8">
-        Cargando plantillas de mesociclos...
-      </div>
+      <CardGridSkeleton />
     </div>
   );
 }

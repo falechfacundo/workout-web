@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useWorkoutRemindersStore } from "@/lib/stores/workout-reminders-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { RowListSkeleton } from "@/components/ui/data-skeletons";
 import { ReminderForm } from "./reminder-form";
 
 const dayNames = [
@@ -94,7 +95,7 @@ export function ReminderList() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading reminders...</p>
+          <RowListSkeleton rows={3} />
         ) : reminders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <BellOff className="mb-2 h-8 w-8 text-muted-foreground/50" />

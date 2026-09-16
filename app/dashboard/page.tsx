@@ -13,6 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RowListSkeleton } from "@/components/ui/data-skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MuscleGroupVolumeChart } from "@/components/dashboard/workout/muscle-group-volume-chart";
 import { WorkoutFrequencyChart } from "@/components/dashboard/analytics/workout-frequency-chart";
@@ -21,31 +23,85 @@ import { useWorkoutLogsStore } from "@/lib/stores/workout-logs-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { getPerformanceMetrics, getVolumeByMuscleGroup } from "@/lib/actions/analytics";
 
+function MetricCard({
+  title,
+  loading,
+  value,
+  caption,
+}: {
+  title: string;
+  loading: boolean;
+  value: string;
+  caption: string;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        ) : (
+          <>
+            <div className="text-2xl font-bold">{value}</div>
+            <p className="text-xs text-muted-foreground">{caption}</p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MesocyclesListSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 3 }, (_, i) => (
+        <div key={i} className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+          <Skeleton className="h-2 w-full rounded-full" />
+          <div className="flex justify-between">
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [muscleGroupVolume, setMuscleGroupVolume] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any>(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+  const [volumeLoading, setVolumeLoading] = useState(true);
+  const [muscleGroupVolume, setMuscleGroupVolume] = useState<any[]>([]);
 
   const { user, isLoading: authLoading } = useRequireAuth();
 
-  const { activeMesocycles, fetchActiveMesocycles } = useMesocyclesStore();
+  const {
+    activeMesocycles,
+    isLoading: mesocyclesLoading,
+    fetchActiveMesocycles,
+  } = useMesocyclesStore();
   const { fetchWorkoutStats } = useWorkoutLogsStore();
 
-  // Cargar datos cuando el usuario está autenticado
   useEffect(() => {
     async function loadData() {
       if (authLoading || !user) return;
 
-      setLoading(true);
       try {
-        // Cargar datos necesarios para el dashboard
         await Promise.all([
           fetchActiveMesocycles(user.id),
           fetchWorkoutStats(user.id, "month"),
         ]);
 
-        // Obtener métricas de rendimiento
         const metricsResult = await getPerformanceMetrics(user.id);
 
         if (metricsResult.error) {
@@ -60,8 +116,8 @@ export default function DashboardPage() {
             }
           );
         }
+        setMetricsLoading(false);
 
-        // Obtener volumen por grupo muscular
         const { data: volumeData, error: volumeError } =
           await getVolumeByMuscleGroup(user.id, "month");
 
@@ -70,46 +126,82 @@ export default function DashboardPage() {
         } else {
           setMuscleGroupVolume((volumeData as any[]) || []);
         }
+        setVolumeLoading(false);
       } catch (err) {
         console.error("Dashboard error:", err);
         setError("Error loading dashboard data");
-      } finally {
-        setLoading(false);
+        setMetricsLoading(false);
+        setVolumeLoading(false);
       }
     }
 
     loadData();
   }, [authLoading, user, fetchActiveMesocycles, fetchWorkoutStats]);
 
-  // Muestra loading durante la carga
-  if (authLoading || loading) {
+  if (authLoading && !user) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center p-8">Loading dashboard data...</div>
+        <div className="grid gap-4 md:gap-8">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+              <p className="text-muted-foreground">
+                Welcome to your workout training management dashboard.
+              </p>
+            </div>
+            <Skeleton className="h-10 w-40" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <Skeleton className="h-4 w-24" />
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-3 w-28" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
+              <CardHeader>
+                <Skeleton className="h-5 w-44" />
+                <Skeleton className="h-4 w-72" />
+              </CardHeader>
+              <CardContent>
+                <RowListSkeleton rows={3} />
+              </CardContent>
+            </Card>
+            <Card className="lg:col-span-3">
+              <CardHeader>
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-4 w-52" />
+              </CardHeader>
+              <CardContent>
+                <MesocyclesListSkeleton />
+              </CardContent>
+            </Card>
+          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-44" />
+              <Skeleton className="h-4 w-72" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-80 w-full rounded-lg" />
+            </CardContent>
+          </Card>
+        </div>
       </DashboardLayout>
     );
   }
 
   if (!user) {
     return null; // Will be redirected by useRequireAuth
-  }
-
-  // Muestra error si ocurre
-  if (error) {
-    return (
-      <DashboardLayout>
-        <div className="flex-1 space-y-4 p-8 pt-6">
-          <div className="flex items-center justify-between space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          </div>
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <p className="text-sm text-red-700">
-              {error || "Error loading dashboard data"}
-            </p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
   }
 
   return (
@@ -126,66 +218,40 @@ export default function DashboardPage() {
             <Link href="/dashboard/workout-logs/new">Start New Workout</Link>
           </Button>
         </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Workouts
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {metrics?.totalWorkouts || 0}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Workouts completed
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Volume
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {(metrics?.totalVolume || 0).toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Weight × reps this month
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Sets</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {metrics?.totalSets || 0}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Sets completed this month
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Avg. Duration
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {metrics?.avgDuration || 0}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Minutes per workout
-              </p>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="Total Workouts"
+            loading={metricsLoading}
+            value={`${metrics?.totalWorkouts ?? 0}`}
+            caption="Workouts completed"
+          />
+          <MetricCard
+            title="Total Volume"
+            loading={metricsLoading}
+            value={(metrics?.totalVolume ?? 0).toLocaleString()}
+            caption="Weight × reps this month"
+          />
+          <MetricCard
+            title="Total Sets"
+            loading={metricsLoading}
+            value={`${metrics?.totalSets ?? 0}`}
+            caption="Sets completed this month"
+          />
+          <MetricCard
+            title="Avg. Duration"
+            loading={metricsLoading}
+            value={`${metrics?.avgDuration ?? 0}`}
+            caption="Minutes per workout"
+          />
         </div>
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
           <Card className="lg:col-span-4">
             <CardHeader>
@@ -195,9 +261,11 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {activeMesocycles.length > 0 ? (
-                  activeMesocycles.slice(0, 3).map((mesocycle, index) => (
+              {mesocyclesLoading ? (
+                <RowListSkeleton rows={3} />
+              ) : activeMesocycles.length > 0 ? (
+                <div className="space-y-4">
+                  {activeMesocycles.slice(0, 3).map((mesocycle, index) => (
                     <div
                       key={mesocycle.id}
                       className="flex items-center gap-4 rounded-lg border p-4"
@@ -220,16 +288,16 @@ export default function DashboardPage() {
                         </Link>
                       </Button>
                     </div>
-                  ))
-                ) : (
-                  <div className="flex items-center justify-center p-4 text-center text-muted-foreground">
-                    <p>
-                      No active mesocycles. Create a training program to get
-                      started.
-                    </p>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center p-4 text-center text-muted-foreground">
+                  <p>
+                    No active mesocycles. Create a training program to get
+                    started.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
           <Card className="lg:col-span-3">
@@ -238,10 +306,11 @@ export default function DashboardPage() {
               <CardDescription>Your current training programs</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {activeMesocycles.length > 0 ? (
-                  activeMesocycles.map((mesocycle) => {
-                    // Calculate progress
+              {mesocyclesLoading ? (
+                <MesocyclesListSkeleton />
+              ) : activeMesocycles.length > 0 ? (
+                <div className="space-y-4">
+                  {activeMesocycles.map((mesocycle) => {
                     const startDate = new Date(mesocycle.start_date);
                     const endDate = new Date(mesocycle.end_date);
                     const today = new Date();
@@ -291,16 +360,16 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     );
-                  })
-                ) : (
-                  <div className="flex items-center justify-center p-4 text-center text-muted-foreground">
-                    <p>
-                      No active mesocycles. Create a training program to get
-                      started.
-                    </p>
-                  </div>
-                )}
-              </div>
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center p-4 text-center text-muted-foreground">
+                  <p>
+                    No active mesocycles. Create a training program to get
+                    started.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -319,7 +388,11 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="h-80">
-                <MuscleGroupVolumeChart data={muscleGroupVolume} />
+                {volumeLoading ? (
+                  <Skeleton className="h-80 w-full rounded-lg" />
+                ) : (
+                  <MuscleGroupVolumeChart data={muscleGroupVolume} />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -332,7 +405,7 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="h-80">
-                {user && <WorkoutFrequencyChart userId={user.id} />}
+                <WorkoutFrequencyChart userId={user.id} />
               </CardContent>
             </Card>
           </TabsContent>

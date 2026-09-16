@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/dashboard/mesocycles/page-header";
 import { SearchAndFilterBar } from "@/components/dashboard/mesocycles/search-and-filter-bar";
 import { MesocycleCard } from "@/components/dashboard/mesocycles/mesocycle-card";
 import { EmptyState } from "@/components/dashboard/mesocycles/empty-state";
+import { MesocycleCardSkeleton } from "@/components/ui/data-skeletons";
 
 export default function MesocyclesPage() {
   const { user } = useRequireAuth();
@@ -75,18 +76,10 @@ export default function MesocyclesPage() {
     setFilterStatus(status);
   };
 
-  if (loading || mesocyclesLoading) {
-    return (
-      <DashboardLayout>
-        <div className="grid gap-4 md:gap-8">
-          <PageHeader />
-          <div className="flex justify-center p-8">Loading mesocycles...</div>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  const showSkeleton = loading || mesocyclesLoading;
+  const hasMesocycles = filteredMesocycles.length > 0;
 
-  if (mesocyclesError) {
+  if (mesocyclesError && !showSkeleton) {
     return (
       <DashboardLayout>
         <div className="text-destructive">
@@ -96,39 +89,38 @@ export default function MesocyclesPage() {
     );
   }
 
-  const hasMesocycles = filteredMesocycles.length > 0;
-
-  if (!hasMesocycles && !searchQuery && !filterStatus) {
-    return (
-      <DashboardLayout>
-        <div className="grid gap-4 md:gap-8">
-          <PageHeader />
-          <EmptyState />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
     <DashboardLayout>
       <div className="grid gap-4 md:gap-8">
         <PageHeader />
-        <SearchAndFilterBar
-          onSearch={handleSearch}
-          searchQuery={searchQuery}
-          onFilterChange={handleFilterChange}
-          currentFilter={filterStatus}
-        />
-        {hasMesocycles ? (
+        {showSkeleton ? (
           <div className="grid gap-4">
-            {filteredMesocycles.filter((m) => m.id).map((mesocycle) => (
-              <MesocycleCard key={mesocycle.id!} mesocycle={mesocycle as any} />
+            {Array.from({ length: 3 }, (_, i) => (
+              <MesocycleCardSkeleton key={i} />
             ))}
           </div>
         ) : (
-          <div className="text-center p-8 text-muted-foreground">
-            No mesocycles found matching your search criteria.
-          </div>
+          <>
+            <SearchAndFilterBar
+              onSearch={handleSearch}
+              searchQuery={searchQuery}
+              onFilterChange={handleFilterChange}
+              currentFilter={filterStatus}
+            />
+            {!hasMesocycles && !searchQuery && !filterStatus ? (
+              <EmptyState />
+            ) : hasMesocycles ? (
+              <div className="grid gap-4">
+                {filteredMesocycles.filter((m) => m.id).map((mesocycle) => (
+                  <MesocycleCard key={mesocycle.id!} mesocycle={mesocycle as any} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-8 text-muted-foreground">
+                No mesocycles found matching your search criteria.
+              </div>
+            )}
+          </>
         )}
       </div>
     </DashboardLayout>

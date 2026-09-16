@@ -13,6 +13,8 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { useTrainingSessionsStore } from "@/lib/stores/training-sessions-store";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RowListSkeleton } from "@/components/ui/data-skeletons";
 
 interface WeekContentProps {
   mesocycleId: string;
@@ -87,9 +89,7 @@ export function WeekContent({ mesocycleId, weekNumber }: WeekContentProps) {
     return (
       <Card>
         <CardContent className="p-6">
-          <p className="text-center text-muted-foreground">
-            Cargando sesiones para la semana {weekNumber}...
-          </p>
+          <RowListSkeleton rows={2} />
         </CardContent>
       </Card>
     );
@@ -160,9 +160,11 @@ export function WeekContent({ mesocycleId, weekNumber }: WeekContentProps) {
                       {session.day_of_week != null
                         ? `${dayNames[session.day_of_week]} - `
                         : ""}
-                      {isExercisesLoading
-                        ? "Cargando ejercicios..."
-                        : `${sessionExercises.length} ejercicios`}
+                      {isExercisesLoading ? (
+                        <Skeleton className="mt-1 h-3 w-24" />
+                      ) : (
+                        `${sessionExercises.length} ejercicios`
+                      )}
                     </CardDescription>
                   </div>
                 </div>
@@ -179,9 +181,9 @@ export function WeekContent({ mesocycleId, weekNumber }: WeekContentProps) {
                   <div className="font-medium">Ejercicios</div>
                   <div className="space-y-2">
                     {isExercisesLoading ? (
-                      <p className="text-center text-muted-foreground py-4">
-                        Cargando ejercicios...
-                      </p>
+                      <div className="py-2">
+                        <RowListSkeleton rows={2} />
+                      </div>
                     ) : sessionExercises.length === 0 ? (
                       <p className="text-center text-muted-foreground py-4">
                         No hay ejercicios añadidos a esta sesión

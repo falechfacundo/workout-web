@@ -7,6 +7,7 @@ import { getExercises } from "@/lib/actions/exercises"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface ExerciseProgressChartProps {
   userId: string
@@ -86,7 +87,7 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
       </CardHeader>
       <CardContent>
         {isLoading || isExercisesLoading ? (
-          <div className="flex h-[300px] items-center justify-center">Loading...</div>
+          <Skeleton className="h-[300px] w-full rounded-lg" />
         ) : data.length === 0 ? (
           <div className="flex h-[300px] items-center justify-center text-muted-foreground">
             No data available for {getExerciseName()}

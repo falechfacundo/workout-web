@@ -17,6 +17,11 @@ import { differenceInWeeks } from "date-fns";
 import { WeekContent } from "@/components/dashboard/mesocycles/week-content";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  StatCardSkeleton,
+  RowListSkeleton,
+} from "@/components/ui/data-skeletons";
 
 export default function MesocycleDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +37,33 @@ export default function MesocycleDetailPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-40">
-          <p className="text-muted-foreground">Cargando mesociclo...</p>
+        <div className="grid gap-4 md:gap-8">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-9 shrink-0" />
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-4 w-80 max-w-full" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Skeleton className="h-9 w-36" />
+              <Skeleton className="h-9 w-40" />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+            </CardHeader>
+            <CardContent>
+              <RowListSkeleton rows={2} />
+            </CardContent>
+          </Card>
         </div>
       </DashboardLayout>
     );

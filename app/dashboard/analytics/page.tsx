@@ -5,6 +5,11 @@ import { PerformanceMetrics } from "@/components/dashboard/analytics/performance
 import { VolumeByMuscleGroup } from "@/components/dashboard/analytics/volume-by-muscle-group";
 import { ExerciseProgressChart } from "@/components/dashboard/analytics/exercise-progress-chart";
 import { WorkoutFrequencyChart } from "@/components/dashboard/analytics/workout-frequency-chart";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  StatGridSkeleton,
+  ChartSkeleton,
+} from "@/components/ui/data-skeletons";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
 export default function AnalyticsPage() {
@@ -14,7 +19,18 @@ export default function AnalyticsPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center p-8">Loading analytics data...</div>
+        <div className="grid gap-4 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-8 w-40" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <StatGridSkeleton />
+          <div className="grid gap-4 md:grid-cols-2">
+            <ChartSkeleton />
+            <ChartSkeleton />
+          </div>
+          <ChartSkeleton height={320} />
+        </div>
       </DashboardLayout>
     );
   }

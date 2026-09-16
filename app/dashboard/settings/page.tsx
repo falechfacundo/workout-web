@@ -3,6 +3,7 @@
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import { useRequireAuth } from "@/hooks/use-require-auth"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -17,7 +18,21 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center p-8">Loading settings...</div>
+        <div className="flex flex-col gap-4 md:gap-8">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-72" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-9 w-28" />
+            </CardContent>
+          </Card>
+        </div>
       </DashboardLayout>
     )
   }

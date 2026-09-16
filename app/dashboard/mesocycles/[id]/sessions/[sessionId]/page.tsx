@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ListCardSkeleton } from "@/components/ui/data-skeletons";
 
 export default function TrainingSessionDetailPage() {
   const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
@@ -51,14 +53,18 @@ export default function TrainingSessionDetailPage() {
     return (
       <DashboardLayout>
         <div className="grid gap-4 md:gap-8">
-          <div className="flex flex-col items-center justify-center p-12">
-            <div className="text-center">
-              <h2 className="text-xl font-medium">Cargando sesión...</h2>
-              <p className="text-muted-foreground mt-2">
-                Espera mientras se cargan los datos de la sesión
-              </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-9 shrink-0" />
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-56" />
+                <Skeleton className="h-4 w-64" />
+              </div>
             </div>
+            <Skeleton className="h-9 w-32" />
           </div>
+          <ListCardSkeleton />
+          <ListCardSkeleton />
         </div>
       </DashboardLayout>
     );

@@ -22,7 +22,7 @@ export function MuscleGroupCard({ muscleGroup }: { muscleGroup: MuscleGroup }) {
       </CardHeader>
       <CardContent>
         <div className="text-sm text-muted-foreground">
-          <p>Loading exercise count...</p>
+          <p>{muscleGroup.is_default ? "Default" : "Custom"}</p>
         </div>
       </CardContent>
     </Card>

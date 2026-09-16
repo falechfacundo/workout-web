@@ -35,6 +35,8 @@ import { MuscleGroupVolumeChart } from "@/components/dashboard/workout/muscle-gr
 import { useWorkoutLogsStore } from "@/lib/stores/workout-logs-store";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { ListCardSkeleton } from "@/components/ui/data-skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WorkoutLogsPage() {
   const { user } = useRequireAuth();
@@ -166,10 +168,18 @@ export default function WorkoutLogsPage() {
     return (
       <DashboardLayout>
         <div className="grid gap-4 md:gap-8">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold tracking-tight">Workout Logs</h1>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Workout Logs</h1>
+              <p className="text-muted-foreground">
+                Track and review your workout history.
+              </p>
+            </div>
+            <Skeleton className="h-9 w-40" />
           </div>
-          <div className="flex justify-center p-8">Loading workout logs...</div>
+          <ListCardSkeleton />
+          <ListCardSkeleton />
+          <ListCardSkeleton />
         </div>
       </DashboardLayout>
     );

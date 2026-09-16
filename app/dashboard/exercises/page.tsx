@@ -52,29 +52,7 @@ export default function ExercisesPage() {
     setSelectedMuscleGroup(id === selectedMuscleGroupId ? "" : id);
   };
 
-  if (authLoading || loading) {
-    return (
-      <DashboardLayout>
-        <div className="grid gap-4 md:gap-8">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Exercises</h1>
-              <p className="text-muted-foreground">
-                Manage your exercise library for your training programs.
-              </p>
-            </div>
-          </div>
-          <div className="flex justify-center p-8">Loading exercises...</div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (!user) {
-    return null; // Will be redirected by useRequireAuth
-  }
-
-  if (error) {
+  if (error && !authLoading && !loading) {
     return (
       <DashboardLayout>
         <div className="grid gap-4 md:gap-8">
@@ -126,7 +104,7 @@ export default function ExercisesPage() {
 
         <ExerciseList
           exercises={filteredExercises}
-          isLoading={isLoading}
+          isLoading={authLoading || loading || isLoading}
           searchQuery={searchQuery}
           selectedMuscleGroupId={selectedMuscleGroupId}
         />

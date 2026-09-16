@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useMesocycleTemplatesStore } from "@/lib/stores/mesocycle-templates-store";
 import { getGoalLabel } from "@/components/dashboard/mesocycles/templates/template-card";
+import { StatCardSkeleton } from "@/components/ui/data-skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { MesocycleTemplateWithRelations } from "@/lib/schemas/mesocycle-template";
 
 /**
@@ -54,7 +56,22 @@ export default function TemplateDetailPage() {
           </Link>
         </Button>
 
-        {isLoading && <p className="text-muted-foreground">Cargando…</p>}
+        {isLoading && (
+          <div className="grid gap-4 md:gap-8">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-4 w-80 max-w-full" />
+              </div>
+              <Skeleton className="h-9 w-24" />
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </div>
+          </div>
+        )}
 
         {error && (
           <p className="text-destructive text-sm">{error}</p>
