@@ -185,7 +185,7 @@ export async function protectedAction(id) {
 
 - Passwords are hashed with **bcrypt** (10 rounds) and stored in `users.password_hash`
 - New users from the `signUp` action are `must_change_password = false`
-- Seeded/dev accounts are `must_change_password = true`; the user is forced to `/change-password` (API route `POST /api/auth/change-password`) where they must provide the current password and a new one (min. 8 chars), which updates `password_hash` and clears the flag
+- The seed demo user (`demo@example.com`) is `must_change_password = false` too, so it signs in directly to the dashboard. Accounts that set `must_change_password = true` are forced to `/change-password` (API route `POST /api/auth/change-password`) where they must provide the current password and a new one (min. 8 chars), which updates `password_hash` and clears the flag
 
 ## Best Practices
 
