@@ -88,7 +88,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <SheetContent side="left" className="flex flex-col">
             <nav className="grid gap-2 text-lg font-medium">
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold" onClick={() => setOpen(false)}>
-                <BrandMark className="h-6 w-6 text-primary" />
+                <BrandMark className="h-8 w-8 text-primary" />
                 <span>GymTrack</span>
               </Link>
               {navItems.map((item) => (
@@ -113,7 +113,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </SheetContent>
         </Sheet>
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <BrandMark className="h-6 w-6 text-primary" />
+          <BrandMark className="h-8 w-8 text-primary" />
           <span className="hidden md:inline-block">GymTrack</span>
         </Link>
         <div className="flex-1"></div>
