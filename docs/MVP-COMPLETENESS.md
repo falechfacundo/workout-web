@@ -50,11 +50,12 @@ Este doc es la fuente de verdad del estado por feature y de la deuda técnica. P
 - [ ] **Sin test suite**: agregar al menos smoke tests de auth + CRUD básico.
 - [ ] **`npm audit`** post-install.
 - [ ] **Reset de password por email** no implementado (solo cambio de password con la actual). Requiere SMTP.
-- [ ] **Scoping por `user_id` en queries Prisma**: sin RLS, cada action debe filtrar datos propios. Revisar acciones nuevas.
+- [ ] **Scoping por `user_id` en queries Prisma**: sin RLS, cada action debe filtrar datos propios. `workout-logs.ts`, `training-sessions.ts`, `exercises.ts`, `muscle-groups.ts` y `workout-reminders.ts` ya se auditaron y arreglaron (2026-09-17, ver abajo) — revisar igual cualquier action nueva.
 - [ ] **Session Templates standalone**: sigue sin UI dedicada; hoy se cubre parcialmente vía mesocycle templates + `instantiateMesocycleFromTemplate`.
 
 ### Resuelto recientemente (2026-09-17)
 
+- [x] **IDOR en server actions**: `getWorkoutLog`/`updateWorkoutLog`/`deleteWorkoutLog`/`updateExerciseLogSet`/`deleteExerciseLogSet`/`completeWorkoutLog` (`workout-logs.ts`), `getTrainingSession`/`updateTrainingSession`/`deleteTrainingSession`/`addExerciseToSession`/`updateSessionExercise`/`removeExerciseFromSession`/`reorderSessionExercises`/`updateTrainingSessionStatus` (`training-sessions.ts`), `getExercise`/`updateExercise`/`deleteExercise` (`exercises.ts`), `getMuscleGroup`/`updateMuscleGroup`/`deleteMuscleGroup` (`muscle-groups.ts`) y los cuatro de `workout-reminders.ts` operaban sobre un `id` sin verificar que perteneciera al usuario logueado — cualquier usuario autenticado podía leer/editar/borrar el recurso de otro conociendo (o adivinando) el UUID. Arreglado con `updateMany`/`deleteMany` + chequeo de `count`, o `findFirst` con `OR: [{user_id}, {is_default:true}]` para recursos compartidos (`Exercise`, `MuscleGroup`). Encontrado auditando el contrato de la API mobile.
 - [x] **Analytics en el nav** del sidebar + active state por sub-rutas (antes solo match exacto).
 - [x] **Toggle de tema** light/dark/system en el header (`components/theme-toggle.tsx`).
 - [x] **Workout Player en vivo** (`mesocycles/[id]/sessions/[sessionId]/live`): sets guiados + timer de descanso + guardado del log.

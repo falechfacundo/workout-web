@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
+import { getServerUser } from "@/lib/auth";
 
 const logger = createLogger("training-sessions-actions");
 
@@ -123,9 +124,14 @@ export async function getTrainingSession(id: string) {
     const startTime = performance.now();
     logger.debug("Starting getTrainingSession", { sessionId: id });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     try {
-      const data = await db.trainingSession.findUnique({
-        where: { id },
+      const data = await db.trainingSession.findFirst({
+        where: { id, mesocycle: { user_id: user.id } },
       });
 
       const elapsedTime = Math.round(performance.now() - startTime);
@@ -164,6 +170,11 @@ export async function createTrainingSession(formData: TrainingSessionFormData) {
       mesocycleId: formData.mesocycle_id,
     });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     try {
       const validatedFields = TrainingSessionSchema.safeParse(formData);
 
@@ -191,6 +202,14 @@ export async function createTrainingSession(formData: TrainingSessionFormData) {
         status,
         scheduled_date,
       } = validatedFields.data;
+
+      const mesocycle = await db.mesocycle.findFirst({
+        where: { id: mesocycle_id, user_id: user.id },
+        select: { id: true },
+      });
+      if (!mesocycle) {
+        return { data: null, error: "Mesociclo no encontrado" };
+      }
 
       const data = await db.trainingSession.create({
         data: {
@@ -247,6 +266,11 @@ export async function updateTrainingSession(formData: TrainingSessionFormData) {
       name: formData.name,
     });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     try {
       const validatedFields = TrainingSessionSchema.safeParse(formData);
 
@@ -277,8 +301,8 @@ export async function updateTrainingSession(formData: TrainingSessionFormData) {
         };
       }
 
-      const data = await db.trainingSession.update({
-        where: { id },
+      const { count } = await db.trainingSession.updateMany({
+        where: { id, mesocycle: { user_id: user.id } },
         data: {
           name,
           description: description || null,
@@ -289,6 +313,12 @@ export async function updateTrainingSession(formData: TrainingSessionFormData) {
           completed_date: completed_date ? new Date(completed_date) : null,
         },
       });
+
+      if (count === 0) {
+        return { data: null, error: "Sesión no encontrada" };
+      }
+
+      const data = await db.trainingSession.findFirst({ where: { id } });
 
       const elapsedTime = Math.round(performance.now() - startTime);
 
@@ -326,10 +356,19 @@ export async function deleteTrainingSession(id: string) {
     const startTime = performance.now();
     logger.debug("Starting deleteTrainingSession", { sessionId: id });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     try {
-      await db.trainingSession.delete({
-        where: { id },
+      const { count } = await db.trainingSession.deleteMany({
+        where: { id, mesocycle: { user_id: user.id } },
       });
+
+      if (count === 0) {
+        return { data: null, error: "Sesión no encontrada" };
+      }
 
       const elapsedTime = Math.round(performance.now() - startTime);
 
@@ -361,9 +400,17 @@ export async function getSessionExercises(sessionId: string) {
   const startTime = performance.now();
   logger.debug("Starting getSessionExercises", { sessionId });
 
+  const user = await getServerUser();
+  if (!user?.id) {
+    throw new Error("Debes iniciar sesión");
+  }
+
   try {
     const data = await db.sessionExercise.findMany({
-      where: { training_session_id: sessionId },
+      where: {
+        training_session_id: sessionId,
+        training_session: { mesocycle: { user_id: user.id } },
+      },
       include: {
         exercise: true,
       },
@@ -397,6 +444,11 @@ export async function addExerciseToSession(formData: SessionExerciseFormData) {
     exerciseId: formData.exercise_id,
   });
 
+  const user = await getServerUser();
+  if (!user?.id) {
+    return { error: "Debes iniciar sesión" };
+  }
+
   try {
     const validatedFields = SessionExerciseSchema.safeParse(formData);
 
@@ -428,6 +480,14 @@ export async function addExerciseToSession(formData: SessionExerciseFormData) {
       return {
         error: "Training session ID is required",
       };
+    }
+
+    const ownedSession = await db.trainingSession.findFirst({
+      where: { id: training_session_id, mesocycle: { user_id: user.id } },
+      select: { id: true },
+    });
+    if (!ownedSession) {
+      return { error: "Sesión no encontrada" };
     }
 
     // Get the current highest order value
@@ -500,6 +560,11 @@ export async function updateSessionExercise(formData: SessionExerciseFormData) {
     exerciseId: formData.exercise_id,
   });
 
+  const user = await getServerUser();
+  if (!user?.id) {
+    return { error: "Debes iniciar sesión" };
+  }
+
   try {
     const validatedFields = SessionExerciseSchema.safeParse(formData);
 
@@ -528,8 +593,8 @@ export async function updateSessionExercise(formData: SessionExerciseFormData) {
       };
     }
 
-    await db.sessionExercise.update({
-      where: { id },
+    const { count } = await db.sessionExercise.updateMany({
+      where: { id, training_session: { mesocycle: { user_id: user.id } } },
       data: {
         exercise_id,
         order_index: order_index ?? 0,
@@ -541,6 +606,10 @@ export async function updateSessionExercise(formData: SessionExerciseFormData) {
         notes: notes || null,
       },
     });
+
+    if (count === 0) {
+      return { error: "Ejercicio de sesión no encontrado" };
+    }
 
     // Get the mesocycle ID for the revalidation
     if (training_session_id) {
@@ -586,10 +655,19 @@ export async function removeExerciseFromSession(
     mesocycleId,
   });
 
+  const user = await getServerUser();
+  if (!user?.id) {
+    return { error: "Debes iniciar sesión" };
+  }
+
   try {
-    await db.sessionExercise.delete({
-      where: { id },
+    const { count } = await db.sessionExercise.deleteMany({
+      where: { id, training_session: { mesocycle: { user_id: user.id } } },
     });
+
+    if (count === 0) {
+      return { error: "Ejercicio de sesión no encontrado" };
+    }
 
     const elapsedTime = Math.round(performance.now() - startTime);
 
@@ -627,19 +705,26 @@ export async function reorderSessionExercises(
     exerciseCount: exerciseIds.length,
   });
 
+  const user = await getServerUser();
+  if (!user?.id) {
+    return { error: "Debes iniciar sesión" };
+  }
+
   try {
+    const sessionData = await db.trainingSession.findFirst({
+      where: { id: sessionId, mesocycle: { user_id: user.id } },
+      select: { mesocycle_id: true },
+    });
+    if (!sessionData) {
+      return { error: "Sesión no encontrada" };
+    }
+
     for (let i = 0; i < exerciseIds.length; i++) {
-      await db.sessionExercise.update({
-        where: { id: exerciseIds[i] },
+      await db.sessionExercise.updateMany({
+        where: { id: exerciseIds[i], training_session_id: sessionId },
         data: { order_index: i },
       });
     }
-
-    // Get the mesocycle ID for the revalidation
-    const sessionData = await db.trainingSession.findUnique({
-      where: { id: sessionId },
-      select: { mesocycle_id: true },
-    });
 
     if (sessionData) {
       revalidatePath(
@@ -673,11 +758,22 @@ export async function updateTrainingSessionStatus(id: string, status: string) {
       newStatus: status,
     });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     try {
-      const data = await db.trainingSession.update({
-        where: { id },
+      const { count } = await db.trainingSession.updateMany({
+        where: { id, mesocycle: { user_id: user.id } },
         data: { status },
       });
+
+      if (count === 0) {
+        return { data: null, error: "Sesión no encontrada" };
+      }
+
+      const data = await db.trainingSession.findFirst({ where: { id } });
 
       const elapsedTime = Math.round(performance.now() - startTime);
 

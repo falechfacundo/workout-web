@@ -27,7 +27,9 @@ export async function getWorkoutReminders(userId: string) {
 
     try {
       const data = await db.workoutReminder.findMany({
-        where: { user_id: userId },
+        // user.id de la sesión, no el userId recibido por parámetro — evita
+        // que un cliente pida los recordatorios de otro usuario.
+        where: { user_id: user.id },
         orderBy: { day_of_week: "asc" },
         include: {
           training_session: {
@@ -80,8 +82,8 @@ export async function getWorkoutReminder(id: string) {
     }
 
     try {
-      const data = await db.workoutReminder.findUnique({
-        where: { id },
+      const data = await db.workoutReminder.findFirst({
+        where: { id, user_id: user.id },
         include: {
           training_session: {
             select: {
@@ -150,7 +152,6 @@ export async function createWorkoutReminder(formData: WorkoutReminderFormValues)
       }
 
       const {
-        user_id,
         training_session_id,
         day_of_week,
         time_of_day,
@@ -158,9 +159,21 @@ export async function createWorkoutReminder(formData: WorkoutReminderFormValues)
         notification_type,
       } = validatedFields.data;
 
+      if (training_session_id) {
+        const ownedSession = await db.trainingSession.findFirst({
+          where: { id: training_session_id, mesocycle: { user_id: user.id } },
+          select: { id: true },
+        });
+        if (!ownedSession) {
+          return { data: null, error: "Sesión no encontrada" };
+        }
+      }
+
+      // user_id sale de la sesión, no del formData: si no, cualquiera podría
+      // crear recordatorios a nombre de otro usuario pasando su user_id.
       const data = await db.workoutReminder.create({
         data: {
-          user_id,
+          user_id: user.id,
           training_session_id: training_session_id || null,
           day_of_week: day_of_week ?? null,
           time_of_day: time_of_day || null,
@@ -173,7 +186,7 @@ export async function createWorkoutReminder(formData: WorkoutReminderFormValues)
 
       logger.info("Successfully created workout reminder", {
         reminderId: data?.id,
-        userId: user_id,
+        userId: user.id,
         dayOfWeek: day_of_week,
         elapsedMs: elapsedTime,
       });
@@ -240,8 +253,8 @@ export async function updateWorkoutReminder(formData: WorkoutReminderFormValues)
         };
       }
 
-      const data = await db.workoutReminder.update({
-        where: { id },
+      const { count } = await db.workoutReminder.updateMany({
+        where: { id, user_id: user.id },
         data: {
           training_session_id: training_session_id || null,
           day_of_week: day_of_week ?? null,
@@ -250,6 +263,12 @@ export async function updateWorkoutReminder(formData: WorkoutReminderFormValues)
           notification_type,
         },
       });
+
+      if (count === 0) {
+        return { data: null, error: "Recordatorio no encontrado" };
+      }
+
+      const data = await db.workoutReminder.findFirst({ where: { id } });
 
       const elapsedTime = Math.round(performance.now() - startTime);
 
@@ -293,9 +312,13 @@ export async function deleteWorkoutReminder(id: string) {
     }
 
     try {
-      await db.workoutReminder.delete({
-        where: { id },
+      const { count } = await db.workoutReminder.deleteMany({
+        where: { id, user_id: user.id },
       });
+
+      if (count === 0) {
+        return { data: null, error: "Recordatorio no encontrado" };
+      }
 
       const elapsedTime = Math.round(performance.now() - startTime);
 
@@ -336,10 +359,16 @@ export async function toggleWorkoutReminder(id: string, isEnabled: boolean) {
     }
 
     try {
-      const data = await db.workoutReminder.update({
-        where: { id },
+      const { count } = await db.workoutReminder.updateMany({
+        where: { id, user_id: user.id },
         data: { is_enabled: isEnabled },
       });
+
+      if (count === 0) {
+        return { data: null, error: "Recordatorio no encontrado" };
+      }
+
+      const data = await db.workoutReminder.findFirst({ where: { id } });
 
       const elapsedTime = Math.round(performance.now() - startTime);
 

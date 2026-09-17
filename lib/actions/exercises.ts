@@ -115,8 +115,12 @@ export async function getExercise(id: string) {
     logger.debug("Obteniendo ejercicio por ID", { exerciseId: id });
     const startTime = performance.now();
 
-    const result = await db.exercise.findUnique({
-      where: { id },
+    const user = await getServerUser();
+
+    const result = await db.exercise.findFirst({
+      where: user
+        ? { id, OR: [{ user_id: user.id }, { is_default: true }] }
+        : { id, is_default: true },
       include: {
         primary_muscle_group: { select: { id: true, name: true } },
         exercise_muscle_groups: {
@@ -259,6 +263,11 @@ export async function updateExercise(formData: ExerciseFormValues) {
       exerciseName: formData.name,
     });
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const validatedFields = exerciseFormSchema.safeParse(formData);
 
     if (!validatedFields.success) {
@@ -297,6 +306,14 @@ export async function updateExercise(formData: ExerciseFormValues) {
       primaryMuscleGroupId: primary_muscle_group_id,
       secondaryGroupsCount: secondary_muscle_groups?.length || 0,
     });
+
+    const existing = await db.exercise.findUnique({
+      where: { id },
+      select: { user_id: true, is_default: true },
+    });
+    if (!existing || existing.is_default || existing.user_id !== user.id) {
+      return { data: null, error: "Ejercicio no encontrado" };
+    }
 
     const exercise = await db.exercise.update({
       where: { id },
@@ -352,6 +369,19 @@ export async function deleteExercise(id: string) {
   return safeAction(async () => {
     logger.debug("Iniciando eliminación de ejercicio", { exerciseId: id });
     const startTime = performance.now();
+
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
+    const existing = await db.exercise.findUnique({
+      where: { id },
+      select: { user_id: true, is_default: true },
+    });
+    if (!existing || existing.is_default || existing.user_id !== user.id) {
+      return { data: null, error: "Ejercicio no encontrado" };
+    }
 
     logger.info("Eliminando asociaciones de grupos musculares", {
       exerciseId: id,

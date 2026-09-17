@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { createLogger } from "@/lib/utils/logger";
+import { getServerUser } from "@/lib/auth";
 
 const logger = createLogger("workout-logs-actions");
 
@@ -99,10 +100,15 @@ export async function updateWorkoutLog(
   formData: WorkoutLogFormData
 ): Promise<{ data: WorkoutLogWithSets | null; error: string | null }> {
   try {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const validatedData = WorkoutLogSchema.parse(formData);
 
-    const workoutLog = await db.workoutLog.update({
-      where: { id },
+    const { count } = await db.workoutLog.updateMany({
+      where: { id, user_id: user.id },
       data: {
         training_session_id: validatedData.training_session_id || null,
         mesocycle_id: validatedData.mesocycle_id || null,
@@ -112,9 +118,15 @@ export async function updateWorkoutLog(
         duration_minutes: validatedData.duration_minutes || null,
         rating: validatedData.rating || null,
       },
-      include: {
-        exercise_logs: true,
-      },
+    });
+
+    if (count === 0) {
+      return { data: null, error: "Registro de entrenamiento no encontrado" };
+    }
+
+    const workoutLog = await db.workoutLog.findFirst({
+      where: { id, user_id: user.id },
+      include: { exercise_logs: true },
     });
 
     return { data: workoutLog as WorkoutLogWithSets, error: null };
@@ -133,9 +145,18 @@ export async function deleteWorkoutLog(
   id: string
 ): Promise<{ error: string | null }> {
   try {
-    await db.workoutLog.delete({
-      where: { id },
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { error: "Debes iniciar sesión" };
+    }
+
+    const { count } = await db.workoutLog.deleteMany({
+      where: { id, user_id: user.id },
     });
+
+    if (count === 0) {
+      return { error: "Registro de entrenamiento no encontrado" };
+    }
 
     return { error: null };
   } catch {
@@ -147,8 +168,13 @@ export async function getWorkoutLog(
   id: string
 ): Promise<{ data: WorkoutLogWithSets | null; error: string | null }> {
   try {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const workoutLog = await db.workoutLog.findFirst({
-      where: { id },
+      where: { id, user_id: user.id },
       include: {
         exercise_logs: true,
       },
@@ -240,7 +266,23 @@ export async function createExerciseLogSet(formData: ExerciseLogSetFormData): Pr
   error: string | null;
 }> {
   try {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const validatedData = ExerciseLogSetSchema.parse(formData);
+
+    // El set se cuelga de un workout_log por FK — verificar que ese log sea
+    // del usuario actual, si no cualquiera podría agregar sets al
+    // entrenamiento de otro pasando su workout_log_id.
+    const workoutLog = await db.workoutLog.findFirst({
+      where: { id: validatedData.workout_log_id!, user_id: user.id },
+      select: { id: true },
+    });
+    if (!workoutLog) {
+      return { data: null, error: "Registro de entrenamiento no encontrado" };
+    }
 
     const exerciseLog = await db.exerciseLog.create({
       data: {
@@ -271,10 +313,15 @@ export async function updateExerciseLogSet(
   error: string | null;
 }> {
   try {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const validatedData = ExerciseLogSetSchema.parse(formData);
 
-    const exerciseLog = await db.exerciseLog.update({
-      where: { id },
+    const { count } = await db.exerciseLog.updateMany({
+      where: { id, workout_log: { user_id: user.id } },
       data: {
         exercise_id: validatedData.exercise_id,
         set_number: validatedData.set_number,
@@ -284,6 +331,12 @@ export async function updateExerciseLogSet(
         notes: validatedData.notes || null,
       },
     });
+
+    if (count === 0) {
+      return { data: null, error: "Set no encontrado" };
+    }
+
+    const exerciseLog = await db.exerciseLog.findUnique({ where: { id } });
 
     return { data: exerciseLog, error: null };
   } catch (error) {
@@ -298,9 +351,18 @@ export async function deleteExerciseLogSet(
   id: string
 ): Promise<{ error: string | null }> {
   try {
-    await db.exerciseLog.delete({
-      where: { id },
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { error: "Debes iniciar sesión" };
+    }
+
+    const { count } = await db.exerciseLog.deleteMany({
+      where: { id, workout_log: { user_id: user.id } },
     });
+
+    if (count === 0) {
+      return { error: "Set no encontrado" };
+    }
 
     return { error: null };
   } catch {
@@ -313,8 +375,13 @@ export async function completeWorkoutLog(
   duration: number,
   notes?: string
 ) {
-  await db.workoutLog.update({
-    where: { id },
+  const user = await getServerUser();
+  if (!user?.id) {
+    return;
+  }
+
+  const { count } = await db.workoutLog.updateMany({
+    where: { id, user_id: user.id },
     data: {
       end_time: new Date(),
       duration_minutes: duration,
@@ -322,13 +389,20 @@ export async function completeWorkoutLog(
     },
   });
 
+  if (count === 0) {
+    return;
+  }
+
   revalidatePath("/dashboard/workout-logs");
   redirect("/dashboard/workout-logs");
 }
 
 export async function getWorkoutSets(workoutId: string) {
+  const user = await getServerUser();
+  if (!user?.id) return [];
+
   const data = await db.exerciseLog.findMany({
-    where: { workout_log_id: workoutId },
+    where: { workout_log_id: workoutId, workout_log: { user_id: user.id } },
     include: {
       exercise: true,
     },

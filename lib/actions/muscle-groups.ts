@@ -33,8 +33,12 @@ export async function getMuscleGroups() {
 
 export async function getMuscleGroup(id: string) {
   return safeAction(async () => {
-    const data = await db.muscleGroup.findUnique({
-      where: { id },
+    const user = await getServerUser();
+
+    const data = await db.muscleGroup.findFirst({
+      where: user
+        ? { id, OR: [{ user_id: user.id }, { is_default: true }] }
+        : { id, is_default: true },
     });
 
     if (!data) {
@@ -91,6 +95,11 @@ export async function createMuscleGroup(data: MuscleGroupFormData) {
 
 export async function updateMuscleGroup(data: { id: string; name: string }) {
   return safeAction(async () => {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "You must be logged in" };
+    }
+
     const existingGroup = await db.muscleGroup.findUnique({
       where: { id: data.id },
     });
@@ -109,6 +118,13 @@ export async function updateMuscleGroup(data: { id: string; name: string }) {
       };
     }
 
+    if (existingGroup.user_id !== user.id) {
+      return {
+        data: null,
+        error: "Muscle group not found",
+      };
+    }
+
     const updatedMuscleGroup = await db.muscleGroup.update({
       where: { id: data.id },
       data: { name: data.name },
@@ -123,6 +139,11 @@ export async function updateMuscleGroup(data: { id: string; name: string }) {
 
 export async function deleteMuscleGroup(id: string) {
   return safeAction(async () => {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "You must be logged in" };
+    }
+
     if (!id) {
       return {
         data: null,
@@ -145,6 +166,13 @@ export async function deleteMuscleGroup(id: string) {
       return {
         data: null,
         error: "Default muscle groups cannot be deleted",
+      };
+    }
+
+    if (existingGroup.user_id !== user.id) {
+      return {
+        data: null,
+        error: "Muscle group not found",
       };
     }
 
