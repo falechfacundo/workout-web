@@ -3,7 +3,9 @@
 import { useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useTrainingSessionsStore } from "@/lib/stores/training-sessions-store";
-import { ArrowLeft, Dumbbell, Plus } from "lucide-react";
+import { ArrowLeft, Copy, Dumbbell, Play, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { duplicateTrainingSession } from "@/lib/actions/mesocycles";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -131,14 +133,43 @@ export default function TrainingSessionDetailPage() {
               </p>
             </div>
           </div>
-          <Button asChild>
-            <Link
-              href={`/dashboard/mesocycles/${id}/sessions/${sessionId}/exercises/new`}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              title="Duplicar sesión"
+              onClick={async () => {
+                const result = await duplicateTrainingSession(sessionId);
+                if (result.error || !result.data) {
+                  toast.error(result.error || "Error al duplicar la sesión");
+                } else {
+                  toast.success("Sesión duplicada");
+                  router.push(`/dashboard/mesocycles/${id}`);
+                }
+              }}
             >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Exercise
-            </Link>
-          </Button>
+              <Copy className="h-4 w-4" />
+              <span className="sr-only">Duplicar sesión</span>
+            </Button>
+            {sessionExercises.length > 0 && (
+              <Button asChild>
+                <Link
+                  href={`/dashboard/mesocycles/${id}/sessions/${sessionId}/live`}
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  Start Workout
+                </Link>
+              </Button>
+            )}
+            <Button variant="outline" asChild>
+              <Link
+                href={`/dashboard/mesocycles/${id}/sessions/${sessionId}/exercises/new`}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Exercise
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {currentSession.description && (

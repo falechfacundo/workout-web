@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { getWorkoutFrequency } from "@/lib/actions/analytics"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -78,7 +78,18 @@ export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
                 <XAxis dataKey="date" tickLine={false} axisLine={false} />
                 <YAxis tickLine={false} axisLine={false} tickFormatter={(value: string | number) => `${value}`} />
                 <Tooltip content={<ChartTooltipContent indicator="dashed" />} />
-                <Bar dataKey="count" fill="var(--color-count)" radius={4} name="Workouts" />
+                <Bar dataKey="count" fill="var(--color-count)" radius={4} name="Workouts">
+                  {data.map((_, index) => (
+                    <Cell
+                      key={index}
+                      fill={
+                        index === data.length - 1
+                          ? "hsl(var(--primary))"
+                          : "hsl(var(--chart-2))"
+                      }
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>

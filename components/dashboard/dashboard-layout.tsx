@@ -5,12 +5,13 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, Calendar, Dumbbell, LayoutDashboard, LogOut, Menu, Settings, Target, User } from "lucide-react"
+import { BarChart3, Calendar, ClipboardList, Dumbbell, LayoutDashboard, LogOut, Menu, Settings, Target, User } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface NavItem {
   title: string
@@ -40,6 +41,11 @@ const navItems: NavItem[] = [
     icon: <Dumbbell className="h-5 w-5" />,
   },
   {
+    title: "Analytics",
+    href: "/dashboard/analytics",
+    icon: <BarChart3 className="h-5 w-5" />,
+  },
+  {
     title: "Mesocycles",
     href: "/dashboard/mesocycles",
     icon: <Calendar className="h-5 w-5" />,
@@ -47,7 +53,7 @@ const navItems: NavItem[] = [
   {
     title: "Workout Logs",
     href: "/dashboard/workout-logs",
-    icon: <BarChart3 className="h-5 w-5" />,
+    icon: <ClipboardList className="h-5 w-5" />,
   },
   {
     title: "Profile",
@@ -64,6 +70,9 @@ const navItems: NavItem[] = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+
+  const isActive = (href: string) =>
+    href === "/dashboard" ? pathname === href : pathname.startsWith(href)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -87,8 +96,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-accent",
-                    pathname === item.href ? "bg-accent" : "transparent",
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium uppercase tracking-widest hover:bg-accent",
+                    isActive(item.href) ? "bg-accent" : "transparent",
                   )}
                 >
                   {item.icon}
@@ -107,6 +116,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <span className="hidden md:inline-block">GymTrack</span>
         </Link>
         <div className="flex-1"></div>
+        <ThemeToggle />
         <Button variant="outline" size="icon" className="rounded-full">
           <User className="h-5 w-5" />
           <span className="sr-only">User menu</span>
@@ -120,8 +130,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-accent",
-                  pathname === item.href ? "bg-accent" : "transparent",
+                  "flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium uppercase tracking-widest hover:bg-accent",
+                  isActive(item.href) ? "bg-accent" : "transparent",
                 )}
               >
                 {item.icon}

@@ -5,6 +5,8 @@ import { PerformanceMetrics } from "@/components/dashboard/analytics/performance
 import { VolumeByMuscleGroup } from "@/components/dashboard/analytics/volume-by-muscle-group";
 import { ExerciseProgressChart } from "@/components/dashboard/analytics/exercise-progress-chart";
 import { WorkoutFrequencyChart } from "@/components/dashboard/analytics/workout-frequency-chart";
+import { ConsistencyCard } from "@/components/dashboard/analytics/consistency-card";
+import { PersonalRecordsCard } from "@/components/dashboard/analytics/personal-records-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   StatGridSkeleton,
@@ -56,7 +58,12 @@ export default function AnalyticsPage() {
           <ExerciseProgressChart userId={user.id} />
         </div>
 
-        <WorkoutFrequencyChart userId={user.id} />
+        <div className="grid gap-4 md:grid-cols-2">
+          <WorkoutFrequencyChart userId={user.id} />
+          <ConsistencyCard userId={user.id} />
+        </div>
+
+        <PersonalRecordsCard userId={user.id} />
       </div>
     </DashboardLayout>
   );

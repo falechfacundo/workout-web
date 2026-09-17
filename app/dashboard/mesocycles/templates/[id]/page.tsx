@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useMesocycleTemplatesStore } from "@/lib/stores/mesocycle-templates-store";
 import { getGoalLabel } from "@/components/dashboard/mesocycles/templates/template-card";
+import { InstantiateTemplateDialog } from "@/components/dashboard/mesocycles/templates/instantiate-template-dialog";
 import { StatCardSkeleton } from "@/components/ui/data-skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MesocycleTemplateWithRelations } from "@/lib/schemas/mesocycle-template";
@@ -88,11 +89,18 @@ export default function TemplateDetailPage() {
                   {template.description || "Sin descripción"}
                 </p>
               </div>
-              <Button asChild>
-                <Link href={`/dashboard/mesocycles/templates/${template.id}/edit`}>
-                  Editar
-                </Link>
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <InstantiateTemplateDialog
+                  templateId={template.id ?? ""}
+                  templateName={template.name ?? "Plantilla"}
+                  durationWeeks={template.duration_weeks}
+                />
+                <Button asChild>
+                  <Link href={`/dashboard/mesocycles/templates/${template.id}/edit`}>
+                    Editar
+                  </Link>
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">

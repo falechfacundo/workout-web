@@ -307,3 +307,193 @@ export async function getPerformanceMetrics(userId: string) {
     }
   });
 }
+
+export async function getPersonalRecords(userId: string, limit = 10) {
+  return safeAction(async () => {
+    const workoutLogs = await db.workoutLog.findMany({
+      where: { user_id: userId },
+      select: { id: true },
+    });
+
+    if (!workoutLogs?.length) {
+      return [];
+    }
+
+    const workoutIds = workoutLogs.map((w) => w.id);
+
+    const sets = await db.exerciseLog.findMany({
+      where: {
+        workout_log_id: { in: workoutIds },
+        weight: { not: null },
+      },
+      select: {
+        exercise_id: true,
+        reps: true,
+        weight: true,
+        workout_log: { select: { date: true } },
+        exercise: { select: { name: true } },
+      },
+    });
+
+    interface PersonalRecord {
+      exercise_id: string;
+      exercise_name: string;
+      best_weight: number;
+      best_reps: number;
+      estimated_1rm: number;
+      achieved_at: Date | string;
+    }
+
+    const prMap = new Map<string, PersonalRecord>();
+
+    for (const set of sets) {
+      const weight = Number(set.weight) || 0;
+      if (weight <= 0) continue;
+      const estimated1rm = weight * (1 + set.reps / 30);
+      const current = prMap.get(set.exercise_id);
+      if (!current || estimated1rm > current.estimated_1rm) {
+        prMap.set(set.exercise_id, {
+          exercise_id: set.exercise_id,
+          exercise_name: set.exercise?.name || "Unknown",
+          best_weight: weight,
+          best_reps: set.reps,
+          estimated_1rm: estimated1rm,
+          achieved_at: set.workout_log.date,
+        });
+      }
+    }
+
+    return Array.from(prMap.values())
+      .sort((a, b) => b.estimated_1rm - a.estimated_1rm)
+      .slice(0, limit);
+  });
+}
+
+export async function getWorkoutStreak(userId: string) {
+  return safeAction(async () => {
+    const logs = await db.workoutLog.findMany({
+      where: { user_id: userId },
+      select: { date: true },
+      orderBy: { date: "desc" },
+      take: 365,
+    });
+
+    const dateSet = new Set(
+      (logs || []).map((l) => new Date(l.date).toISOString().split("T")[0])
+    );
+
+    const dayMs = 24 * 60 * 60 * 1000;
+
+    let currentStreak = 0;
+    const cursor = new Date();
+    cursor.setHours(12, 0, 0, 0);
+    if (!dateSet.has(cursor.toISOString().split("T")[0])) {
+      cursor.setTime(cursor.getTime() - dayMs);
+    }
+    while (dateSet.has(cursor.toISOString().split("T")[0])) {
+      currentStreak++;
+      cursor.setTime(cursor.getTime() - dayMs);
+    }
+
+    const sortedDates = Array.from(dateSet).sort();
+    let longestStreak = 0;
+    let run = 0;
+    let prevTime: number | null = null;
+    for (const d of sortedDates) {
+      const time = new Date(`${d}T12:00:00`).getTime();
+      run = prevTime !== null && time - prevTime === dayMs ? run + 1 : 1;
+      longestStreak = Math.max(longestStreak, run);
+      prevTime = time;
+    }
+
+    return {
+      currentStreak,
+      longestStreak,
+      lastWorkout: sortedDates.length
+        ? sortedDates[sortedDates.length - 1]
+        : null,
+    };
+  });
+}
+
+export async function getWorkoutHeatmap(userId: string, weeks = 20) {
+  return safeAction(async () => {
+    const start = new Date();
+    start.setDate(start.getDate() - weeks * 7);
+
+    const logs = await db.workoutLog.findMany({
+      where: {
+        user_id: userId,
+        date: { gte: start },
+      },
+      select: { date: true },
+    });
+
+    const counts = new Map<string, number>();
+    for (const log of logs || []) {
+      const key = new Date(log.date).toISOString().split("T")[0];
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+
+    return Array.from(counts.entries()).map(([date, count]) => ({
+      date,
+      count,
+    }));
+  });
+}
+
+export async function getMesocycleCompliance(mesocycleId: string) {
+  return safeAction(async () => {
+    const mesocycle = await db.mesocycle.findUnique({
+      where: { id: mesocycleId },
+      select: { id: true, name: true, start_date: true, end_date: true },
+    });
+
+    if (!mesocycle) {
+      return { data: null, error: "Mesociclo no encontrado" };
+    }
+
+    const sessions = await db.trainingSession.findMany({
+      where: { mesocycle_id: mesocycleId },
+      select: {
+        id: true,
+        status: true,
+        scheduled_date: true,
+        completed_date: true,
+      },
+    });
+
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    const totalSessions = sessions.length;
+    const completedSessions = sessions.filter(
+      (s) => s.status === "completed"
+    ).length;
+    const dueSessions = sessions.filter(
+      (s) => s.scheduled_date && new Date(s.scheduled_date) <= today
+    ).length;
+    const overdueSessions = sessions.filter(
+      (s) =>
+        s.status !== "completed" &&
+        s.scheduled_date &&
+        new Date(s.scheduled_date) < today
+    ).length;
+
+    return {
+      data: {
+        mesocycleId,
+        name: mesocycle.name,
+        totalSessions,
+        completedSessions,
+        dueSessions,
+        overdueSessions,
+        compliance:
+          dueSessions > 0
+            ? Math.round((completedSessions / dueSessions) * 100)
+            : null,
+      },
+      error: null,
+    };
+  });
+}

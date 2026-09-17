@@ -9,12 +9,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Edit, Plus, Target } from "lucide-react";
+import { ArrowLeft, Copy, Edit, Plus, Target } from "lucide-react";
+import { toast } from "sonner";
+import { duplicateMesocycle } from "@/lib/actions/mesocycles";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { differenceInWeeks } from "date-fns";
 import { WeekContent } from "@/components/dashboard/mesocycles/week-content";
+import { ComplianceCard } from "@/components/dashboard/mesocycles/compliance-card";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +28,7 @@ import {
 
 export default function MesocycleDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { currentMesocycle, fetchMesocycle, isLoading, error } =
     useMesocyclesStore();
 
@@ -140,6 +144,23 @@ export default function MesocycleDetailPage() {
             </div>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              size="icon"
+              title="Duplicar mesociclo"
+              onClick={async () => {
+                const result = await duplicateMesocycle(id);
+                if (result.error || !result.data) {
+                  toast.error(result.error || "Error al duplicar el mesociclo");
+                } else {
+                  toast.success("Mesociclo duplicado");
+                  router.push(`/dashboard/mesocycles/${result.data.id}`);
+                }
+              }}
+            >
+              <Copy className="h-4 w-4" />
+              <span className="sr-only">Duplicar mesociclo</span>
+            </Button>
             <Button variant="outline" asChild>
               <Link href={`/dashboard/mesocycles/edit/${id}`}>
                 <Edit className="mr-2 h-4 w-4" />
@@ -250,6 +271,8 @@ export default function MesocycleDetailPage() {
             </CardContent>
           </Card>
         </div>
+        <ComplianceCard mesocycleId={id} />
+
         <Tabs defaultValue={`week${currentWeek}`}>
           <div className="flex items-center justify-between">
             <TabsList className="overflow-auto">
