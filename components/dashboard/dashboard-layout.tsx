@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { BrandMark } from "@/components/brand-mark"
 
 interface NavItem {
   title: string
@@ -87,7 +88,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <SheetContent side="left" className="flex flex-col">
             <nav className="grid gap-2 text-lg font-medium">
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold" onClick={() => setOpen(false)}>
-                <Dumbbell className="h-6 w-6 text-primary" />
+                <BrandMark className="h-6 w-6 text-primary" />
                 <span>GymTrack</span>
               </Link>
               {navItems.map((item) => (
@@ -112,7 +113,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </SheetContent>
         </Sheet>
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Dumbbell className="h-6 w-6 text-primary" />
+          <BrandMark className="h-6 w-6 text-primary" />
           <span className="hidden md:inline-block">GymTrack</span>
         </Link>
         <div className="flex-1"></div>
