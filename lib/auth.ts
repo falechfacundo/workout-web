@@ -1,6 +1,8 @@
 import type { AuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { encode as encodeJwt, decode as decodeJwt } from "next-auth/jwt";
+import type { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
@@ -73,4 +75,66 @@ export const authOptions: AuthOptions = {
 export async function getServerUser() {
   const session = await getServerSession(authOptions);
   return session?.user ?? null;
+}
+
+export type ApiUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  mustChangePassword: boolean;
+};
+
+const MOBILE_TOKEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
+
+/**
+ * Firma un JWT (mismo formato/algoritmo que la sesión de NextAuth) para
+ * clientes que no pueden mantener cookies, como la app mobile. Se manda
+ * como `Authorization: Bearer <token>`.
+ */
+export async function signMobileToken(user: ApiUser): Promise<string> {
+  return encodeJwt({
+    token: { id: user.id, email: user.email, name: user.name, mustChangePassword: user.mustChangePassword },
+    secret: process.env.NEXTAUTH_SECRET as string,
+    maxAge: MOBILE_TOKEN_MAX_AGE,
+  });
+}
+
+/**
+ * Resuelve el usuario autenticado para route handlers consumidos por la app
+ * mobile: primero intenta el bearer token (app RN), y si no hay, cae a la
+ * cookie de sesión de NextAuth (útil para probar desde el browser).
+ */
+export async function getApiUser(req: NextRequest): Promise<ApiUser | null> {
+  const authHeader = req.headers.get("authorization");
+  const bearerToken = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1];
+
+  if (bearerToken) {
+    try {
+      const decoded = await decodeJwt({
+        token: bearerToken,
+        secret: process.env.NEXTAUTH_SECRET as string,
+      });
+      if (decoded?.id && decoded?.email) {
+        return {
+          id: decoded.id,
+          email: decoded.email,
+          name: (decoded.name as string | null) ?? null,
+          mustChangePassword: !!decoded.mustChangePassword,
+        };
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || !session.user.email) return null;
+
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name ?? null,
+    mustChangePassword: !!session.user.mustChangePassword,
+  };
 }
