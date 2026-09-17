@@ -49,6 +49,24 @@ interface PerformedSet {
   isDone: boolean;
 }
 
+export interface LastPerformance {
+  exercise_id: string;
+  exercise_name: string;
+  date: string;
+  weight: number | null;
+  reps: number;
+  rir: number | null;
+}
+
+function initialSets(ex: PlayerExercise, last?: LastPerformance): PerformedSet[] {
+  return Array.from({ length: Math.max(1, ex.sets) }, () => ({
+    weight: last?.weight != null ? String(last.weight) : "",
+    reps: last?.reps != null ? String(last.reps) : "",
+    rir: last?.rir != null ? String(last.rir) : "",
+    isDone: false,
+  }));
+}
+
 export interface WorkoutResult {
   logId: string;
 }
@@ -93,6 +111,7 @@ interface LiveWorkoutProps {
   sessionName: string;
   sessionHref: string;
   exercises: PlayerExercise[];
+  lastPerformance?: Record<string, LastPerformance>;
   onSaved?: (result: WorkoutResult) => void;
 }
 
@@ -103,6 +122,7 @@ export function LiveWorkout({
   sessionName,
   sessionHref,
   exercises,
+  lastPerformance,
   onSaved,
 }: LiveWorkoutProps) {
   const [startedAt] = useState(() => new Date());
@@ -116,7 +136,7 @@ export function LiveWorkout({
     Object.fromEntries(
       exercises.map((ex) => [
         ex.id,
-        Array.from({ length: Math.max(1, ex.sets) }, () => emptySet()),
+        initialSets(ex, lastPerformance?.[ex.exercise_id]),
       ])
     )
   );
@@ -342,6 +362,13 @@ export function LiveWorkout({
                         ? ` — descanso ${exercise.rest_between_sets}s`
                         : ""}
                     </CardDescription>
+                    {lastPerformance?.[exercise.exercise_id] && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Última vez ({new Date(
+                          lastPerformance[exercise.exercise_id].date
+                        ).toLocaleDateString()}): {lastPerformance[exercise.exercise_id].weight ?? "—"} kg × {lastPerformance[exercise.exercise_id].reps}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardHeader>

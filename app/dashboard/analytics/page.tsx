@@ -7,6 +7,8 @@ import { ExerciseProgressChart } from "@/components/dashboard/analytics/exercise
 import { WorkoutFrequencyChart } from "@/components/dashboard/analytics/workout-frequency-chart";
 import { ConsistencyCard } from "@/components/dashboard/analytics/consistency-card";
 import { PersonalRecordsCard } from "@/components/dashboard/analytics/personal-records-card";
+import { BodyMapCard } from "@/components/dashboard/analytics/body-map-card";
+import { RirTrendCard } from "@/components/dashboard/analytics/rir-trend-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   StatGridSkeleton,
@@ -62,6 +64,13 @@ export default function AnalyticsPage() {
           <WorkoutFrequencyChart userId={user.id} />
           <ConsistencyCard userId={user.id} />
         </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <RirTrendCard userId={user.id} />
+          <BodyMapCard userId={user.id} />
+        </div>
+
+        <BodyMapCard userId={user.id} />
 
         <PersonalRecordsCard userId={user.id} />
       </div>

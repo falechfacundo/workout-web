@@ -18,6 +18,8 @@ import { useParams, useRouter } from "next/navigation";
 import { differenceInWeeks } from "date-fns";
 import { WeekContent } from "@/components/dashboard/mesocycles/week-content";
 import { ComplianceCard } from "@/components/dashboard/mesocycles/compliance-card";
+import { BodyMapCard } from "@/components/dashboard/analytics/body-map-card";
+import { BlockComparisonCard } from "@/components/dashboard/mesocycles/block-comparison-card";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -272,6 +274,8 @@ export default function MesocycleDetailPage() {
           </Card>
         </div>
         <ComplianceCard mesocycleId={id} />
+        <BodyMapCard userId={currentMesocycle.user_id} mesocycleId={id} />
+        <BlockComparisonCard mesocycleId={id} />
 
         <Tabs defaultValue={`week${currentWeek}`}>
           <div className="flex items-center justify-between">

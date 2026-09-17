@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
@@ -10,15 +10,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ListCardSkeleton } from "@/components/ui/data-skeletons";
 import { useTrainingSessionsStore } from "@/lib/stores/training-sessions-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { getLastExercisePerformance } from "@/lib/actions/analytics";
 import {
   LiveWorkout,
   type PlayerExercise,
+  type LastPerformance,
 } from "@/components/dashboard/workout/live-workout";
 
 export default function LiveSessionPage() {
   const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
   const router = useRouter();
   const { user, isLoading: authLoading } = useRequireAuth();
+  const [lastPerformance, setLastPerformance] = useState<
+    Record<string, LastPerformance>
+  >({});
   const {
     currentSession,
     sessionExercises,
@@ -44,6 +49,20 @@ export default function LiveSessionPage() {
     load();
     return () => reset();
   }, [sessionId, fetchSession, fetchSessionExercises, reset]);
+
+  useEffect(() => {
+    if (!user) return;
+    getLastExercisePerformance(user.id)
+      .then((result) => {
+        const list = (result.data as LastPerformance[]) || [];
+        setLastPerformance(
+          Object.fromEntries(list.map((p) => [p.exercise_id, p]))
+        );
+      })
+      .catch((err) =>
+        console.error("Error loading last exercise performance:", err)
+      );
+  }, [user]);
 
   if (authLoading || (isLoading && !currentSession)) {
     return (
@@ -101,6 +120,7 @@ export default function LiveSessionPage() {
         sessionName={currentSession.name}
         sessionHref={`/dashboard/mesocycles/${id}/sessions/${sessionId}`}
         exercises={sessionExercises as unknown as PlayerExercise[]}
+        lastPerformance={lastPerformance}
         onSaved={(result) => router.push(`/dashboard/workout-logs/${result.logId}`)}
       />
     </DashboardLayout>
