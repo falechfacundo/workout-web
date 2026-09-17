@@ -70,8 +70,6 @@ export default function AnalyticsPage() {
           <BodyMapCard userId={user.id} />
         </div>
 
-        <BodyMapCard userId={user.id} />
-
         <PersonalRecordsCard userId={user.id} />
       </div>
     </DashboardLayout>
