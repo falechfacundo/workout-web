@@ -1,6 +1,6 @@
 # MVP Completeness Checklist — Estado en Producción
 
-Estado: **En producción.** Actualizado al 2026-09-17 tras el deploy en Vercel (Supabase solo como Postgres vía Prisma + NextAuth v4).
+Estado: **En producción.** Actualizado al 2026-09-17 (fix de bug de datos en Mediciones, rate limiting real de login, Google Sign-In). Deploy en Vercel (Supabase solo como Postgres vía Prisma + NextAuth v4).
 
 Este doc es la fuente de verdad del estado por feature y de la deuda técnica. Para agentes/desarrolladores: leé también [AGENTS.md](../AGENTS.md) (advertencias de producción y verificación obligatoria).
 
@@ -23,12 +23,13 @@ Este doc es la fuente de verdad del estado por feature y de la deuda técnica. P
 | Training Sessions (crear/editar) | `mesocycles/[id]/sessions/new`, `[id]/sessions/[sessionId]` | ✅ Listo | Sí | Persisten vía `createTrainingSession`/`updateTrainingSession` (BL-1 resuelto). Detalle con botones "Start Workout" y duplicar sesión. |
 | Workout Logs | `/dashboard/workout-logs` (+ `new`, `[id]`) | ✅ Listo | Sí | `?template=<sessionId>` preselecciona la sesión en el form (BL-3 resuelto). |
 | Workout Player (en vivo) | `mesocycles/[id]/sessions/[sessionId]/live` | ✅ Listo | Sí | Sesión guiada set por set: peso/reps/RIR con placeholder del plan, checkbox por set, "Add set", timer de descanso automático desde `rest_between_sets` (+30s, skip, chime), guardado del log + status `completed` de la sesión. |
-| Profile & Measurements | `/dashboard/profile` | ✅ Listo | Sí | Envuelto en `DashboardLayout`; forms de perfil + historial de medidas. Las actions de measurements siguen siendo stubs (ver deuda). |
-| Settings | `/dashboard/settings` | ✅ Listo | Sí | Sign out desde aquí y desde el sidebar. |
+| Profile & Measurements | `/dashboard/profile` | ✅ Listo | Sí | Envuelto en `DashboardLayout`; forms de perfil + historial de medidas. `add/update/deleteMeasurement` cablean datos reales y escopan por `id` + `user_id` (antes afectaban todas las mediciones del usuario). |
+| Settings | `/dashboard/settings` | ✅ Listo | Sí | Sign out desde aquí y desde el sidebar. Card de Google (vincular/desvincular). |
+| Google Sign-In | `/auth/login`, `/auth/register`, `/dashboard/settings` | ✅ Listo | Sí | Login/registro con Google; sin auto-linking por email (`OAuthAccountNotLinked` si el email ya tiene password) — vinculación manual desde Settings vía `/api/google-link`. |
 | Sign out | `SignOutButton` en layout/settings | ✅ Listo | Sí | |
 | Tema claro/oscuro | next-themes | ✅ Listo | Sí | `ThemeProvider` en `app/layout.tsx` + `ThemeToggle` (light/dark/system) en el header del dashboard. |
 | Insights | analytics + `mesocycles/[id]` | ✅ Listo | Sí | PRs automáticos (`getPersonalRecords`, Epley), consistencia con heatmap 20 semanas + streaks (`getWorkoutStreak`, `getWorkoutHeatmap`), compliance por mesociclo (`getMesocycleCompliance`). |
-| Auth (middleware + sesión) | `proxy.ts` (NextAuth `withAuth`) + `lib/auth.ts` | ✅ Listo | Sí | NextAuth v4 (Credentials + bcrypt) + Prisma. Seed demo con `must_change_password = false`. |
+| Auth (middleware + sesión) | `proxy.ts` (NextAuth `withAuth`) + `lib/auth.ts` | ✅ Listo | Sí | NextAuth v4 (Credentials + bcrypt, `password_hash` nullable para cuentas Google) + Prisma. Rate limiting real de login (`login_attempts`, 5 intentos / 15 min). Seed demo con `must_change_password = false`. |
 | Loaders del dashboard | skeletons shadcn | ✅ Listo | Sí | Shell de cada página siempre visible; skeletons en zonas de datos (`components/ui/data-skeletons.tsx` + `loading.tsx` por segmento). |
 | Planificación avanzada | actions en `lib/actions/mesocycles.ts` | ✅ Listo | Sí | Duplicar sesión/mesociclo + instanciar mesociclo desde template con fecha de inicio (`instantiateMesocycleFromTemplate`, diálogo "Usar Plantilla"). |
 
@@ -37,15 +38,14 @@ Este doc es la fuente de verdad del estado por feature y de la deuda técnica. P
 | Chequeo | Resultado |
 |---|---|
 | `npx tsc --noEmit` | 0 errores |
-| `npm run lint` | 0 errores, ~135 warnings `no-explicit-any` (preexistentes, no agregar nuevos) |
+| `npm run lint` | 0 errores, ~132 warnings `no-explicit-any` (preexistentes, no agregar nuevos) |
 | `npm run build` | Pasa (16.2.12, Turbopack) — verificado 2026-09-17 |
 
 ## Deuda técnica (post-MVP)
 
-- [ ] **~135 warnings `no-explicit-any`**: tipar contra `lib/schemas/*` (Zod) o los tipos de Prisma. No agregar `any` nuevos.
-- [ ] **`lib/utils/rate-limiter.ts` es no-op** (siempre permite): el rate limiting real del login debe ir del lado servidor. La app está expuesta en prod: priorizar.
-- [ ] **`lib/actions/measurements.ts` son stubs**: `getMeasurements()` sin args; `add/update/deleteMeasurement()` no-arg. Cablearlas al dominio real o eliminar.
+- [ ] **~132 warnings `no-explicit-any`**: tipar contra `lib/schemas/*` (Zod) o los tipos de Prisma. No agregar `any` nuevos.
 - [ ] **Toasts duplicados**: `hooks/use-toast.ts` vs `components/ui/use-toast.ts` — unificar.
+- [ ] **Unlink de Google sin passkey de respaldo**: si un usuario se registró directo con Google y nunca puso password, no puede desvincular (quedaría sin forma de entrar). Sería bueno ofrecer "set a password" desde Settings para destrabar ese caso.
 - [ ] **Migraciones versionadas**: hoy se usa `prisma db push` contra prod. Considerar `prisma migrate dev`/`deploy` con archivos de migración.
 - [ ] **Sin test suite**: agregar al menos smoke tests de auth + CRUD básico.
 - [ ] **`npm audit`** post-install.
@@ -61,6 +61,11 @@ Este doc es la fuente de verdad del estado por feature y de la deuda técnica. P
 - [x] **Workout Player en vivo** (`mesocycles/[id]/sessions/[sessionId]/live`): sets guiados + timer de descanso + guardado del log.
 - [x] **Insights**: PRs automáticos, heatmap/streaks, compliance de mesociclo.
 - [x] **Duplicar sesión/mesociclo** e **instanciar mesociclo desde template** (con scoping por `user_id`).
+- [x] **Logo final** en `public/` (reemplaza los placeholders).
+- [x] **Bug de datos en Mediciones**: `add/update/deleteMeasurement` ignoraban el input y `update/delete` afectaban todas las mediciones del usuario en vez de una sola. Arreglado + limpiado el código muerto duplicado en `profile-store.ts`.
+- [x] **Rate limiting real de login**: antes `lib/utils/rate-limiter.ts` no se llamaba desde ningún lado (ni cliente ni servidor). Ahora vive en `authorize()` (`lib/auth.ts`) respaldado por la tabla `login_attempts`.
+- [x] **Google Sign-In**: nuevo provider en NextAuth + vinculación manual desde Settings (`google_id` en `User`, `password_hash` ahora nullable).
+- [x] **Favicon + landmark `<main>`**: sacan los hallazgos menores de la auditoría de Lighthouse (404 de `favicon.ico`, accesibilidad).
 
 ## Cuenta demo
 
@@ -71,7 +76,7 @@ Creada por `npm run db:seed` (borra y re-crea TODA la DB): `demo@example.com` / 
 > ⚠️ El `.env` local apunta a la **misma DB de producción**. `npm run db:seed` borra y re-crea todo — no correrlo salvo intención explícita.
 
 1. `npm install`
-2. Completar `.env` según `.env.example` (`DATABASE_URL` pooler 6543, `DIRECT_URL` 5432, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`)
+2. Completar `.env` según `.env.example` (`DATABASE_URL` pooler 6543, `DIRECT_URL` 5432, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` para Google Sign-In)
 3. `npm run dev`
 
 ## Histórico
