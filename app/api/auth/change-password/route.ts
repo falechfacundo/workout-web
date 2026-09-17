@@ -33,6 +33,13 @@ export async function POST(request: NextRequest) {
     });
     if (!user) return unauthorizedResponse();
 
+    if (!user.password_hash) {
+      return errorResponse(
+        "Esta cuenta inició sesión con Google y no tiene contraseña todavía.",
+        400
+      );
+    }
+
     const isValid = await bcrypt.compare(currentPassword, user.password_hash);
     if (!isValid) {
       return errorResponse("La contraseña actual es incorrecta.", 400);

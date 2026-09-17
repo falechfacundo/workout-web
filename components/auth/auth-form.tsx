@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
@@ -30,9 +30,34 @@ interface AuthFormProps {
   mode: "signin" | "signup";
 }
 
+const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
+  OAuthAccountNotLinked:
+    "Ese email ya tiene una cuenta con contraseña. Iniciá sesión con tu contraseña y vinculá Google desde Configuración.",
+};
+
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (!error) return;
+
+    toast({
+      variant: "destructive",
+      title: "No se pudo iniciar sesión con Google",
+      description:
+        GOOGLE_ERROR_MESSAGES[error] ??
+        "Ocurrió un error durante el inicio de sesión con Google.",
+    });
+  }, [searchParams]);
+
+  async function onGoogleSignIn() {
+    setIsGoogleLoading(true);
+    await signIn("google", { callbackUrl: "/dashboard" });
+  }
 
   const signInForm = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -181,6 +206,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
           </Button>
         </form>
+        <GoogleButton onClick={onGoogleSignIn} isLoading={isGoogleLoading} />
       </Form>
     );
   }
@@ -271,6 +297,39 @@ export function AuthForm({ mode }: AuthFormProps) {
           {isLoading ? "Creando cuenta..." : "Crear cuenta"}
         </Button>
       </form>
+      <GoogleButton onClick={onGoogleSignIn} isLoading={isGoogleLoading} />
     </Form>
+  );
+}
+
+function GoogleButton({
+  onClick,
+  isLoading,
+}: {
+  onClick: () => void;
+  isLoading: boolean;
+}) {
+  return (
+    <div className="mt-6 space-y-4">
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            O continuá con
+          </span>
+        </div>
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        disabled={isLoading}
+        onClick={onClick}
+      >
+        {isLoading ? "Redirigiendo..." : "Continuar con Google"}
+      </Button>
+    </div>
   );
 }

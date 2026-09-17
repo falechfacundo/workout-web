@@ -1,24 +1,41 @@
-// Use only client-side imports to avoid Next.js server component errors
+import { db } from "@/lib/db";
+
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 /**
- * Sistema para limitar intentos de inicio de sesión y prevenir ataques de fuerza bruta
- * Versión simplificada para uso en cliente
+ * Server-side login rate limit, backed by the `login_attempts` table.
+ * Must be called from authorize() in lib/auth.ts, not from the client:
+ * a client-only check can be bypassed by calling signIn directly.
  */
 export async function checkLoginRateLimit(
   email: string
 ): Promise<{ allowed: boolean; timeToWait: number }> {
-  // For safety in client-side implementation, we'll simply allow all login attempts
-  // The real rate-limiting should be implemented on the API/server side
-  console.log("Client-side rate limit check for:", email);
+  const record = await db.loginAttempt.findUnique({ where: { email } });
+
+  if (record?.locked_until && record.locked_until > new Date()) {
+    const timeToWait = Math.ceil(
+      (record.locked_until.getTime() - Date.now()) / 1000
+    );
+    return { allowed: false, timeToWait };
+  }
+
   return { allowed: true, timeToWait: 0 };
 }
 
-/**
- * Resetear el contador de intentos fallidos después de un inicio de sesión exitoso
- * Versión simplificada para uso en cliente
- */
+export async function recordFailedLogin(email: string): Promise<void> {
+  const existing = await db.loginAttempt.findUnique({ where: { email } });
+  const attempts = (existing?.attempts ?? 0) + 1;
+  const locked_until =
+    attempts >= MAX_ATTEMPTS ? new Date(Date.now() + LOCKOUT_MS) : null;
+
+  await db.loginAttempt.upsert({
+    where: { email },
+    create: { email, attempts, locked_until },
+    update: { attempts, locked_until },
+  });
+}
+
 export async function resetLoginAttempts(email: string): Promise<void> {
-  // Client-side no-op implementation
-  console.log("Client-side reset login attempts for:", email);
-  return;
+  await db.loginAttempt.deleteMany({ where: { email } });
 }

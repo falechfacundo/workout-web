@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AuthForm } from "@/components/auth/auth-form";
 import { DemoCredentials } from "@/components/auth/demo-credentials";
 
@@ -13,7 +14,9 @@ export default function LoginPage() {
             Enter your email to sign in to your account
           </p>
         </div>
-        <AuthForm mode="signin" />
+        <Suspense>
+          <AuthForm mode="signin" />
+        </Suspense>
         <DemoCredentials />
       </div>
     </div>

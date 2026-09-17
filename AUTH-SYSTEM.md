@@ -181,9 +181,41 @@ export async function protectedAction(id) {
    - `getServerUser()` reads the session via `getServerSession`
    - Redirect or render based on auth status
 
+## Google Sign-In
+
+### Files:
+
+- `/lib/auth.ts` (`GoogleProvider` + `signIn` callback)
+- `/lib/actions/google-link.ts` (`getGoogleLinkStatus`, `unlinkGoogleAccount`)
+- `/app/api/google-link/route.ts` + `/app/api/google-link/callback/route.ts` (manual linking flow, outside NextAuth)
+
+### Policy: no automatic account linking by email
+
+There is no Prisma adapter (JWT-only sessions), so Google sign-in is handled entirely in the `signIn` callback:
+
+- **New email** (no existing `User`): creates a `User` (`password_hash: null`, `google_id` = Google `sub`) + empty `Profile`, same shape as `signUp`.
+- **Existing email, `google_id` already matches**: normal login.
+- **Existing email, not linked yet** (password-only account, or a different Google account): the sign-in is **rejected** — redirects to `/auth/login?error=OAuthAccountNotLinked`. The user must log in with their password and link Google from `/dashboard/settings` instead. This is deliberate: auto-linking by email would let anyone with control of a Google account silently take over a password account that happens to share that email.
+
+### Manual linking (Settings)
+
+Linking is a separate, minimal OAuth flow (not NextAuth's `signIn("google")`) so it can never be confused with a login attempt:
+
+1. `GET /api/google-link` — requires an active session, sets a short-lived `state` cookie, redirects to Google's consent screen.
+2. `GET /api/google-link/callback` — verifies `state`, exchanges the code for tokens, decodes the `id_token`, requires `email_verified` and that the Google email matches the **logged-in** user's email, then sets `google_id` on that user.
+3. Unlinking (`unlinkGoogleAccount`) is blocked if the user has no `password_hash` — otherwise they'd lock themselves out.
+
+### Credentials provider guard
+
+`authorize()` now also rejects when `user.password_hash` is `null` (a Google-only account trying to sign in with a password) — same code path as rate limiting (see below).
+
+## Login rate limiting
+
+`lib/utils/rate-limiter.ts` is backed by the `login_attempts` table (`LoginAttempt` model) and enforced server-side inside `authorize()` in `lib/auth.ts` — not on the client, since a client-only check can be bypassed. 5 failed attempts per email locks that email out for 15 minutes; a successful login resets the counter.
+
 ## Password Storage & Change Password
 
-- Passwords are hashed with **bcrypt** (10 rounds) and stored in `users.password_hash`
+- Passwords are hashed with **bcrypt** (10 rounds) and stored in `users.password_hash` (nullable: `null` for accounts created via Google that haven't set a password)
 - New users from the `signUp` action are `must_change_password = false`
 - The seed demo user (`demo@example.com`) is `must_change_password = false` too, so it signs in directly to the dashboard. Accounts that set `must_change_password = true` are forced to `/change-password` (API route `POST /api/auth/change-password`) where they must provide the current password and a new one (min. 8 chars), which updates `password_hash` and clears the flag
 

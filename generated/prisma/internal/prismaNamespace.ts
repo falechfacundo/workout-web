@@ -415,7 +415,8 @@ export const ModelName = {
   MesocycleTemplateGoal: 'MesocycleTemplateGoal',
   MesocycleTemplateMuscleFocus: 'MesocycleTemplateMuscleFocus',
   TrainingSessionTemplate: 'TrainingSessionTemplate',
-  TemplateSessionExercise: 'TemplateSessionExercise'
+  TemplateSessionExercise: 'TemplateSessionExercise',
+  LoginAttempt: 'LoginAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -431,7 +432,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "profile" | "profileMeasurement" | "muscleGroup" | "exercise" | "exerciseMuscleGroup" | "mesocycle" | "mesocycleGoal" | "mesocycleMuscleGroupFocus" | "trainingSession" | "sessionExercise" | "workoutLog" | "exerciseLog" | "workoutReminder" | "mesocycleTemplate" | "mesocycleTemplateGoal" | "mesocycleTemplateMuscleFocus" | "trainingSessionTemplate" | "templateSessionExercise"
+    modelProps: "user" | "profile" | "profileMeasurement" | "muscleGroup" | "exercise" | "exerciseMuscleGroup" | "mesocycle" | "mesocycleGoal" | "mesocycleMuscleGroupFocus" | "trainingSession" | "sessionExercise" | "workoutLog" | "exerciseLog" | "workoutReminder" | "mesocycleTemplate" | "mesocycleTemplateGoal" | "mesocycleTemplateMuscleFocus" | "trainingSessionTemplate" | "templateSessionExercise" | "loginAttempt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1841,6 +1842,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    LoginAttempt: {
+      payload: Prisma.$LoginAttemptPayload<ExtArgs>
+      fields: Prisma.LoginAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LoginAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LoginAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.LoginAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LoginAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.LoginAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.LoginAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.LoginAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LoginAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.LoginAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>
+        }
+        update: {
+          args: Prisma.LoginAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.LoginAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LoginAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LoginAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.LoginAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LoginAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.LoginAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLoginAttempt>
+        }
+        groupBy: {
+          args: Prisma.LoginAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LoginAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LoginAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LoginAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1885,6 +1960,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   password_hash: 'password_hash',
+  google_id: 'google_id',
   must_change_password: 'must_change_password',
   created_at: 'created_at',
   updated_at: 'updated_at'
@@ -2178,6 +2254,16 @@ export const TemplateSessionExerciseScalarFieldEnum = {
 export type TemplateSessionExerciseScalarFieldEnum = (typeof TemplateSessionExerciseScalarFieldEnum)[keyof typeof TemplateSessionExerciseScalarFieldEnum]
 
 
+export const LoginAttemptScalarFieldEnum = {
+  email: 'email',
+  attempts: 'attempts',
+  locked_until: 'locked_until',
+  updated_at: 'updated_at'
+} as const
+
+export type LoginAttemptScalarFieldEnum = (typeof LoginAttemptScalarFieldEnum)[keyof typeof LoginAttemptScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2454,6 +2540,7 @@ export type GlobalOmitConfig = {
   mesocycleTemplateMuscleFocus?: Prisma.MesocycleTemplateMuscleFocusOmit
   trainingSessionTemplate?: Prisma.TrainingSessionTemplateOmit
   templateSessionExercise?: Prisma.TemplateSessionExerciseOmit
+  loginAttempt?: Prisma.LoginAttemptOmit
 }
 
 /* Types for Logging */

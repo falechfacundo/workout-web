@@ -136,3 +136,8 @@ export type TrainingSessionTemplate = Prisma.TrainingSessionTemplateModel
  * 
  */
 export type TemplateSessionExercise = Prisma.TemplateSessionExerciseModel
+/**
+ * Model LoginAttempt
+ * 
+ */
+export type LoginAttempt = Prisma.LoginAttemptModel

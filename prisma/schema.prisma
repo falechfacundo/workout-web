@@ -11,7 +11,8 @@ model User {
   id                 String    @id @default(uuid(4))
   email              String    @unique
   name               String?
-  password_hash      String
+  password_hash      String?
+  google_id          String?   @unique
   must_change_password Boolean  @default(true)
   created_at         DateTime  @default(now())
   updated_at         DateTime  @updatedAt
@@ -383,4 +384,16 @@ model TemplateSessionExercise {
 
   @@index([training_session_template_id])
   @@map("template_session_exercises")
+}
+
+// Tracks failed login attempts per email to rate-limit brute-force attempts
+// server-side (lib/auth.ts authorize()). Not tied to User: an email that
+// doesn't exist yet must still be throttled to avoid user enumeration.
+model LoginAttempt {
+  email        String    @id
+  attempts     Int       @default(0)
+  locked_until DateTime?
+  updated_at   DateTime  @updatedAt
+
+  @@map("login_attempts")
 }

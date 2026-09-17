@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AuthForm } from "@/components/auth/auth-form";
 
 export default function RegisterPage() {
@@ -12,7 +13,9 @@ export default function RegisterPage() {
             Enter your email below to create your account
           </p>
         </div>
-        <AuthForm mode="signup" />
+        <Suspense>
+          <AuthForm mode="signup" />
+        </Suspense>
       </div>
     </div>
   );

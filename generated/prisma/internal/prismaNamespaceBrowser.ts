@@ -69,7 +69,8 @@ export const ModelName = {
   MesocycleTemplateGoal: 'MesocycleTemplateGoal',
   MesocycleTemplateMuscleFocus: 'MesocycleTemplateMuscleFocus',
   TrainingSessionTemplate: 'TrainingSessionTemplate',
-  TemplateSessionExercise: 'TemplateSessionExercise'
+  TemplateSessionExercise: 'TemplateSessionExercise',
+  LoginAttempt: 'LoginAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -93,6 +94,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   password_hash: 'password_hash',
+  google_id: 'google_id',
   must_change_password: 'must_change_password',
   created_at: 'created_at',
   updated_at: 'updated_at'
@@ -384,6 +386,16 @@ export const TemplateSessionExerciseScalarFieldEnum = {
 } as const
 
 export type TemplateSessionExerciseScalarFieldEnum = (typeof TemplateSessionExerciseScalarFieldEnum)[keyof typeof TemplateSessionExerciseScalarFieldEnum]
+
+
+export const LoginAttemptScalarFieldEnum = {
+  email: 'email',
+  attempts: 'attempts',
+  locked_until: 'locked_until',
+  updated_at: 'updated_at'
+} as const
+
+export type LoginAttemptScalarFieldEnum = (typeof LoginAttemptScalarFieldEnum)[keyof typeof LoginAttemptScalarFieldEnum]
 
 
 export const SortOrder = {

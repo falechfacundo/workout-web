@@ -1,10 +1,16 @@
 import type { AuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import { encode as encodeJwt, decode as decodeJwt } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import {
+  checkLoginRateLimit,
+  recordFailedLogin,
+  resetLoginAttempts,
+} from "@/lib/utils/rate-limiter";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -17,17 +23,34 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        const rateLimit = await checkLoginRateLimit(credentials.email);
+        if (!rateLimit.allowed) {
+          throw new Error(
+            `Too many failed attempts. Try again in ${Math.ceil(
+              rateLimit.timeToWait / 60
+            )} minute(s).`
+          );
+        }
+
         const user = await db.user.findUnique({
           where: { email: credentials.email },
         });
 
-        if (!user) return null;
+        if (!user || !user.password_hash) {
+          await recordFailedLogin(credentials.email);
+          return null;
+        }
 
         const isValid = await bcrypt.compare(
           credentials.password,
           user.password_hash
         );
-        if (!isValid) return null;
+        if (!isValid) {
+          await recordFailedLogin(credentials.email);
+          return null;
+        }
+
+        await resetLoginAttempts(credentials.email);
 
         return {
           id: user.id,
@@ -37,9 +60,52 @@ export const authOptions: AuthOptions = {
         };
       },
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    }),
   ],
   session: { strategy: "jwt" },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "google" || !profile?.email) return true;
+
+      const googleId = account.providerAccountId;
+      const existing = await db.user.findUnique({
+        where: { email: profile.email },
+      });
+
+      if (!existing) {
+        const created = await db.user.create({
+          data: {
+            email: profile.email,
+            name: profile.name,
+            google_id: googleId,
+            password_hash: null,
+            must_change_password: false,
+            profile: {
+              create: {
+                full_name: profile.name,
+              },
+            },
+          },
+        });
+        user.id = created.id;
+        user.mustChangePassword = false;
+        return true;
+      }
+
+      if (existing.google_id !== googleId) {
+        // Email already registered with a password (or a different Google
+        // account): don't auto-link. The user must sign in with their
+        // password and link Google from Settings.
+        return "/auth/login?error=OAuthAccountNotLinked";
+      }
+
+      user.id = existing.id;
+      user.mustChangePassword = existing.must_change_password;
+      return true;
+    },
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
