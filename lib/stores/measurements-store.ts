@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { createLogger } from "@/lib/utils/logger";
-import { type Measurement } from "@/lib/schemas/measurement";
+import { type Measurement, type MeasurementInput } from "@/lib/schemas/measurement";
 
 import {
   getMeasurements,
@@ -21,11 +21,11 @@ interface MeasurementsState {
   fetchMeasurements: (profileId: string) => Promise<void>;
   addMeasurement: (
     profileId: string,
-    measurement: Partial<Measurement>
+    measurement: MeasurementInput
   ) => Promise<Measurement | null>;
   updateMeasurement: (
     id: string,
-    measurement: Partial<Measurement>
+    measurement: Partial<MeasurementInput>
   ) => Promise<void>;
   deleteMeasurement: (id: string) => Promise<void>;
   reset: () => void;
@@ -83,13 +83,13 @@ export const useMeasurementsStore = create<MeasurementsState>((set) => ({
     }
   },
 
-  addMeasurement: async (profileId) => {
+  addMeasurement: async (profileId, measurement) => {
     set({ isLoading: true, error: null });
 
     try {
       logger.debug("Adding new measurement", { profileId });
 
-      const result = await addMeasurementAction();
+      const result = await addMeasurementAction(measurement);
 
       if (result.error) {
         logger.warn("Error adding measurement", {
@@ -134,13 +134,13 @@ export const useMeasurementsStore = create<MeasurementsState>((set) => ({
     }
   },
 
-  updateMeasurement: async (id) => {
+  updateMeasurement: async (id, measurement) => {
     set({ isLoading: true, error: null });
 
     try {
       logger.debug("Updating measurement", { id });
 
-      const result = await updateMeasurementAction();
+      const result = await updateMeasurementAction(id, measurement);
 
       if (result.error) {
         logger.warn("Error updating measurement", {
@@ -183,7 +183,7 @@ export const useMeasurementsStore = create<MeasurementsState>((set) => ({
     try {
       logger.debug("Deleting measurement", { id });
 
-      const result = await deleteMeasurementAction();
+      const result = await deleteMeasurementAction(id);
 
       if (result.error) {
         logger.warn("Error deleting measurement", {

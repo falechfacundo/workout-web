@@ -85,10 +85,21 @@ export const measurementSchema = z.object({
 });
 
 /**
+ * Schema for the payload actually sent to the server actions: same as
+ * measurementFormSchema but with `date` already formatted as an ISO string
+ * (the form converts it client-side before calling addMeasurement/updateMeasurement).
+ */
+export const measurementInputSchema = measurementFormSchema
+  .omit({ date: true })
+  .extend({ date: z.string() });
+
+/**
  * Types exported for use throughout the application
  *
  * - Measurement: Base entity type from main schema
  * - MeasurementFormValues: For form validation and submission
+ * - MeasurementInput: For the server action payload (date as ISO string)
  */
 export type Measurement = z.infer<typeof measurementSchema>;
 export type MeasurementFormValues = z.infer<typeof measurementFormSchema>;
+export type MeasurementInput = z.infer<typeof measurementInputSchema>;
