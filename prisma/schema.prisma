@@ -26,8 +26,22 @@ model User {
   workout_reminders      WorkoutReminder[]
   mesocycle_templates    MesocycleTemplate[]
   training_session_templates TrainingSessionTemplate[]
+  push_tokens            PushToken[]
 
   @@map("users")
+}
+
+model PushToken {
+  id         String   @id @default(uuid(4))
+  user_id    String
+  token      String   @unique
+  platform   String
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("push_tokens")
 }
 
 model Profile {
@@ -285,6 +299,7 @@ model WorkoutReminder {
   time_of_day   String?
   is_enabled    Boolean  @default(true)
   notification_type String @default("browser")
+  last_sent_at  DateTime?
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 

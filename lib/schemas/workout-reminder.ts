@@ -10,7 +10,7 @@ export const workoutReminderSchema = z.object({
   day_of_week: z.number().int().min(0).max(6).optional().nullable(),
   time_of_day: z.string().optional().nullable(),
   is_enabled: z.boolean().default(true),
-  notification_type: z.enum(["browser", "email", "both"]).default("browser"),
+  notification_type: z.enum(["browser", "email", "both", "push"]).default("browser"),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
@@ -25,7 +25,7 @@ export const workoutReminderFormSchema = z.object({
   day_of_week: z.number().int().min(0).max(6).optional().nullable(),
   time_of_day: z.string().optional().nullable(),
   is_enabled: z.boolean().default(true),
-  notification_type: z.enum(["browser", "email", "both"]).default("browser"),
+  notification_type: z.enum(["browser", "email", "both", "push"]).default("browser"),
 });
 
 /**

@@ -42,6 +42,7 @@ export type WorkoutReminderMinAggregateOutputType = {
   time_of_day: string | null
   is_enabled: boolean | null
   notification_type: string | null
+  last_sent_at: Date | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -54,6 +55,7 @@ export type WorkoutReminderMaxAggregateOutputType = {
   time_of_day: string | null
   is_enabled: boolean | null
   notification_type: string | null
+  last_sent_at: Date | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -66,6 +68,7 @@ export type WorkoutReminderCountAggregateOutputType = {
   time_of_day: number
   is_enabled: number
   notification_type: number
+  last_sent_at: number
   created_at: number
   updated_at: number
   _all: number
@@ -88,6 +91,7 @@ export type WorkoutReminderMinAggregateInputType = {
   time_of_day?: true
   is_enabled?: true
   notification_type?: true
+  last_sent_at?: true
   created_at?: true
   updated_at?: true
 }
@@ -100,6 +104,7 @@ export type WorkoutReminderMaxAggregateInputType = {
   time_of_day?: true
   is_enabled?: true
   notification_type?: true
+  last_sent_at?: true
   created_at?: true
   updated_at?: true
 }
@@ -112,6 +117,7 @@ export type WorkoutReminderCountAggregateInputType = {
   time_of_day?: true
   is_enabled?: true
   notification_type?: true
+  last_sent_at?: true
   created_at?: true
   updated_at?: true
   _all?: true
@@ -211,6 +217,7 @@ export type WorkoutReminderGroupByOutputType = {
   time_of_day: string | null
   is_enabled: boolean
   notification_type: string
+  last_sent_at: Date | null
   created_at: Date
   updated_at: Date
   _count: WorkoutReminderCountAggregateOutputType | null
@@ -246,6 +253,7 @@ export type WorkoutReminderWhereInput = {
   time_of_day?: Prisma.StringNullableFilter<"WorkoutReminder"> | string | null
   is_enabled?: Prisma.BoolFilter<"WorkoutReminder"> | boolean
   notification_type?: Prisma.StringFilter<"WorkoutReminder"> | string
+  last_sent_at?: Prisma.DateTimeNullableFilter<"WorkoutReminder"> | Date | string | null
   created_at?: Prisma.DateTimeFilter<"WorkoutReminder"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"WorkoutReminder"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -260,6 +268,7 @@ export type WorkoutReminderOrderByWithRelationInput = {
   time_of_day?: Prisma.SortOrderInput | Prisma.SortOrder
   is_enabled?: Prisma.SortOrder
   notification_type?: Prisma.SortOrder
+  last_sent_at?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -277,6 +286,7 @@ export type WorkoutReminderWhereUniqueInput = Prisma.AtLeast<{
   time_of_day?: Prisma.StringNullableFilter<"WorkoutReminder"> | string | null
   is_enabled?: Prisma.BoolFilter<"WorkoutReminder"> | boolean
   notification_type?: Prisma.StringFilter<"WorkoutReminder"> | string
+  last_sent_at?: Prisma.DateTimeNullableFilter<"WorkoutReminder"> | Date | string | null
   created_at?: Prisma.DateTimeFilter<"WorkoutReminder"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"WorkoutReminder"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -291,6 +301,7 @@ export type WorkoutReminderOrderByWithAggregationInput = {
   time_of_day?: Prisma.SortOrderInput | Prisma.SortOrder
   is_enabled?: Prisma.SortOrder
   notification_type?: Prisma.SortOrder
+  last_sent_at?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   _count?: Prisma.WorkoutReminderCountOrderByAggregateInput
@@ -311,6 +322,7 @@ export type WorkoutReminderScalarWhereWithAggregatesInput = {
   time_of_day?: Prisma.StringNullableWithAggregatesFilter<"WorkoutReminder"> | string | null
   is_enabled?: Prisma.BoolWithAggregatesFilter<"WorkoutReminder"> | boolean
   notification_type?: Prisma.StringWithAggregatesFilter<"WorkoutReminder"> | string
+  last_sent_at?: Prisma.DateTimeNullableWithAggregatesFilter<"WorkoutReminder"> | Date | string | null
   created_at?: Prisma.DateTimeWithAggregatesFilter<"WorkoutReminder"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"WorkoutReminder"> | Date | string
 }
@@ -321,6 +333,7 @@ export type WorkoutReminderCreateInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutWorkout_remindersInput
@@ -335,6 +348,7 @@ export type WorkoutReminderUncheckedCreateInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -345,6 +359,7 @@ export type WorkoutReminderUpdateInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutWorkout_remindersNestedInput
@@ -359,6 +374,7 @@ export type WorkoutReminderUncheckedUpdateInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -371,6 +387,7 @@ export type WorkoutReminderCreateManyInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -381,6 +398,7 @@ export type WorkoutReminderUpdateManyMutationInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -393,6 +411,7 @@ export type WorkoutReminderUncheckedUpdateManyInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -415,6 +434,7 @@ export type WorkoutReminderCountOrderByAggregateInput = {
   time_of_day?: Prisma.SortOrder
   is_enabled?: Prisma.SortOrder
   notification_type?: Prisma.SortOrder
+  last_sent_at?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -431,6 +451,7 @@ export type WorkoutReminderMaxOrderByAggregateInput = {
   time_of_day?: Prisma.SortOrder
   is_enabled?: Prisma.SortOrder
   notification_type?: Prisma.SortOrder
+  last_sent_at?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -443,6 +464,7 @@ export type WorkoutReminderMinOrderByAggregateInput = {
   time_of_day?: Prisma.SortOrder
   is_enabled?: Prisma.SortOrder
   notification_type?: Prisma.SortOrder
+  last_sent_at?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -541,6 +563,7 @@ export type WorkoutReminderCreateWithoutUserInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
   training_session?: Prisma.TrainingSessionCreateNestedOneWithoutWorkout_remindersInput
@@ -553,6 +576,7 @@ export type WorkoutReminderUncheckedCreateWithoutUserInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -594,6 +618,7 @@ export type WorkoutReminderScalarWhereInput = {
   time_of_day?: Prisma.StringNullableFilter<"WorkoutReminder"> | string | null
   is_enabled?: Prisma.BoolFilter<"WorkoutReminder"> | boolean
   notification_type?: Prisma.StringFilter<"WorkoutReminder"> | string
+  last_sent_at?: Prisma.DateTimeNullableFilter<"WorkoutReminder"> | Date | string | null
   created_at?: Prisma.DateTimeFilter<"WorkoutReminder"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"WorkoutReminder"> | Date | string
 }
@@ -604,6 +629,7 @@ export type WorkoutReminderCreateWithoutTraining_sessionInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutWorkout_remindersInput
@@ -616,6 +642,7 @@ export type WorkoutReminderUncheckedCreateWithoutTraining_sessionInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -653,6 +680,7 @@ export type WorkoutReminderCreateManyUserInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -663,6 +691,7 @@ export type WorkoutReminderUpdateWithoutUserInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   training_session?: Prisma.TrainingSessionUpdateOneWithoutWorkout_remindersNestedInput
@@ -675,6 +704,7 @@ export type WorkoutReminderUncheckedUpdateWithoutUserInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -686,6 +716,7 @@ export type WorkoutReminderUncheckedUpdateManyWithoutUserInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -697,6 +728,7 @@ export type WorkoutReminderCreateManyTraining_sessionInput = {
   time_of_day?: string | null
   is_enabled?: boolean
   notification_type?: string
+  last_sent_at?: Date | string | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -707,6 +739,7 @@ export type WorkoutReminderUpdateWithoutTraining_sessionInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutWorkout_remindersNestedInput
@@ -719,6 +752,7 @@ export type WorkoutReminderUncheckedUpdateWithoutTraining_sessionInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -730,6 +764,7 @@ export type WorkoutReminderUncheckedUpdateManyWithoutTraining_sessionInput = {
   time_of_day?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notification_type?: Prisma.StringFieldUpdateOperationsInput | string
+  last_sent_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -744,6 +779,7 @@ export type WorkoutReminderSelect<ExtArgs extends runtime.Types.Extensions.Inter
   time_of_day?: boolean
   is_enabled?: boolean
   notification_type?: boolean
+  last_sent_at?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -758,6 +794,7 @@ export type WorkoutReminderSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   time_of_day?: boolean
   is_enabled?: boolean
   notification_type?: boolean
+  last_sent_at?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -772,6 +809,7 @@ export type WorkoutReminderSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   time_of_day?: boolean
   is_enabled?: boolean
   notification_type?: boolean
+  last_sent_at?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -786,11 +824,12 @@ export type WorkoutReminderSelectScalar = {
   time_of_day?: boolean
   is_enabled?: boolean
   notification_type?: boolean
+  last_sent_at?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type WorkoutReminderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "training_session_id" | "day_of_week" | "time_of_day" | "is_enabled" | "notification_type" | "created_at" | "updated_at", ExtArgs["result"]["workoutReminder"]>
+export type WorkoutReminderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "training_session_id" | "day_of_week" | "time_of_day" | "is_enabled" | "notification_type" | "last_sent_at" | "created_at" | "updated_at", ExtArgs["result"]["workoutReminder"]>
 export type WorkoutReminderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   training_session?: boolean | Prisma.WorkoutReminder$training_sessionArgs<ExtArgs>
@@ -818,6 +857,7 @@ export type $WorkoutReminderPayload<ExtArgs extends runtime.Types.Extensions.Int
     time_of_day: string | null
     is_enabled: boolean
     notification_type: string
+    last_sent_at: Date | null
     created_at: Date
     updated_at: Date
   }, ExtArgs["result"]["workoutReminder"]>
@@ -1252,6 +1292,7 @@ export interface WorkoutReminderFieldRefs {
   readonly time_of_day: Prisma.FieldRef<"WorkoutReminder", 'String'>
   readonly is_enabled: Prisma.FieldRef<"WorkoutReminder", 'Boolean'>
   readonly notification_type: Prisma.FieldRef<"WorkoutReminder", 'String'>
+  readonly last_sent_at: Prisma.FieldRef<"WorkoutReminder", 'DateTime'>
   readonly created_at: Prisma.FieldRef<"WorkoutReminder", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"WorkoutReminder", 'DateTime'>
 }

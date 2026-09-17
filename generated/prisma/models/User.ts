@@ -215,6 +215,7 @@ export type UserWhereInput = {
   workout_reminders?: Prisma.WorkoutReminderListRelationFilter
   mesocycle_templates?: Prisma.MesocycleTemplateListRelationFilter
   training_session_templates?: Prisma.TrainingSessionTemplateListRelationFilter
+  push_tokens?: Prisma.PushTokenListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -235,6 +236,7 @@ export type UserOrderByWithRelationInput = {
   workout_reminders?: Prisma.WorkoutReminderOrderByRelationAggregateInput
   mesocycle_templates?: Prisma.MesocycleTemplateOrderByRelationAggregateInput
   training_session_templates?: Prisma.TrainingSessionTemplateOrderByRelationAggregateInput
+  push_tokens?: Prisma.PushTokenOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -258,6 +260,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   workout_reminders?: Prisma.WorkoutReminderListRelationFilter
   mesocycle_templates?: Prisma.MesocycleTemplateListRelationFilter
   training_session_templates?: Prisma.TrainingSessionTemplateListRelationFilter
+  push_tokens?: Prisma.PushTokenListRelationFilter
 }, "id" | "email" | "google_id">
 
 export type UserOrderByWithAggregationInput = {
@@ -306,6 +309,7 @@ export type UserCreateInput = {
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -326,6 +330,7 @@ export type UserUncheckedCreateInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -346,6 +351,7 @@ export type UserUpdateInput = {
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -366,6 +372,7 @@ export type UserUncheckedUpdateInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -458,6 +465,20 @@ export type BoolFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type UserCreateNestedOneWithoutPush_tokensInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPush_tokensInput, Prisma.UserUncheckedCreateWithoutPush_tokensInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPush_tokensInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPush_tokensNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPush_tokensInput, Prisma.UserUncheckedCreateWithoutPush_tokensInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPush_tokensInput
+  upsert?: Prisma.UserUpsertWithoutPush_tokensInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPush_tokensInput, Prisma.UserUpdateWithoutPush_tokensInput>, Prisma.UserUncheckedUpdateWithoutPush_tokensInput>
 }
 
 export type UserCreateNestedOneWithoutProfileInput = {
@@ -594,6 +615,102 @@ export type UserUpdateOneWithoutTraining_session_templatesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTraining_session_templatesInput, Prisma.UserUpdateWithoutTraining_session_templatesInput>, Prisma.UserUncheckedUpdateWithoutTraining_session_templatesInput>
 }
 
+export type UserCreateWithoutPush_tokensInput = {
+  id?: string
+  email: string
+  name?: string | null
+  password_hash?: string | null
+  google_id?: string | null
+  must_change_password?: boolean
+  created_at?: Date | string
+  updated_at?: Date | string
+  profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  profile_measurements?: Prisma.ProfileMeasurementCreateNestedManyWithoutUserInput
+  muscle_groups?: Prisma.MuscleGroupCreateNestedManyWithoutUserInput
+  exercises?: Prisma.ExerciseCreateNestedManyWithoutUserInput
+  mesocycles?: Prisma.MesocycleCreateNestedManyWithoutUserInput
+  workout_logs?: Prisma.WorkoutLogCreateNestedManyWithoutUserInput
+  workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
+  mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
+  training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPush_tokensInput = {
+  id?: string
+  email: string
+  name?: string | null
+  password_hash?: string | null
+  google_id?: string | null
+  must_change_password?: boolean
+  created_at?: Date | string
+  updated_at?: Date | string
+  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  profile_measurements?: Prisma.ProfileMeasurementUncheckedCreateNestedManyWithoutUserInput
+  muscle_groups?: Prisma.MuscleGroupUncheckedCreateNestedManyWithoutUserInput
+  exercises?: Prisma.ExerciseUncheckedCreateNestedManyWithoutUserInput
+  mesocycles?: Prisma.MesocycleUncheckedCreateNestedManyWithoutUserInput
+  workout_logs?: Prisma.WorkoutLogUncheckedCreateNestedManyWithoutUserInput
+  workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
+  mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
+  training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPush_tokensInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPush_tokensInput, Prisma.UserUncheckedCreateWithoutPush_tokensInput>
+}
+
+export type UserUpsertWithoutPush_tokensInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPush_tokensInput, Prisma.UserUncheckedUpdateWithoutPush_tokensInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPush_tokensInput, Prisma.UserUncheckedCreateWithoutPush_tokensInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPush_tokensInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPush_tokensInput, Prisma.UserUncheckedUpdateWithoutPush_tokensInput>
+}
+
+export type UserUpdateWithoutPush_tokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  google_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  must_change_password?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  profile_measurements?: Prisma.ProfileMeasurementUpdateManyWithoutUserNestedInput
+  muscle_groups?: Prisma.MuscleGroupUpdateManyWithoutUserNestedInput
+  exercises?: Prisma.ExerciseUpdateManyWithoutUserNestedInput
+  mesocycles?: Prisma.MesocycleUpdateManyWithoutUserNestedInput
+  workout_logs?: Prisma.WorkoutLogUpdateManyWithoutUserNestedInput
+  workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
+  mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
+  training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPush_tokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password_hash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  google_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  must_change_password?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  profile_measurements?: Prisma.ProfileMeasurementUncheckedUpdateManyWithoutUserNestedInput
+  muscle_groups?: Prisma.MuscleGroupUncheckedUpdateManyWithoutUserNestedInput
+  exercises?: Prisma.ExerciseUncheckedUpdateManyWithoutUserNestedInput
+  mesocycles?: Prisma.MesocycleUncheckedUpdateManyWithoutUserNestedInput
+  workout_logs?: Prisma.WorkoutLogUncheckedUpdateManyWithoutUserNestedInput
+  workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
+  mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
+  training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type UserCreateWithoutProfileInput = {
   id?: string
   email: string
@@ -611,6 +728,7 @@ export type UserCreateWithoutProfileInput = {
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProfileInput = {
@@ -630,6 +748,7 @@ export type UserUncheckedCreateWithoutProfileInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProfileInput = {
@@ -665,6 +784,7 @@ export type UserUpdateWithoutProfileInput = {
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfileInput = {
@@ -684,6 +804,7 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutProfile_measurementsInput = {
@@ -703,6 +824,7 @@ export type UserCreateWithoutProfile_measurementsInput = {
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProfile_measurementsInput = {
@@ -722,6 +844,7 @@ export type UserUncheckedCreateWithoutProfile_measurementsInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProfile_measurementsInput = {
@@ -757,6 +880,7 @@ export type UserUpdateWithoutProfile_measurementsInput = {
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfile_measurementsInput = {
@@ -776,6 +900,7 @@ export type UserUncheckedUpdateWithoutProfile_measurementsInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMuscle_groupsInput = {
@@ -795,6 +920,7 @@ export type UserCreateWithoutMuscle_groupsInput = {
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMuscle_groupsInput = {
@@ -814,6 +940,7 @@ export type UserUncheckedCreateWithoutMuscle_groupsInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMuscle_groupsInput = {
@@ -849,6 +976,7 @@ export type UserUpdateWithoutMuscle_groupsInput = {
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMuscle_groupsInput = {
@@ -868,6 +996,7 @@ export type UserUncheckedUpdateWithoutMuscle_groupsInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutExercisesInput = {
@@ -887,6 +1016,7 @@ export type UserCreateWithoutExercisesInput = {
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutExercisesInput = {
@@ -906,6 +1036,7 @@ export type UserUncheckedCreateWithoutExercisesInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutExercisesInput = {
@@ -941,6 +1072,7 @@ export type UserUpdateWithoutExercisesInput = {
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutExercisesInput = {
@@ -960,6 +1092,7 @@ export type UserUncheckedUpdateWithoutExercisesInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMesocyclesInput = {
@@ -979,6 +1112,7 @@ export type UserCreateWithoutMesocyclesInput = {
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMesocyclesInput = {
@@ -998,6 +1132,7 @@ export type UserUncheckedCreateWithoutMesocyclesInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMesocyclesInput = {
@@ -1033,6 +1168,7 @@ export type UserUpdateWithoutMesocyclesInput = {
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMesocyclesInput = {
@@ -1052,6 +1188,7 @@ export type UserUncheckedUpdateWithoutMesocyclesInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutWorkout_logsInput = {
@@ -1071,6 +1208,7 @@ export type UserCreateWithoutWorkout_logsInput = {
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWorkout_logsInput = {
@@ -1090,6 +1228,7 @@ export type UserUncheckedCreateWithoutWorkout_logsInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWorkout_logsInput = {
@@ -1125,6 +1264,7 @@ export type UserUpdateWithoutWorkout_logsInput = {
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkout_logsInput = {
@@ -1144,6 +1284,7 @@ export type UserUncheckedUpdateWithoutWorkout_logsInput = {
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutWorkout_remindersInput = {
@@ -1163,6 +1304,7 @@ export type UserCreateWithoutWorkout_remindersInput = {
   workout_logs?: Prisma.WorkoutLogCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWorkout_remindersInput = {
@@ -1182,6 +1324,7 @@ export type UserUncheckedCreateWithoutWorkout_remindersInput = {
   workout_logs?: Prisma.WorkoutLogUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWorkout_remindersInput = {
@@ -1217,6 +1360,7 @@ export type UserUpdateWithoutWorkout_remindersInput = {
   workout_logs?: Prisma.WorkoutLogUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkout_remindersInput = {
@@ -1236,6 +1380,7 @@ export type UserUncheckedUpdateWithoutWorkout_remindersInput = {
   workout_logs?: Prisma.WorkoutLogUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMesocycle_templatesInput = {
@@ -1255,6 +1400,7 @@ export type UserCreateWithoutMesocycle_templatesInput = {
   workout_logs?: Prisma.WorkoutLogCreateNestedManyWithoutUserInput
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMesocycle_templatesInput = {
@@ -1274,6 +1420,7 @@ export type UserUncheckedCreateWithoutMesocycle_templatesInput = {
   workout_logs?: Prisma.WorkoutLogUncheckedCreateNestedManyWithoutUserInput
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMesocycle_templatesInput = {
@@ -1309,6 +1456,7 @@ export type UserUpdateWithoutMesocycle_templatesInput = {
   workout_logs?: Prisma.WorkoutLogUpdateManyWithoutUserNestedInput
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMesocycle_templatesInput = {
@@ -1328,6 +1476,7 @@ export type UserUncheckedUpdateWithoutMesocycle_templatesInput = {
   workout_logs?: Prisma.WorkoutLogUncheckedUpdateManyWithoutUserNestedInput
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   training_session_templates?: Prisma.TrainingSessionTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTraining_session_templatesInput = {
@@ -1347,6 +1496,7 @@ export type UserCreateWithoutTraining_session_templatesInput = {
   workout_logs?: Prisma.WorkoutLogCreateNestedManyWithoutUserInput
   workout_reminders?: Prisma.WorkoutReminderCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTraining_session_templatesInput = {
@@ -1366,6 +1516,7 @@ export type UserUncheckedCreateWithoutTraining_session_templatesInput = {
   workout_logs?: Prisma.WorkoutLogUncheckedCreateNestedManyWithoutUserInput
   workout_reminders?: Prisma.WorkoutReminderUncheckedCreateNestedManyWithoutUserInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutUserInput
+  push_tokens?: Prisma.PushTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTraining_session_templatesInput = {
@@ -1401,6 +1552,7 @@ export type UserUpdateWithoutTraining_session_templatesInput = {
   workout_logs?: Prisma.WorkoutLogUpdateManyWithoutUserNestedInput
   workout_reminders?: Prisma.WorkoutReminderUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTraining_session_templatesInput = {
@@ -1420,6 +1572,7 @@ export type UserUncheckedUpdateWithoutTraining_session_templatesInput = {
   workout_logs?: Prisma.WorkoutLogUncheckedUpdateManyWithoutUserNestedInput
   workout_reminders?: Prisma.WorkoutReminderUncheckedUpdateManyWithoutUserNestedInput
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutUserNestedInput
+  push_tokens?: Prisma.PushTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1436,6 +1589,7 @@ export type UserCountOutputType = {
   workout_reminders: number
   mesocycle_templates: number
   training_session_templates: number
+  push_tokens: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1447,6 +1601,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   workout_reminders?: boolean | UserCountOutputTypeCountWorkout_remindersArgs
   mesocycle_templates?: boolean | UserCountOutputTypeCountMesocycle_templatesArgs
   training_session_templates?: boolean | UserCountOutputTypeCountTraining_session_templatesArgs
+  push_tokens?: boolean | UserCountOutputTypeCountPush_tokensArgs
 }
 
 /**
@@ -1515,6 +1670,13 @@ export type UserCountOutputTypeCountTraining_session_templatesArgs<ExtArgs exten
   where?: Prisma.TrainingSessionTemplateWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPush_tokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PushTokenWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1534,6 +1696,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   workout_reminders?: boolean | Prisma.User$workout_remindersArgs<ExtArgs>
   mesocycle_templates?: boolean | Prisma.User$mesocycle_templatesArgs<ExtArgs>
   training_session_templates?: boolean | Prisma.User$training_session_templatesArgs<ExtArgs>
+  push_tokens?: boolean | Prisma.User$push_tokensArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1581,6 +1744,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   workout_reminders?: boolean | Prisma.User$workout_remindersArgs<ExtArgs>
   mesocycle_templates?: boolean | Prisma.User$mesocycle_templatesArgs<ExtArgs>
   training_session_templates?: boolean | Prisma.User$training_session_templatesArgs<ExtArgs>
+  push_tokens?: boolean | Prisma.User$push_tokensArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1598,6 +1762,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     workout_reminders: Prisma.$WorkoutReminderPayload<ExtArgs>[]
     mesocycle_templates: Prisma.$MesocycleTemplatePayload<ExtArgs>[]
     training_session_templates: Prisma.$TrainingSessionTemplatePayload<ExtArgs>[]
+    push_tokens: Prisma.$PushTokenPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2011,6 +2176,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   workout_reminders<T extends Prisma.User$workout_remindersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$workout_remindersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkoutReminderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   mesocycle_templates<T extends Prisma.User$mesocycle_templatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$mesocycle_templatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MesocycleTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   training_session_templates<T extends Prisma.User$training_session_templatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$training_session_templatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TrainingSessionTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  push_tokens<T extends Prisma.User$push_tokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$push_tokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2649,6 +2815,30 @@ export type User$training_session_templatesArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.TrainingSessionTemplateScalarFieldEnum | Prisma.TrainingSessionTemplateScalarFieldEnum[]
+}
+
+/**
+ * User.push_tokens
+ */
+export type User$push_tokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PushToken
+   */
+  select?: Prisma.PushTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PushToken
+   */
+  omit?: Prisma.PushTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PushTokenInclude<ExtArgs> | null
+  where?: Prisma.PushTokenWhereInput
+  orderBy?: Prisma.PushTokenOrderByWithRelationInput | Prisma.PushTokenOrderByWithRelationInput[]
+  cursor?: Prisma.PushTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PushTokenScalarFieldEnum | Prisma.PushTokenScalarFieldEnum[]
 }
 
 /**

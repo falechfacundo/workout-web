@@ -124,6 +124,7 @@ export function ReminderForm({ reminder, onClose }: ReminderFormProps) {
                 <SelectItem value="browser">Browser</SelectItem>
                 <SelectItem value="email">Email</SelectItem>
                 <SelectItem value="both">Both</SelectItem>
+                <SelectItem value="push">Push (mobile app)</SelectItem>
               </SelectContent>
             </Select>
           </div>

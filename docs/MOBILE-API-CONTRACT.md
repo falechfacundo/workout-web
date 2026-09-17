@@ -120,6 +120,25 @@ inválidas, 429 si está bloqueado.
 Reusa `signUp` de `lib/actions/auth.ts` tal cual (mismo `AppError.conflict`
 si el email ya existe → 400 "Este email ya está registrado.").
 
+### `POST /auth/google`
+
+```ts
+// request
+{ id_token: string }
+// response 200
+{ token: string; user: { id, email, name: string | null, mustChangePassword: boolean } }
+```
+Login/registro con Google desde mobile (`@react-native-google-signin/google-signin`,
+ver `docs/GOOGLE-SIGNIN.md` en `workout-mobile`). `id_token` es el que devuelve
+`GoogleSignin.configure({ webClientId })` + `GoogleSignin.signIn()` en el
+cliente — se verifica server-side con `google-auth-library` contra `audience:
+GOOGLE_CLIENT_ID` (el mismo Web Client ID que usa NextAuth para el login web,
+no hace falta uno nuevo). Sin usuario existente: lo crea (mismo criterio que
+el `signIn` callback de NextAuth en `lib/auth.ts`). Si el email ya existe con
+otra cuenta (password u otro `google_id`): 400, no auto-linkea — el usuario
+tiene que loguearse con contraseña y vincular Google desde Ajustes (ver
+`POST /account/google` más abajo).
+
 ### `GET /me`
 
 Requiere auth. Devuelve el usuario + su `profile` (puede ser `null` si nunca
@@ -263,16 +282,53 @@ del middleware web, que no aplica a mobile. 400 si la cuenta no tiene
 Requiere auth. `{ linked: boolean; can_unlink: boolean }` — `can_unlink` es
 `false` si el usuario nunca puso password (se quedaría sin forma de entrar).
 
+### `POST /account/google`
+
+```ts
+// request
+{ id_token: string }
+// response 200
+{ linked: true }
+```
+Requiere auth. Vincula `google_id` a la cuenta ya logueada. A diferencia del
+flujo web (`/api/google-link` + callback, que depende de una cookie de sesión
+durante el redirect a Google), acá el cliente ya hizo el sign-in nativo
+(`@react-native-google-signin/google-signin`, mismo `idToken` que usa
+`POST /auth/google`) y lo manda directo — no hay round-trip con Google del
+lado servidor. Se verifica que `payload.email` coincida con el email de
+`apiUser` (si no, 400 — evita que un token válido de *otra* cuenta de Google
+se pueda vincular a la sesión de otro usuario). 400 si esa cuenta de Google
+ya está vinculada a otro usuario (`P2002` en `google_id`, que es `@unique`).
+
 ### `DELETE /account/google`
 
 Requiere auth. Desvincula `google_id`. 400 con `can_unlink: false` (ver
-arriba). **No hay endpoint para *vincular* Google desde mobile todavía** —
-el flujo web (`/api/google-link` + `/api/google-link/callback`) es un
-redirect OAuth que identifica "quién está vinculando" por la cookie de
-sesión de NextAuth; no hay forma de pasarle el bearer token mobile a través
-de ese round-trip con Google sin rediseñar el callback para aceptar también
-un token (ej. vía `state`). Pendiente — ver Google Sign-In nativo en el
-roadmap de `workout-mobile`.
+arriba).
+
+### `POST /push-token`
+
+```ts
+// request
+{ token: string; platform: "ios" | "android" }
+// response 200
+{ registered: true }
+```
+Requiere auth. Upsert por `token` (`@unique` en `PushToken`) — si ese token
+ya estaba registrado a otro usuario (reinstalación de la app, o logout +
+login con otra cuenta en el mismo device), se reasigna. `token` es el que
+devuelve `Notifications.getExpoPushTokenAsync()` en mobile
+(`lib/notifications/push.ts`), no un token nativo de FCM/APNs — el dispatcher
+(`app/api/cron/workout-reminders`) le pega a la Expo Push API con esto.
+
+### `DELETE /push-token`
+
+```ts
+// request
+{ token: string }
+```
+Requiere auth. Borra el token, scopeado también por `user_id` (no solo
+`token`) — no se puede borrar el token de otro usuario. Se llama en logout
+(`lib/auth/auth-context.tsx`), antes de limpiar el bearer.
 
 ## Optimistic updates — dónde sí y dónde no
 
@@ -311,13 +367,18 @@ después codear:
   Deliberadamente fuera de v1: la planificación se hace en el dashboard web,
   mobile es "ver el plan + loguear el entrenamiento". Si eso cambia, es
   trabajo nuevo, no un gap a completar rápido.
-- **Vincular Google desde mobile** (solo desvincular está implementado —
-  ver `DELETE /account/google` arriba) y **Google Sign-In nativo** (login,
-  no solo linking) — ambos requieren `expo-auth-session` contra el mismo
-  `GoogleProvider` + rediseñar el callback para aceptar bearer.
-- **Push notifications** — `WorkoutReminder.notification_type` solo soporta
-  `"browser"` hoy; agregar `"push"` + guardar el Expo push token es cambio de
-  schema + endpoint nuevo (`POST /me/push-token`).
+- **Push notifications.** OJO con esto — no es solo "agregar un tipo de
+  notificación": `WorkoutReminder` (`day_of_week`/`time_of_day`/
+  `notification_type`) es hoy **puro CRUD sin dispatcher**. No hay cron, ni
+  service worker, ni envío de email — nada lee esa tabla más que el propio
+  form del dashboard. `notification_type` ya tiene `"browser"|"email"|"both"`
+  en el enum (`lib/schemas/workout-reminder.ts`) pero ninguno de los tres se
+  envía nunca. Para que mobile reciba un push de verdad hace falta, como
+  mínimo: (1) tabla para guardar Expo push tokens por usuario, (2) un cron
+  (Vercel Cron → `vercel.json` + route protegida con `CRON_SECRET`) que
+  corra cada X minutos, matchee `WorkoutReminder`s cuyo `day_of_week`/
+  `time_of_day` caen en la ventana actual y no se mandaron hoy todavía, y
+  llame a la Expo Push API. Ver `docs/PUSH-NOTIFICATIONS.md` para el diseño.
 - **Paginación** en `/mesocycles` y `/workout-logs` (hoy: lista completa /
   últimos 50 fijo).
 - **CORS** — no configurado porque `fetch` de React Native no lo aplica

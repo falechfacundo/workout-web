@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  PushToken: 'PushToken',
   Profile: 'Profile',
   ProfileMeasurement: 'ProfileMeasurement',
   MuscleGroup: 'MuscleGroup',
@@ -101,6 +102,17 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const PushTokenScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  token: 'token',
+  platform: 'platform',
+  created_at: 'created_at'
+} as const
+
+export type PushTokenScalarFieldEnum = (typeof PushTokenScalarFieldEnum)[keyof typeof PushTokenScalarFieldEnum]
 
 
 export const ProfileScalarFieldEnum = {
@@ -307,6 +319,7 @@ export const WorkoutReminderScalarFieldEnum = {
   time_of_day: 'time_of_day',
   is_enabled: 'is_enabled',
   notification_type: 'notification_type',
+  last_sent_at: 'last_sent_at',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const

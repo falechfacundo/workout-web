@@ -1,0 +1,26 @@
+name: Workout reminders cron
+
+# GitHub Actions no garantiza el minuto exacto de un `schedule` (puede
+# atrasarse varios minutos, más en horas pico) y lo desactiva solo si el repo
+# pasa 60 días sin ningún push — no bloquea por inactividad del cron en sí.
+# El endpoint tolera hasta 20 min de atraso (WINDOW_MINUTES en
+# app/api/cron/workout-reminders/route.ts). Ver docs/PUSH-NOTIFICATIONS.md.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call workout-reminders dispatcher
+        run: |
+          status=$(curl -sS -o /tmp/body.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://workout-web-tau.vercel.app/api/cron/workout-reminders")
+          echo "HTTP $status"
+          cat /tmp/body.json
+          if [ "$status" -ge 300 ]; then
+            exit 1
+          fi
