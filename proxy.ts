@@ -1,38 +1,14 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 
-export default withAuth(
-  function middleware(req: any) {
-    const { pathname } = req.nextUrl;
-    const token = req.nextauth.token;
+// Auth.js v5: el proxy usa solo la config edge-safe (sin Prisma ni bcrypt).
+// Las reglas de acceso (auth pages, mustChangePassword, sesión obligatoria)
+// viven en el callback `authorized` de lib/auth.config.ts.
+const { auth } = NextAuth(authConfig);
 
-    // If user must change password, redirect to /change-password
-    // (except API auth routes)
-    if (
-      token?.mustChangePassword &&
-      pathname !== "/change-password" &&
-      !pathname.startsWith("/api/auth")
-    ) {
-      return NextResponse.redirect(new URL("/change-password", req.url));
-    }
-
-    // Authenticated users should not access auth pages
-    if (pathname.startsWith("/auth") && token) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      // Allow unauthenticated access to auth pages; protect everything else
-      authorized: ({ req, token }: { req: any; token: any }) => {
-        if (req.nextUrl.pathname.startsWith("/auth")) return true;
-        return !!token;
-      },
-    },
-  }
-);
+export const proxy = auth as unknown as (
+  request: Request
+) => Promise<Response | undefined>;
 
 export const config = {
   matcher: ["/dashboard/:path*", "/auth/:path*", "/change-password"],
