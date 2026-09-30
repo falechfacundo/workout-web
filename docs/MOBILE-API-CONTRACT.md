@@ -222,6 +222,13 @@ en un único `db.$transaction`.
 // response 201: WorkoutLog completo con exercise_logs
 ```
 
+**Idempotente por `(usuario, start_time)`:** si ya existe un `WorkoutLog` del usuario con ese
+`start_time`, se devuelve **200** con el log existente en lugar de crear otro. Existe para que el
+cliente mobile pueda reintentar con seguridad un envío cuya respuesta no llegó (el payload se
+guarda en el teléfono y se reenvía idéntico). No hay `UNIQUE` en la base todavía: dos requests
+*simultáneos* idénticos podrían duplicar; el cliente serializa los envíos, así que en la práctica
+no ocurre. Endurecerlo con un índice único `(user_id, start_time)` es una mejora pendiente.
+
 **Por qué transaccional y no incremental:** guardar con una llamada por set
 (4+N llamadas de red) puede fallar a la mitad sobre una red mobile y dejar un
 `WorkoutLog` sin `end_time`/sets o una sesión sin marcar completada. El

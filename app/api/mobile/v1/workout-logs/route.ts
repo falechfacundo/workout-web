@@ -92,6 +92,17 @@ export async function POST(request: NextRequest) {
       if (!mesocycle) return errorResponse("Mesociclo no encontrado.", 404);
     }
 
+    // Idempotencia: si el celular no recibió la respuesta (red caída justo después de que el servidor guardó),
+    // el reintento manda el MISMO payload. La clave natural es (usuario, start_time): un mismo usuario no
+    // puede empezar dos entrenamientos en el mismo instante exacto. Devolvemos el existente en vez de duplicar.
+    const duplicate = await db.workoutLog.findFirst({
+      where: { user_id: apiUser.id, start_time: new Date(input.start_time) },
+      include: { exercise_logs: true },
+    });
+    if (duplicate) {
+      return successResponse(toPlainJSON(duplicate), "Entrenamiento ya guardado.");
+    }
+
     const workoutLog = await db.$transaction(async (tx) => {
       const log = await tx.workoutLog.create({
         data: {
