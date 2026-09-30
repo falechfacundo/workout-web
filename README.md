@@ -26,7 +26,7 @@ Bienvenido al repositorio de **Workout App** (también llamada GymTrack), una ap
 
 ### 🔐 Autenticación y Seguridad
 
-- 🛡️ **NextAuth v4 (Credentials)**: Login/registro con email + contraseña (bcrypt, 10 rounds)
+- 🛡️ **Auth.js v5 (Credentials + Google)**: Login/registro con email + contraseña (bcrypt, 10 rounds)
 - 🔒 **Server Actions**: Validación de autenticación en servidor (`getServerUser()`) y contrato `{ data, error }` vía `safeAction`
 - 🛡️ **Middleware protector** (`proxy.ts`): Protección a nivel de ruta con Next.js 16
 - 🔑 **Cambio de contraseña**: Flujo `/change-password` que requiere la contraseña actual

@@ -6,7 +6,7 @@ Este proyecto está **en producción**. Los cambios afectan datos y usuarios rea
 
 - **Next.js 16** (App Router, Turbopack, root middleware en `proxy.ts`).
 - **TypeScript** tipado; server actions devuelven contrato `{ data, error }` vía `safeAction` (`lib/utils/safe-action.ts`).
-- **Auth**: NextAuth v4 (Credentials + bcrypt) + `getServerUser()` (`lib/auth.ts`).
+- **Auth**: Auth.js v5 (`next-auth@5.0.0-beta.32`, versión exacta; la 4.x sigue siendo `latest`). Credentials + Google + bcrypt. Config edge-safe en `lib/auth.config.ts` (callbacks y `authorized`), providers y base en `lib/auth.ts` (`{ handlers, auth, signIn, signOut }`), `proxy.ts` usa `auth`. Servidor: `auth()` / `getServerUser()`. Ver `AUTH-SYSTEM.md`.
 - **DB**: **Supabase solo como PostgreSQL**, accedida con **Prisma 7** + `@prisma/adapter-pg` (`lib/db.ts`, `prisma/schema.prisma`, `prisma.config.ts`). **No** hay Supabase Auth, RLS, Storage ni functions.
 - **UI/estado**: shadcn/ui (Radix + Tailwind), Zustand (`lib/stores/*`), React Hook Form + Zod (`lib/schemas/*`), Recharts, date-fns, Sonner.
 - **Docs de referencia**: `docs/DEPLOYMENT.md`, `AUTH-SYSTEM.md`, `lib/docs/*` (logging). No tocar `lib/docs/*` salvo que se pida.

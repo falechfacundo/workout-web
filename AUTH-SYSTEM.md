@@ -2,13 +2,13 @@
 
 ## Overview
 
-This document describes the authentication architecture implemented in the Workout app. The system uses **NextAuth.js v4** (Credentials provider) with **bcrypt** password hashing and a **Prisma**-backed `users` table. It provides multiple layers of protection for different parts of the application.
+This document describes the authentication architecture implemented in the Workout app. The system uses **Auth.js v5** (`next-auth@5.0.0-beta.32`, exact pin; Credentials + Google providers) with **bcrypt** password hashing and a **Prisma**-backed `users` table. It provides multiple layers of protection for different parts of the application.
 
 ## Authentication Components
 
 The authentication system consists of four main layers:
 
-1. **Route-level middleware** (`withAuth`) for broad protection of entire sections of the app
+1. **Route-level proxy** (`auth` with the edge-safe config in `lib/auth.config.ts`) for broad protection of entire sections of the app
 2. **`SessionProvider` (NextAuth)** for global authentication state management
 3. **Client-side hooks** for component-level protection
 4. **Server-side utilities** for authentication in server components and server actions
@@ -23,45 +23,34 @@ The authentication system consists of four main layers:
 
 The middleware intercepts all requests to protected routes and validates the user's authentication status (JWT cookie) before allowing access:
 
-- `withAuth` from `next-auth/middleware` maintains the session across page navigations
+- `NextAuth(authConfig).auth` (Auth.js v5) reads the session JWT; the access rules live in the `authorized` callback of `lib/auth.config.ts` (`next-auth/middleware` / `withAuth` no longer exist in v5)
 - Routes matching `/dashboard/:path*` are automatically protected
 - Unauthenticated users are redirected to `/auth/login`
 - Authenticated users trying to access auth pages are redirected to `/dashboard`
 - Users with `mustChangePassword` are redirected to `/change-password`
 
 ```typescript
-// Key middleware pattern (proxy.ts in Next 16)
+// proxy.ts (Next 16): uses only the edge-safe config (no Prisma, no bcrypt)
+const { auth } = NextAuth(authConfig);
+export const proxy = auth;
+
 export const config = {
   matcher: ["/dashboard/:path*", "/auth/:path*", "/change-password"],
 };
 
-export default withAuth(
-  function middleware(req) {
-    const { pathname } = req.nextUrl;
-    const isAuthed = !!req.nextauth.token;
-    const mustChangePassword = (req.nextauth.token as any)?.mustChangePassword;
+// lib/auth.config.ts → callbacks.authorized
+authorized({ auth, request }) {
+  const { pathname } = request.nextUrl;
+  const user = auth?.user;
 
-    if (pathname.startsWith("/auth") && isAuthed) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-    if (
-      mustChangePassword &&
-      !pathname.startsWith("/change-password") &&
-      !pathname.startsWith("/api/auth")
-    ) {
-      return NextResponse.redirect(new URL("/change-password", req.url));
-    }
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const pathname = req.nextUrl.pathname;
-        if (pathname.startsWith("/auth")) return true;
-        return !!token;
-      },
-    },
+  if (user?.mustChangePassword && pathname !== "/change-password" && !pathname.startsWith("/api/auth")) {
+    return NextResponse.redirect(new URL("/change-password", request.url));
   }
-);
+  if (pathname.startsWith("/auth")) {
+    return user ? NextResponse.redirect(new URL("/dashboard", request.url)) : true;
+  }
+  return !!user; // false → Auth.js redirects to pages.signIn (/auth/login)
+}
 ```
 
 ## 2. Auth Provider (SessionProvider)
@@ -128,11 +117,14 @@ const ProtectedPage = withAuth(MyPage);
 
 ### Files:
 
-- `/lib/auth.ts` (exports `authOptions` and `getServerUser()`)
+- `/lib/auth.ts` (exports `{ handlers, auth, signIn, signOut }`, `getServerUser()` and the mobile token helpers)
+- `/lib/auth.config.ts` (edge-safe config shared with `proxy.ts`)
 
 ### Functionality:
 
-Server components, API routes and server actions authenticate through NextAuth's `getServerSession`.
+Server components, API routes and server actions authenticate through Auth.js v5's `auth()`.
+
+> **Migration note (NextAuth v4 → Auth.js v5, 30/09/2026).** The session cookie is now `authjs.session-token`, so sessions opened before the deploy are closed once. Mobile bearer tokens are signed/read with an explicit salt (`encode`/`decode` require it in v5): tokens issued before the migration stop being valid and the mobile app must sign in again. `AUTH_SECRET` is preferred; `NEXTAUTH_SECRET` still works.
 
 #### getServerUser()
 
