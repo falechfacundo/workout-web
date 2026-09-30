@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import {
   successResponse,
   unauthorizedResponse,
@@ -12,7 +11,7 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) return unauthorizedResponse();
 
     const { currentPassword, newPassword } = await request.json();
