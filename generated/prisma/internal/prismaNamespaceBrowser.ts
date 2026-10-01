@@ -130,6 +130,7 @@ export const ProfileScalarFieldEnum = {
   weekly_availability: 'weekly_availability',
   session_duration_preference: 'session_duration_preference',
   preferred_unit: 'preferred_unit',
+  locale: 'locale',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const

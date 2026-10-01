@@ -11,9 +11,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 
 export function BasicInfoSection() {
   const form = useFormContext();
+  const t = useTranslations("exercises");
 
   return (
     <>
@@ -22,11 +24,11 @@ export function BasicInfoSection() {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>{t("name")}</FormLabel>
             <FormControl>
-              <Input placeholder="e.g., Bench Press" {...field} />
+              <Input placeholder={t("namePlaceholder")} {...field} />
             </FormControl>
-            <FormDescription>The name of the exercise</FormDescription>
+            <FormDescription>{t("nameDescription")}</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -36,17 +38,15 @@ export function BasicInfoSection() {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description</FormLabel>
+            <FormLabel>{t("description")}</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="e.g., Lie on a bench and press the weight upward"
+                placeholder={t("descriptionPlaceholder")}
                 {...field}
                 value={field.value || ""}
               />
             </FormControl>
-            <FormDescription>
-              A brief description of how to perform the exercise
-            </FormDescription>
+            <FormDescription>{t("descriptionDescription")}</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -56,17 +56,15 @@ export function BasicInfoSection() {
         name="video_url"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Video URL</FormLabel>
+            <FormLabel>{t("videoUrl")}</FormLabel>
             <FormControl>
               <Input
-                placeholder="e.g., https://youtube.com/watch?v=..."
+                placeholder={t("videoUrlPlaceholder")}
                 {...field}
                 value={field.value || ""}
               />
             </FormControl>
-            <FormDescription>
-              Optional link to a demonstration video
-            </FormDescription>
+            <FormDescription>{t("videoUrlDescription")}</FormDescription>
             <FormMessage />
           </FormItem>
         )}

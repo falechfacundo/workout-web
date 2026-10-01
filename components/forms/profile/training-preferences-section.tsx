@@ -15,12 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("training-preferences-section");
 
 export function TrainingPreferencesSection() {
   const form = useFormContext();
+  const t = useTranslations("profileForm");
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -29,7 +31,7 @@ export function TrainingPreferencesSection() {
         name="experience_level"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Experience Level</FormLabel>
+            <FormLabel>{t("experienceLevel")}</FormLabel>
             <Select
               onValueChange={(value) => {
                 logger.debug("Experience level changed", { value });
@@ -39,14 +41,14 @@ export function TrainingPreferencesSection() {
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select your experience level" />
+                  <SelectValue placeholder={t("experiencePlaceholder")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-                <SelectItem value="expert">Expert</SelectItem>
+                <SelectItem value="beginner">{t("experienceBeginner")}</SelectItem>
+                <SelectItem value="intermediate">{t("experienceIntermediate")}</SelectItem>
+                <SelectItem value="advanced">{t("experienceAdvanced")}</SelectItem>
+                <SelectItem value="expert">{t("experienceExpert")}</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -59,7 +61,7 @@ export function TrainingPreferencesSection() {
         name="training_goal"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Training Goal</FormLabel>
+            <FormLabel>{t("trainingGoal")}</FormLabel>
             <Select
               onValueChange={(value) => {
                 logger.debug("Training goal changed", { value });
@@ -69,18 +71,18 @@ export function TrainingPreferencesSection() {
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select your primary goal" />
+                  <SelectValue placeholder={t("trainingGoalPlaceholder")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="strength">Strength</SelectItem>
+                <SelectItem value="strength">{t("goalStrength")}</SelectItem>
                 <SelectItem value="hypertrophy">
-                  Hypertrophy (Muscle Growth)
+                  {t("goalHypertrophy")}
                 </SelectItem>
-                <SelectItem value="endurance">Endurance</SelectItem>
-                <SelectItem value="weight_loss">Weight Loss</SelectItem>
-                <SelectItem value="general_fitness">General Fitness</SelectItem>
-                <SelectItem value="sport_specific">Sport Specific</SelectItem>
+                <SelectItem value="endurance">{t("goalEndurance")}</SelectItem>
+                <SelectItem value="weight_loss">{t("goalWeightLoss")}</SelectItem>
+                <SelectItem value="general_fitness">{t("goalGeneralFitness")}</SelectItem>
+                <SelectItem value="sport_specific">{t("goalSportSpecific")}</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -93,7 +95,7 @@ export function TrainingPreferencesSection() {
         name="weekly_availability"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Weekly Availability (days)</FormLabel>
+            <FormLabel>{t("weeklyAvailability")}</FormLabel>
             <Select
               onValueChange={(value) => {
                 const intValue = parseInt(value);
@@ -106,7 +108,7 @@ export function TrainingPreferencesSection() {
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Days per week" />
+                  <SelectValue placeholder={t("daysPerWeek")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
@@ -129,7 +131,7 @@ export function TrainingPreferencesSection() {
         name="session_duration_preference"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Preferred Session Duration (minutes)</FormLabel>
+            <FormLabel>{t("sessionDuration")}</FormLabel>
             <Select
               onValueChange={(value) => {
                 const intValue = parseInt(value);
@@ -142,7 +144,7 @@ export function TrainingPreferencesSection() {
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Minutes per session" />
+                  <SelectValue placeholder={t("minutesPerSession")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>

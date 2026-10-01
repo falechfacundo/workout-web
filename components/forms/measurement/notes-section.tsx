@@ -9,12 +9,14 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("measurement-notes-section");
 
 export function NotesSection() {
   const form = useFormContext();
+  const t = useTranslations("measurementForm");
 
   return (
     <FormField
@@ -22,10 +24,10 @@ export function NotesSection() {
       name="notes"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Notes</FormLabel>
+          <FormLabel>{t("notes")}</FormLabel>
           <FormControl>
             <Textarea
-              placeholder="Any additional notes about these measurements"
+              placeholder={t("notesPlaceholder")}
               className="resize-none"
               {...field}
               value={field.value || ""}

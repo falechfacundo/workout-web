@@ -10,6 +10,7 @@ import {
 import { type ExerciseWithRelations } from "@/lib/schemas/exercise";
 import { Dumbbell } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface ExerciseCardProps {
   exercise: ExerciseWithRelations;
@@ -22,6 +23,8 @@ const incidenceToPercentage = (level?: number) => {
 };
 
 export function ExerciseCard({ exercise }: ExerciseCardProps) {
+  const t = useTranslations("exercises");
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
@@ -31,7 +34,7 @@ export function ExerciseCard({ exercise }: ExerciseCardProps) {
         <div>
           <CardTitle>{exercise.name}</CardTitle>
           <CardDescription>
-            {exercise.description || "No description"}
+            {exercise.description || t("noDescription")}
           </CardDescription>
         </div>
       </CardHeader>
@@ -54,7 +57,7 @@ export function ExerciseCard({ exercise }: ExerciseCardProps) {
           {!exercise.is_default && (
             <Button variant="outline" size="sm" asChild>
               <Link href={`/dashboard/exercises/edit/${exercise.id}`}>
-                Edit
+                {t("editButton")}
               </Link>
             </Button>
           )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +40,7 @@ import { ListCardSkeleton } from "@/components/ui/data-skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WorkoutLogsPage() {
+  const t = useTranslations("workoutLogs");
   const { user } = useRequireAuth();
   const [, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -170,10 +172,8 @@ export default function WorkoutLogsPage() {
         <div className="grid gap-4 md:gap-8">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Workout Logs</h1>
-              <p className="text-muted-foreground">
-                Track and review your workout history.
-              </p>
+              <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+              <p className="text-muted-foreground">{t("subtitle")}</p>
             </div>
             <Skeleton className="h-9 w-40" />
           </div>
@@ -193,7 +193,7 @@ export default function WorkoutLogsPage() {
             <CardContent className="flex flex-col items-center justify-center p-6">
               <Dumbbell className="mb-4 h-12 w-12 text-muted-foreground/50" />
               <p className="mb-2 text-center text-lg font-medium">
-                Error loading workout logs
+                {t("errorTitle")}
               </p>
               <p className="mb-4 text-center text-muted-foreground">
                 {workoutLogsError}
@@ -210,15 +210,13 @@ export default function WorkoutLogsPage() {
       <div className="grid gap-4 md:gap-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Workout Logs</h1>
-            <p className="text-muted-foreground">
-              Track and review your workout history.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           <Button asChild>
             <Link href="/dashboard/workout-logs/new">
               <Plus className="mr-2 h-4 w-4" />
-              Start New Workout
+              {t("startWorkout")}
             </Link>
           </Button>
         </div>
@@ -227,7 +225,7 @@ export default function WorkoutLogsPage() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search workout logs..."
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={handleSearch}
               className="w-full bg-background pl-8"
@@ -245,18 +243,18 @@ export default function WorkoutLogsPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full sm:w-auto">
                 <Calendar className="mr-2 h-4 w-4" />
-                Filter by Mesocycle
+                {t("filterByMesocycle")}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Mesocycles</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("mesocyclesLabel")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuCheckboxItem
                 checked={selectedMesocycleId === null}
                 onClick={() => handleMesocycleFilter(null)}
               >
-                All
+                {t("all")}
               </DropdownMenuCheckboxItem>
               {mesocycles.map((mesocycle) => (
                 <DropdownMenuCheckboxItem
@@ -276,7 +274,7 @@ export default function WorkoutLogsPage() {
           <div className="flex flex-wrap gap-2">
             {searchQuery && (
               <Badge variant="secondary" className="flex items-center gap-1">
-                Search: {searchQuery}
+                {t("searchLabel")}: {searchQuery}
                 <button onClick={clearSearch} className="ml-1">
                   <X className="h-3 w-3" />
                 </button>
@@ -284,9 +282,9 @@ export default function WorkoutLogsPage() {
             )}
             {selectedMesocycleId && (
               <Badge variant="secondary" className="flex items-center gap-1">
-                Mesocycle:{" "}
+                {t("mesocycleLabel")}:{" "}
                 {mesocycles.find((m) => m.id === selectedMesocycleId)?.name ||
-                  "Unknown"}
+                  t("unknown")}
                 <button onClick={clearFilter} className="ml-1">
                   <X className="h-3 w-3" />
                 </button>
@@ -302,19 +300,19 @@ export default function WorkoutLogsPage() {
                 <Dumbbell className="mb-4 h-12 w-12 text-muted-foreground/50" />
                 <p className="mb-2 text-center text-lg font-medium">
                   {workoutLogs.length === 0
-                    ? "No workout logs yet"
-                    : "No workout logs found matching your search criteria"}
+                    ? t("emptyTitleNone")
+                    : t("emptyTitleFiltered")}
                 </p>
                 <p className="mb-4 text-center text-muted-foreground">
                   {workoutLogs.length === 0
-                    ? "Start tracking your workouts to see your progress over time."
-                    : "Try adjusting your search or filters."}
+                    ? t("emptySubtitleNone")
+                    : t("emptySubtitleFiltered")}
                 </p>
                 {workoutLogs.length === 0 && (
                   <Button asChild>
                     <Link href="/dashboard/workout-logs/new">
                       <Plus className="mr-2 h-4 w-4" />
-                      Start First Workout
+                      {t("startFirstWorkout")}
                     </Link>
                   </Button>
                 )}
@@ -337,7 +335,7 @@ export default function WorkoutLogsPage() {
                         </div>
                         <div>
                           <CardTitle>
-                            {log.session?.name || "Custom Workout"}
+                            {log.session?.name || t("customWorkout")}
                           </CardTitle>
                           <CardDescription>
                             {log.mesocycle?.name
@@ -347,13 +345,13 @@ export default function WorkoutLogsPage() {
                           </CardDescription>
                         </div>
                       </div>
-                      <Badge>
+                      <Badge variant={log.end_time ? "outline" : "default"}>
                         {log.end_time
                           ? new Date(log.date).toLocaleDateString() ===
                             new Date().toLocaleDateString()
-                            ? "Today"
+                            ? t("today")
                             : new Date(log.date).toLocaleDateString()
-                          : "In Progress"}
+                          : t("inProgress")}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -361,28 +359,28 @@ export default function WorkoutLogsPage() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                         <div>
-                          <div className="text-sm font-medium">Duration</div>
+                          <div className="text-sm font-medium">{t("duration")}</div>
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Clock className="h-4 w-4" />
-                            <span>{log.duration_minutes || "?"} minutes</span>
+                            <span>{log.duration_minutes || "?"} {t("minutes")}</span>
                           </div>
                         </div>
                         <div>
-                          <div className="text-sm font-medium">Exercises</div>
+                          <div className="text-sm font-medium">{t("exercisesLabel")}</div>
                           <div className="text-muted-foreground">
                             {new Set(sets.map((set) => set.exercise_id)).size}{" "}
-                            completed
+                            {t("completed")}
                           </div>
                         </div>
                         <div>
-                          <div className="text-sm font-medium">Volume</div>
+                          <div className="text-sm font-medium">{t("volume")}</div>
                           <div className="text-muted-foreground">
-                            {sets.length} sets
+                            {sets.length} {t("sets")}
                           </div>
                         </div>
                         <div>
                           <div className="text-sm font-medium">
-                            Total Weight
+                            {t("totalWeight")}
                           </div>
                           <div className="text-muted-foreground">
                             {sets
@@ -401,14 +399,14 @@ export default function WorkoutLogsPage() {
 
                       <Tabs defaultValue="exercises">
                         <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="exercises">Exercises</TabsTrigger>
+                          <TabsTrigger value="exercises">{t("exercisesTab")}</TabsTrigger>
                           <TabsTrigger value="muscle-groups">
-                            Muscle Groups
+                            {t("muscleGroupsTab")}
                           </TabsTrigger>
                         </TabsList>
                         <TabsContent value="exercises" className="mt-4">
                           <div className="space-y-2">
-                            <div className="text-sm font-medium">Exercises</div>
+                            <div className="text-sm font-medium">{t("exercisesLabel")}</div>
                             <div className="flex flex-wrap gap-2">
                               {Array.from(
                                 new Set(
@@ -429,7 +427,7 @@ export default function WorkoutLogsPage() {
                                 )
                               ).length === 0 && (
                                 <span className="text-muted-foreground">
-                                  No exercises recorded
+                                  {t("noExercisesRecorded")}
                                 </span>
                               )}
                             </div>
@@ -438,7 +436,7 @@ export default function WorkoutLogsPage() {
                         <TabsContent value="muscle-groups" className="mt-4">
                           <div className="space-y-4">
                             <div className="text-sm font-medium">
-                              Volume by Muscle Group
+                              {t("volumeByMuscleGroup")}
                             </div>
                             <div className="h-64">
                               <MuscleGroupVolumeChart data={muscleGroupData} />
@@ -450,7 +448,7 @@ export default function WorkoutLogsPage() {
                       <div className="flex justify-end gap-2">
                         <Button size="sm" asChild>
                           <Link href={`/dashboard/workout-logs/${log.id}`}>
-                            View Details
+                            {t("viewDetails")}
                           </Link>
                         </Button>
                       </div>

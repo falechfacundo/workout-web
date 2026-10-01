@@ -5,11 +5,13 @@ import { ExerciseForm } from "@/components/forms/exercise/exercise-form";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartSkeleton } from "@/components/ui/data-skeletons";
 
 export default function NewExercisePage() {
+  const t = useTranslations("exercises");
   // Use auth protection
   const { user, isLoading } = useRequireAuth();
 
@@ -43,14 +45,12 @@ export default function NewExercisePage() {
           <Button variant="outline" size="icon" asChild>
             <Link href="/dashboard/exercises">
               <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
+              <span className="sr-only">{t("back")}</span>
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Add Exercise</h1>
-            <p className="text-muted-foreground">
-              Create a new exercise for your training programs.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t("addPageTitle")}</h1>
+            <p className="text-muted-foreground">{t("addPageSubtitle")}</p>
           </div>
         </div>
 

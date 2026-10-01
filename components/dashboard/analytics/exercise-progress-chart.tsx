@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { useTranslations } from "next-intl"
 import { getExerciseProgress } from "@/lib/actions/analytics"
 import { getExercises } from "@/lib/actions/exercises"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,6 +15,7 @@ interface ExerciseProgressChartProps {
 }
 
 export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
+  const t = useTranslations("analytics")
   const [data, setData] = useState<any[]>([])
   const [exercises, setExercises] = useState<any[]>([])
   const [selectedExercise, setSelectedExercise] = useState<string>("")
@@ -62,19 +64,19 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
 
   const getExerciseName = () => {
     const exercise = exercises.find((e) => e.id === selectedExercise)
-    return exercise ? exercise.name : "Select an exercise"
+    return exercise ? exercise.name : t("selectExercise")
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-0.5">
-          <CardTitle>Exercise Progress</CardTitle>
-          <CardDescription>Track your strength gains over time</CardDescription>
+          <CardTitle>{t("exerciseProgressTitle")}</CardTitle>
+          <CardDescription>{t("exerciseProgressDesc")}</CardDescription>
         </div>
         <Select value={selectedExercise} onValueChange={handleExerciseChange} disabled={isExercisesLoading}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select exercise" />
+            <SelectValue placeholder={t("selectExercise")} />
           </SelectTrigger>
           <SelectContent>
             {exercises.map((exercise) => (
@@ -90,17 +92,17 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
           <Skeleton className="h-[300px] w-full rounded-lg" />
         ) : data.length === 0 ? (
           <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-            No data available for {getExerciseName()}
+            {t("noDataExercise", { exercise: getExerciseName() })}
           </div>
         ) : (
           <ChartContainer
             config={{
               weight: {
-                label: "Weight",
+                label: t("weightLabel"),
                 color: "hsl(var(--chart-1))",
               },
               volume: {
-                label: "Volume",
+                label: t("volumeLabel"),
                 color: "hsl(var(--chart-2))",
               },
             }}
@@ -127,7 +129,7 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   activeDot={{ r: 6 }}
-                  name="Weight"
+                  name={t("weightLabel")}
                 />
                 <Line
                   yAxisId="right"
@@ -137,7 +139,7 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   activeDot={{ r: 6 }}
-                  name="Volume"
+                  name={t("volumeLabel")}
                 />
               </LineChart>
             </ResponsiveContainer>

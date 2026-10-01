@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
@@ -17,6 +18,7 @@ import { useProfileStore } from "@/lib/stores/profile-store";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfilePage() {
+  const t = useTranslations("profile");
   const { profile, isLoading, error, fetchProfile } = useProfileStore();
 
   useEffect(() => {
@@ -64,21 +66,19 @@ export default function ProfilePage() {
   return (
     <DashboardLayout>
       <div className="container py-10 max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Profile & Measurements</h1>
+      <h1 className="text-3xl font-bold mb-8">{t("title")}</h1>
 
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="profile">Personal Information</TabsTrigger>
-          <TabsTrigger value="measurements">Body Measurements</TabsTrigger>
+          <TabsTrigger value="profile">{t("tabPersonal")}</TabsTrigger>
+          <TabsTrigger value="measurements">{t("tabMeasurements")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
           <Card>
             <CardHeader>
-              <CardTitle>Personal Profile</CardTitle>
-              <CardDescription>
-                Update your personal information and preferences
-              </CardDescription>
+              <CardTitle>{t("cardTitle")}</CardTitle>
+              <CardDescription>{t("cardDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               <ProfileForm profile={profile} onSuccess={handleProfileUpdate} />
@@ -91,10 +91,7 @@ export default function ProfilePage() {
             <MeasurementHistory profile={profile} />
           ) : (
             <Alert>
-              <AlertDescription>
-                Please complete your profile information first before adding
-                measurements.
-              </AlertDescription>
+              <AlertDescription>{t("measurementsEmptyAlert")}</AlertDescription>
             </Alert>
           )}
         </TabsContent>

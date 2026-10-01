@@ -15,6 +15,7 @@ import { duplicateMesocycle } from "@/lib/actions/mesocycles";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { differenceInWeeks } from "date-fns";
 import { WeekContent } from "@/components/dashboard/mesocycles/week-content";
 import { ComplianceCard } from "@/components/dashboard/mesocycles/compliance-card";
@@ -31,6 +32,7 @@ import {
 export default function MesocycleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const t = useTranslations("mesocycleDetail");
   const { currentMesocycle, fetchMesocycle, isLoading, error } =
     useMesocyclesStore();
 
@@ -89,8 +91,22 @@ export default function MesocycleDetailPage() {
 
   // Si no hay datos, mostrar no encontrado
   if (!currentMesocycle) {
-    // return notFound();
-    return null;
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center gap-4 rounded-md border border-dashed p-12 text-center">
+          <h3 className="text-lg font-semibold">{t("notFoundTitle")}</h3>
+          <p className="text-sm text-muted-foreground">
+            {t("notFoundDescription")}
+          </p>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/mesocycles">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t("backToList")}
+            </Link>
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   // Calcular las semanas del mesociclo

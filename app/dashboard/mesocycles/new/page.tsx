@@ -5,11 +5,13 @@ import { MesocycleForm } from "@/components/forms/mesocycle/mesocycle-form";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartSkeleton } from "@/components/ui/data-skeletons";
 
 export default function NewMesocyclePage() {
+  const t = useTranslations("mesocycleForm");
   // Use auth protection
   const { user, isLoading } = useRequireAuth();
 
@@ -43,16 +45,14 @@ export default function NewMesocyclePage() {
           <Button variant="outline" size="icon" asChild>
             <Link href="/dashboard/mesocycles">
               <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
+              <span className="sr-only">{t("back")}</span>
             </Link>
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Create Mesocycle
+              {t("createPageTitle")}
             </h1>
-            <p className="text-muted-foreground">
-              Plan a new training program.
-            </p>
+            <p className="text-muted-foreground">{t("createPageSubtitle")}</p>
           </div>
         </div>
 

@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 import { getWorkoutLog, getWorkoutSets } from "@/lib/actions/workout-logs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MuscleGroupVolumeChart } from "@/components/dashboard/workout/muscle-group-volume-chart";
+import { getTranslations } from "next-intl/server";
 
 interface WorkoutLogDetailPageProps {
   params: Promise<{
@@ -24,6 +25,7 @@ export default async function WorkoutLogDetailPage({
   params,
 }: WorkoutLogDetailPageProps) {
   const { id } = await params;
+  const t = await getTranslations("workoutLogDetail");
 
   let workout: any;
   let sets: any[] = [];
@@ -64,12 +66,12 @@ export default async function WorkoutLogDetailPage({
               <Button variant="outline" size="icon" asChild>
                 <Link href="/dashboard/workout-logs">
                   <ArrowLeft className="h-4 w-4" />
-                  <span className="sr-only">Back</span>
+                  <span className="sr-only">{t("back")}</span>
                 </Link>
               </Button>
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">
-                  {workout.session?.name || "Custom Workout"}
+                  {workout.session?.name || t("customWorkout")}
                 </h1>
                 <p className="text-muted-foreground">
                   {workout.mesocycle?.name
@@ -83,8 +85,8 @@ export default async function WorkoutLogDetailPage({
 
           <Tabs defaultValue="exercises">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="exercises">Exercises</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="exercises">{t("exercisesTab")}</TabsTrigger>
+              <TabsTrigger value="analytics">{t("analyticsTab")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="exercises" className="mt-4">
@@ -109,10 +111,10 @@ export default async function WorkoutLogDetailPage({
                     <CardContent>
                       <div className="rounded-lg border">
                         <div className="grid grid-cols-12 gap-2 p-3 font-medium text-sm border-b">
-                          <div className="col-span-1">Set</div>
-                          <div className="col-span-3">Reps</div>
-                          <div className="col-span-3">Weight</div>
-                          <div className="col-span-2">RIR</div>
+                          <div className="col-span-1">{t("setLabel")}</div>
+                          <div className="col-span-3">{t("reps")}</div>
+                          <div className="col-span-3">{t("weight")}</div>
+                          <div className="col-span-2">{t("rir")}</div>
                           <div className="col-span-3"></div>
                         </div>
                         {item.sets.map((set: any) => (
@@ -147,10 +149,10 @@ export default async function WorkoutLogDetailPage({
                     <CardContent className="flex flex-col items-center justify-center p-6">
                       <Dumbbell className="mb-4 h-12 w-12 text-muted-foreground/50" />
                       <p className="mb-2 text-center text-lg font-medium">
-                        No exercises logged yet
+                        {t("noExercisesTitle")}
                       </p>
                       <p className="mb-4 text-center text-muted-foreground">
-                        Start adding exercises to track your workout.
+                        {t("noExercisesDesc")}
                       </p>
                     </CardContent>
                   </Card>
@@ -162,27 +164,25 @@ export default async function WorkoutLogDetailPage({
               <div className="grid gap-4">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Workout Summary</CardTitle>
-                    <CardDescription>
-                      Overview of your workout performance
-                    </CardDescription>
+                    <CardTitle>{t("summaryTitle")}</CardTitle>
+                    <CardDescription>{t("summaryDesc")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                       <div>
                         <div className="text-sm font-medium">
-                          Total Exercises
+                          {t("totalExercises")}
                         </div>
                         <div className="text-2xl font-bold">
                           {Object.keys(exerciseSets).length}
                         </div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium">Total Sets</div>
+                        <div className="text-sm font-medium">{t("totalSets")}</div>
                         <div className="text-2xl font-bold">{sets.length}</div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium">Total Reps</div>
+                        <div className="text-sm font-medium">{t("totalReps")}</div>
                         <div className="text-2xl font-bold">
                           {sets.reduce(
                             (sum: number, set: any) => sum + set.reps,
@@ -191,7 +191,7 @@ export default async function WorkoutLogDetailPage({
                         </div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium">Total Volume</div>
+                        <div className="text-sm font-medium">{t("totalVolume")}</div>
                         <div className="text-2xl font-bold">
                           {sets
                             .reduce(
@@ -208,9 +208,9 @@ export default async function WorkoutLogDetailPage({
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Volume by Muscle Group</CardTitle>
+                    <CardTitle>{t("volumeByMuscleGroupTitle")}</CardTitle>
                     <CardDescription>
-                      Training volume distribution across muscle groups
+                      {t("volumeByMuscleGroupDesc")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="h-80">

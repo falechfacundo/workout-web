@@ -19,12 +19,14 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("measurement-date-section");
 
 export function DateSection() {
   const form = useFormContext();
+  const t = useTranslations("measurementForm");
 
   return (
     <FormField
@@ -32,7 +34,7 @@ export function DateSection() {
       name="date"
       render={({ field }) => (
         <FormItem className="flex flex-col">
-          <FormLabel>Date</FormLabel>
+          <FormLabel>{t("date")}</FormLabel>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
@@ -46,7 +48,7 @@ export function DateSection() {
                   {field.value ? (
                     format(field.value, "PPP")
                   ) : (
-                    <span>Pick a date</span>
+                    <span>{t("pickDate")}</span>
                   )}
                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
@@ -65,9 +67,7 @@ export function DateSection() {
               />
             </PopoverContent>
           </Popover>
-          <FormDescription>
-            The date when measurements were taken
-          </FormDescription>
+          <FormDescription>{t("dateDescription")}</FormDescription>
           <FormMessage />
         </FormItem>
       )}

@@ -13,6 +13,7 @@ import {
 import { Calendar, ChevronDown, Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface SearchAndFilterBarProps {
   onSearch?: (query: string) => void;
@@ -27,6 +28,7 @@ export function SearchAndFilterBar({
   onFilterChange,
   currentFilter = null,
 }: SearchAndFilterBarProps) {
+  const t = useTranslations("mesocycles");
   const [inputValue, setInputValue] = useState(searchQuery);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +64,7 @@ export function SearchAndFilterBar({
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search mesocycles..."
+          placeholder={t("searchPlaceholder")}
           className="w-full bg-background pl-8"
           value={inputValue}
           onChange={handleSearch}
@@ -80,42 +82,44 @@ export function SearchAndFilterBar({
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full sm:w-auto">
             <Calendar className="mr-2 h-4 w-4" />
-            {currentFilter ? `Status: ${currentFilter}` : "Filter by Status"}
+            {currentFilter
+              ? `${t("statusLabelPrefix")}: ${currentFilter}`
+              : t("filterByStatus")}
             <ChevronDown className="ml-2 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Status</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("status")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem
             checked={currentFilter === null}
             onClick={() => handleFilterSelect(null)}
           >
-            All
+            {t("all")}
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             checked={currentFilter === "planned"}
             onClick={() => handleFilterSelect("planned")}
           >
-            Planned
+            {t("statusPlanned")}
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             checked={currentFilter === "in_progress"}
             onClick={() => handleFilterSelect("in_progress")}
           >
-            In Progress
+            {t("statusInProgress")}
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             checked={currentFilter === "completed"}
             onClick={() => handleFilterSelect("completed")}
           >
-            Completed
+            {t("statusCompleted")}
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             checked={currentFilter === "cancelled"}
             onClick={() => handleFilterSelect("cancelled")}
           >
-            Cancelled
+            {t("statusCancelled")}
           </DropdownMenuCheckboxItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -125,7 +129,7 @@ export function SearchAndFilterBar({
         <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
           {searchQuery && (
             <Badge variant="secondary" className="flex items-center gap-1">
-              Search: {searchQuery}
+              {t("searchLabel")}: {searchQuery}
               <button onClick={clearSearch} className="ml-1">
                 <X className="h-3 w-3" />
               </button>
@@ -133,7 +137,7 @@ export function SearchAndFilterBar({
           )}
           {currentFilter && (
             <Badge variant="secondary" className="flex items-center gap-1">
-              Status: {currentFilter}
+              {t("statusLabelPrefix")}: {currentFilter}
               <button onClick={clearFilter} className="ml-1">
                 <X className="h-3 w-3" />
               </button>

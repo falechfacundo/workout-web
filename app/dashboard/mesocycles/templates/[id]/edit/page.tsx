@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { MesocycleTemplateForm } from "@/components/forms/mesocycle-template/mesocycle-template-form";
 import { useMesocycleTemplatesStore } from "@/lib/stores/mesocycle-templates-store";
@@ -14,6 +15,7 @@ import type { MesocycleTemplateWithRelations } from "@/lib/schemas/mesocycle-tem
  * Antes el link "Editar" de cada card propio llevaba a un 404.
  */
 export default function EditMesocycleTemplatePage() {
+  const t = useTranslations("mesocycleTemplateForm");
   const params = useParams();
   const templateId = params.id as string;
   const { fetchTemplate, isLoading } = useMesocycleTemplatesStore();
@@ -50,7 +52,7 @@ export default function EditMesocycleTemplatePage() {
   if (notFound || !template) {
     return (
       <DashboardLayout>
-        <p className="text-destructive text-sm">No se encontró la plantilla.</p>
+        <p className="text-destructive text-sm">{t("notFound")}</p>
       </DashboardLayout>
     );
   }
@@ -60,11 +62,9 @@ export default function EditMesocycleTemplatePage() {
       <div className="grid gap-4 md:gap-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Editar: {template.name}
+            {t("editPageTitlePrefix")} {template.name}
           </h1>
-          <p className="text-muted-foreground">
-            Modificá los datos de tu plantilla de mesociclo.
-          </p>
+          <p className="text-muted-foreground">{t("editPageDesc")}</p>
         </div>
         <MesocycleTemplateForm
           initialTemplate={template}

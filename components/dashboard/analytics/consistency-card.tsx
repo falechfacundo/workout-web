@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Flame } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   Card,
@@ -35,6 +36,7 @@ function intensityClass(count: number | undefined) {
 }
 
 export function ConsistencyCard({ userId }: { userId: string }) {
+  const t = useTranslations("analytics");
   const [heatmap, setHeatmap] = useState<HeatmapEntry[]>([]);
   const [streak, setStreak] = useState<StreakData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,10 +75,10 @@ export function ConsistencyCard({ userId }: { userId: string }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Flame className="h-5 w-5 text-primary" />
-          Consistency
+          {t("consistencyTitle")}
         </CardTitle>
         <CardDescription>
-          Workouts over the last {WEEKS} weeks
+          {t("consistencyDesc", { weeks: WEEKS })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -93,7 +95,7 @@ export function ConsistencyCard({ userId }: { userId: string }) {
                   {streak?.currentStreak ?? 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Current streak (days)
+                  {t("currentStreak")}
                 </p>
               </div>
               <div>
@@ -101,13 +103,13 @@ export function ConsistencyCard({ userId }: { userId: string }) {
                   {streak?.longestStreak ?? 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Longest streak (days)
+                  {t("longestStreak")}
                 </p>
               </div>
               <div>
                 <div className="text-2xl font-bold">{heatmap.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  Active days (period)
+                  {t("activeDays")}
                 </p>
               </div>
             </div>
@@ -123,7 +125,7 @@ export function ConsistencyCard({ userId }: { userId: string }) {
               {days.map((day) => (
                 <div
                   key={day.date}
-                  title={`${day.date}: ${day.count ?? 0} workouts`}
+                  title={`${day.date}: ${day.count ?? 0} ${t("workoutsSuffix")}`}
                   className={`h-3 w-3 rounded-sm ${intensityClass(day.count)}`}
                 />
               ))}

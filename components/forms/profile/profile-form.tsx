@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -31,6 +32,7 @@ export function ProfileForm({
   profile: profileProp,
   onSuccess,
 }: ProfileFormProps) {
+  const t = useTranslations("profileForm");
   const [submitting, setSubmitting] = useState(false);
   const {
     profile: storeProfile,
@@ -108,7 +110,7 @@ export function ProfileForm({
 
   if (isLoading && !profileProp) {
     return (
-      <div className="flex justify-center p-8">Loading profile data...</div>
+      <div className="flex justify-center p-8">{t("loading")}</div>
     );
   }
 
@@ -117,22 +119,22 @@ export function ProfileForm({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="space-y-6">
-            <h3 className="text-lg font-medium">Personal Information</h3>
+            <h3 className="text-lg font-medium">{t("personalInfoTitle")}</h3>
             <PersonalInfoSection />
           </div>
 
           <div className="space-y-6">
-            <h3 className="text-lg font-medium">Physical Stats</h3>
+            <h3 className="text-lg font-medium">{t("physicalStatsTitle")}</h3>
             <PhysicalStatsSection />
           </div>
 
           <div className="space-y-6">
-            <h3 className="text-lg font-medium">Training Preferences</h3>
+            <h3 className="text-lg font-medium">{t("trainingPreferencesTitle")}</h3>
             <TrainingPreferencesSection />
           </div>
 
           <Button type="submit" disabled={submitting || isLoading}>
-            {submitting ? "Saving..." : "Save Profile"}
+            {submitting ? t("saving") : t("saveProfile")}
           </Button>
         </form>
       </Form>

@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 import { useTrainingSessionsStore } from "@/lib/stores/training-sessions-store";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,6 +30,7 @@ interface SessionSelectorProps {
 
 export function SessionSelector({ mesocycleId }: SessionSelectorProps) {
   const form = useFormContext();
+  const t = useTranslations("newWorkoutLog");
   const { sessions, isLoading, fetchSessionsByMesocycle } =
     useTrainingSessionsStore();
 
@@ -53,7 +55,7 @@ export function SessionSelector({ mesocycleId }: SessionSelectorProps) {
       name="training_session_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Training Session</FormLabel>
+          <FormLabel>{t("sessionLabel")}</FormLabel>
           <Select
             onValueChange={(value) => {
               logger.debug("Session selected", { sessionId: value });
@@ -63,11 +65,11 @@ export function SessionSelector({ mesocycleId }: SessionSelectorProps) {
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select a training session (optional)" />
+                <SelectValue placeholder={t("sessionPlaceholder")} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="">Custom Workout</SelectItem>
+              <SelectItem value="">{t("sessionCustom")}</SelectItem>
               {sessions.map((session) => (
                 <SelectItem key={session.id} value={session.id}>
                   {session.name}
@@ -75,9 +77,7 @@ export function SessionSelector({ mesocycleId }: SessionSelectorProps) {
               ))}
             </SelectContent>
           </Select>
-          <FormDescription>
-            The training session template to follow
-          </FormDescription>
+          <FormDescription>{t("sessionDescription")}</FormDescription>
           <FormMessage />
         </FormItem>
       )}

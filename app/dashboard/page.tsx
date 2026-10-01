@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import {
@@ -77,6 +78,7 @@ function MesocyclesListSkeleton() {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
   const [error, setError] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<any>(null);
   const [metricsLoading, setMetricsLoading] = useState(true);
@@ -105,7 +107,7 @@ export default function DashboardPage() {
         const metricsResult = await getPerformanceMetrics(user.id);
 
         if (metricsResult.error) {
-          setError("Error loading performance metrics");
+          setError(t("errorMetrics"));
         } else {
           setMetrics(
             metricsResult.data || {
@@ -129,14 +131,14 @@ export default function DashboardPage() {
         setVolumeLoading(false);
       } catch (err) {
         console.error("Dashboard error:", err);
-        setError("Error loading dashboard data");
+        setError(t("errorLoading"));
         setMetricsLoading(false);
         setVolumeLoading(false);
       }
     }
 
     loadData();
-  }, [authLoading, user, fetchActiveMesocycles, fetchWorkoutStats]);
+  }, [authLoading, user, fetchActiveMesocycles, fetchWorkoutStats, t]);
 
   if (authLoading && !user) {
     return (
@@ -144,10 +146,8 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:gap-8">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-              <p className="text-muted-foreground">
-                Welcome to your workout training management dashboard.
-              </p>
+              <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+              <p className="text-muted-foreground">{t("subtitle")}</p>
             </div>
             <Skeleton className="h-10 w-40" />
           </div>
@@ -209,13 +209,11 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:gap-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
-              Welcome to your workout training management dashboard.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           <Button asChild>
-            <Link href="/dashboard/workout-logs/new">Start New Workout</Link>
+            <Link href="/dashboard/workout-logs/new">{t("startWorkout")}</Link>
           </Button>
         </div>
 
@@ -227,83 +225,101 @@ export default function DashboardPage() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <MetricCard
-            title="Total Workouts"
+            title={t("totalWorkouts")}
             loading={metricsLoading}
             value={`${metrics?.totalWorkouts ?? 0}`}
-            caption="Workouts completed"
+            caption={t("totalWorkoutsCaption")}
           />
           <MetricCard
-            title="Total Volume"
+            title={t("totalVolume")}
             loading={metricsLoading}
             value={(metrics?.totalVolume ?? 0).toLocaleString()}
-            caption="Weight × reps this month"
+            caption={t("totalVolumeCaption")}
           />
           <MetricCard
-            title="Total Sets"
+            title={t("totalSets")}
             loading={metricsLoading}
             value={`${metrics?.totalSets ?? 0}`}
-            caption="Sets completed this month"
+            caption={t("totalSetsCaption")}
           />
           <MetricCard
-            title="Avg. Duration"
+            title={t("avgDuration")}
             loading={metricsLoading}
             value={`${metrics?.avgDuration ?? 0}`}
-            caption="Minutes per workout"
+            caption={t("avgDurationCaption")}
           />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
           <Card className="lg:col-span-4">
             <CardHeader>
-              <CardTitle>Upcoming Workouts</CardTitle>
-              <CardDescription>
-                Your scheduled training sessions for the next 7 days
-              </CardDescription>
+              <CardTitle>{t("upcomingTitle")}</CardTitle>
+              <CardDescription>{t("upcomingDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               {mesocyclesLoading ? (
                 <RowListSkeleton rows={3} />
               ) : activeMesocycles.length > 0 ? (
                 <div className="space-y-4">
-                  {activeMesocycles.slice(0, 3).map((mesocycle, index) => (
-                    <div
-                      key={mesocycle.id}
-                      className="flex items-center gap-4 rounded-lg border p-4"
-                    >
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Calendar className="h-6 w-6" />
+                  {activeMesocycles.slice(0, 3).map((mesocycle) => {
+                    const startDate = new Date(mesocycle.start_date);
+                    const endDate = new Date(mesocycle.end_date);
+                    const today = new Date();
+                    const totalWeeks = Math.max(
+                      1,
+                      Math.ceil(
+                        (endDate.getTime() - startDate.getTime()) /
+                          (1000 * 60 * 60 * 24 * 7)
+                      )
+                    );
+                    const currentWeek = Math.min(
+                      totalWeeks,
+                      Math.max(
+                        1,
+                        Math.ceil(
+                          (today.getTime() - startDate.getTime()) /
+                            (1000 * 60 * 60 * 24 * 7)
+                        )
+                      )
+                    );
+
+                    return (
+                      <div
+                        key={mesocycle.id}
+                        className="flex items-center gap-4 rounded-lg border p-4"
+                      >
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Calendar className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1 space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {mesocycle.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {t("weekOf", { current: currentWeek, total: totalWeeks })} •{" "}
+                            {mesocycle.status}
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/dashboard/mesocycles/${mesocycle.id}`}>
+                            {t("view")}
+                          </Link>
+                        </Button>
                       </div>
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {mesocycle.name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {["Today", "Tomorrow", "Friday"][index]} •{" "}
-                          {mesocycle.status}
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/dashboard/mesocycles/${mesocycle.id}`}>
-                          View
-                        </Link>
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="flex items-center justify-center p-4 text-center text-muted-foreground">
-                  <p>
-                    No active mesocycles. Create a training program to get
-                    started.
-                  </p>
+                  <p>{t("noActiveMesocycles")}</p>
                 </div>
               )}
             </CardContent>
           </Card>
           <Card className="lg:col-span-3">
             <CardHeader>
-              <CardTitle>Active Mesocycles</CardTitle>
-              <CardDescription>Your current training programs</CardDescription>
+              <CardTitle>{t("activeTitle")}</CardTitle>
+              <CardDescription>{t("activeDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               {mesocyclesLoading ? (
@@ -336,8 +352,10 @@ export default function DashboardPage() {
                         <div className="flex items-center justify-between">
                           <div className="font-medium">{mesocycle.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {Math.ceil(daysElapsed / 7)} of{" "}
-                            {Math.ceil(totalDays / 7)} weeks
+                            {t("weeksOf", {
+                              current: Math.ceil(daysElapsed / 7),
+                              total: Math.ceil(totalDays / 7),
+                            })}
                           </div>
                         </div>
                         <div className="h-2 rounded-full bg-muted">
@@ -348,13 +366,13 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex justify-between text-xs text-muted-foreground">
                           <div>
-                            Started:{" "}
+                            {t("started")}:{" "}
                             {new Date(
                               mesocycle.start_date
                             ).toLocaleDateString()}
                           </div>
                           <div>
-                            Ends:{" "}
+                            {t("ends")}:{" "}
                             {new Date(mesocycle.end_date).toLocaleDateString()}
                           </div>
                         </div>
@@ -364,10 +382,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="flex items-center justify-center p-4 text-center text-muted-foreground">
-                  <p>
-                    No active mesocycles. Create a training program to get
-                    started.
-                  </p>
+                  <p>{t("noActiveMesocycles")}</p>
                 </div>
               )}
             </CardContent>

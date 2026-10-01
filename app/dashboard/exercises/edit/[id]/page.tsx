@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 interface EditExercisePageProps {
   params: Promise<{
@@ -16,6 +17,7 @@ export default async function EditExercisePage({
   params,
 }: EditExercisePageProps) {
   const { id } = await params;
+  const t = await getTranslations("exercises");
 
   let exercise: Awaited<ReturnType<typeof getExercise>>;
   try {
@@ -31,16 +33,14 @@ export default async function EditExercisePage({
           <Button variant="outline" size="icon" asChild>
             <Link href="/dashboard/exercises">
               <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
+              <span className="sr-only">{t("back")}</span>
             </Link>
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Edit Exercise
+              {t("editPageTitle")}
             </h1>
-            <p className="text-muted-foreground">
-              Update an existing exercise.
-            </p>
+            <p className="text-muted-foreground">{t("editPageSubtitle")}</p>
           </div>
         </div>
 

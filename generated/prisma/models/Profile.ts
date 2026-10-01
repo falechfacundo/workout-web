@@ -55,6 +55,7 @@ export type ProfileMinAggregateOutputType = {
   weekly_availability: number | null
   session_duration_preference: number | null
   preferred_unit: string | null
+  locale: string | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -74,6 +75,7 @@ export type ProfileMaxAggregateOutputType = {
   weekly_availability: number | null
   session_duration_preference: number | null
   preferred_unit: string | null
+  locale: string | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -93,6 +95,7 @@ export type ProfileCountAggregateOutputType = {
   weekly_availability: number
   session_duration_preference: number
   preferred_unit: number
+  locale: number
   created_at: number
   updated_at: number
   _all: number
@@ -128,6 +131,7 @@ export type ProfileMinAggregateInputType = {
   weekly_availability?: true
   session_duration_preference?: true
   preferred_unit?: true
+  locale?: true
   created_at?: true
   updated_at?: true
 }
@@ -147,6 +151,7 @@ export type ProfileMaxAggregateInputType = {
   weekly_availability?: true
   session_duration_preference?: true
   preferred_unit?: true
+  locale?: true
   created_at?: true
   updated_at?: true
 }
@@ -166,6 +171,7 @@ export type ProfileCountAggregateInputType = {
   weekly_availability?: true
   session_duration_preference?: true
   preferred_unit?: true
+  locale?: true
   created_at?: true
   updated_at?: true
   _all?: true
@@ -272,6 +278,7 @@ export type ProfileGroupByOutputType = {
   weekly_availability: number | null
   session_duration_preference: number | null
   preferred_unit: string
+  locale: string
   created_at: Date
   updated_at: Date
   _count: ProfileCountAggregateOutputType | null
@@ -314,6 +321,7 @@ export type ProfileWhereInput = {
   weekly_availability?: Prisma.IntNullableFilter<"Profile"> | number | null
   session_duration_preference?: Prisma.IntNullableFilter<"Profile"> | number | null
   preferred_unit?: Prisma.StringFilter<"Profile"> | string
+  locale?: Prisma.StringFilter<"Profile"> | string
   created_at?: Prisma.DateTimeFilter<"Profile"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Profile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -335,6 +343,7 @@ export type ProfileOrderByWithRelationInput = {
   weekly_availability?: Prisma.SortOrderInput | Prisma.SortOrder
   session_duration_preference?: Prisma.SortOrderInput | Prisma.SortOrder
   preferred_unit?: Prisma.SortOrder
+  locale?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -359,6 +368,7 @@ export type ProfileWhereUniqueInput = Prisma.AtLeast<{
   weekly_availability?: Prisma.IntNullableFilter<"Profile"> | number | null
   session_duration_preference?: Prisma.IntNullableFilter<"Profile"> | number | null
   preferred_unit?: Prisma.StringFilter<"Profile"> | string
+  locale?: Prisma.StringFilter<"Profile"> | string
   created_at?: Prisma.DateTimeFilter<"Profile"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Profile"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -380,6 +390,7 @@ export type ProfileOrderByWithAggregationInput = {
   weekly_availability?: Prisma.SortOrderInput | Prisma.SortOrder
   session_duration_preference?: Prisma.SortOrderInput | Prisma.SortOrder
   preferred_unit?: Prisma.SortOrder
+  locale?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   _count?: Prisma.ProfileCountOrderByAggregateInput
@@ -407,6 +418,7 @@ export type ProfileScalarWhereWithAggregatesInput = {
   weekly_availability?: Prisma.IntNullableWithAggregatesFilter<"Profile"> | number | null
   session_duration_preference?: Prisma.IntNullableWithAggregatesFilter<"Profile"> | number | null
   preferred_unit?: Prisma.StringWithAggregatesFilter<"Profile"> | string
+  locale?: Prisma.StringWithAggregatesFilter<"Profile"> | string
   created_at?: Prisma.DateTimeWithAggregatesFilter<"Profile"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"Profile"> | Date | string
 }
@@ -425,6 +437,7 @@ export type ProfileCreateInput = {
   weekly_availability?: number | null
   session_duration_preference?: number | null
   preferred_unit?: string
+  locale?: string
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutProfileInput
@@ -446,6 +459,7 @@ export type ProfileUncheckedCreateInput = {
   weekly_availability?: number | null
   session_duration_preference?: number | null
   preferred_unit?: string
+  locale?: string
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutCreated_by_profileInput
@@ -465,6 +479,7 @@ export type ProfileUpdateInput = {
   weekly_availability?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   session_duration_preference?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   preferred_unit?: Prisma.StringFieldUpdateOperationsInput | string
+  locale?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutProfileNestedInput
@@ -486,6 +501,7 @@ export type ProfileUncheckedUpdateInput = {
   weekly_availability?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   session_duration_preference?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   preferred_unit?: Prisma.StringFieldUpdateOperationsInput | string
+  locale?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutCreated_by_profileNestedInput
@@ -506,6 +522,7 @@ export type ProfileCreateManyInput = {
   weekly_availability?: number | null
   session_duration_preference?: number | null
   preferred_unit?: string
+  locale?: string
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -524,6 +541,7 @@ export type ProfileUpdateManyMutationInput = {
   weekly_availability?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   session_duration_preference?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   preferred_unit?: Prisma.StringFieldUpdateOperationsInput | string
+  locale?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -543,6 +561,7 @@ export type ProfileUncheckedUpdateManyInput = {
   weekly_availability?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   session_duration_preference?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   preferred_unit?: Prisma.StringFieldUpdateOperationsInput | string
+  locale?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -567,6 +586,7 @@ export type ProfileCountOrderByAggregateInput = {
   weekly_availability?: Prisma.SortOrder
   session_duration_preference?: Prisma.SortOrder
   preferred_unit?: Prisma.SortOrder
+  locale?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -593,6 +613,7 @@ export type ProfileMaxOrderByAggregateInput = {
   weekly_availability?: Prisma.SortOrder
   session_duration_preference?: Prisma.SortOrder
   preferred_unit?: Prisma.SortOrder
+  locale?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -612,6 +633,7 @@ export type ProfileMinOrderByAggregateInput = {
   weekly_availability?: Prisma.SortOrder
   session_duration_preference?: Prisma.SortOrder
   preferred_unit?: Prisma.SortOrder
+  locale?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -705,6 +727,7 @@ export type ProfileCreateWithoutUserInput = {
   weekly_availability?: number | null
   session_duration_preference?: number | null
   preferred_unit?: string
+  locale?: string
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_templates?: Prisma.MesocycleTemplateCreateNestedManyWithoutCreated_by_profileInput
@@ -724,6 +747,7 @@ export type ProfileUncheckedCreateWithoutUserInput = {
   weekly_availability?: number | null
   session_duration_preference?: number | null
   preferred_unit?: string
+  locale?: string
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedCreateNestedManyWithoutCreated_by_profileInput
@@ -759,6 +783,7 @@ export type ProfileUpdateWithoutUserInput = {
   weekly_availability?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   session_duration_preference?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   preferred_unit?: Prisma.StringFieldUpdateOperationsInput | string
+  locale?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_templates?: Prisma.MesocycleTemplateUpdateManyWithoutCreated_by_profileNestedInput
@@ -778,6 +803,7 @@ export type ProfileUncheckedUpdateWithoutUserInput = {
   weekly_availability?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   session_duration_preference?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   preferred_unit?: Prisma.StringFieldUpdateOperationsInput | string
+  locale?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_templates?: Prisma.MesocycleTemplateUncheckedUpdateManyWithoutCreated_by_profileNestedInput
@@ -797,6 +823,7 @@ export type ProfileCreateWithoutMesocycle_templatesInput = {
   weekly_availability?: number | null
   session_duration_preference?: number | null
   preferred_unit?: string
+  locale?: string
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutProfileInput
@@ -817,6 +844,7 @@ export type ProfileUncheckedCreateWithoutMesocycle_templatesInput = {
   weekly_availability?: number | null
   session_duration_preference?: number | null
   preferred_unit?: string
+  locale?: string
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -851,6 +879,7 @@ export type ProfileUpdateWithoutMesocycle_templatesInput = {
   weekly_availability?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   session_duration_preference?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   preferred_unit?: Prisma.StringFieldUpdateOperationsInput | string
+  locale?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutProfileNestedInput
@@ -871,6 +900,7 @@ export type ProfileUncheckedUpdateWithoutMesocycle_templatesInput = {
   weekly_availability?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   session_duration_preference?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   preferred_unit?: Prisma.StringFieldUpdateOperationsInput | string
+  locale?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -921,6 +951,7 @@ export type ProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   weekly_availability?: boolean
   session_duration_preference?: boolean
   preferred_unit?: boolean
+  locale?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -943,6 +974,7 @@ export type ProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   weekly_availability?: boolean
   session_duration_preference?: boolean
   preferred_unit?: boolean
+  locale?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -963,6 +995,7 @@ export type ProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   weekly_availability?: boolean
   session_duration_preference?: boolean
   preferred_unit?: boolean
+  locale?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -983,11 +1016,12 @@ export type ProfileSelectScalar = {
   weekly_availability?: boolean
   session_duration_preference?: boolean
   preferred_unit?: boolean
+  locale?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type ProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "username" | "full_name" | "avatar_url" | "weight_kg" | "height_cm" | "birth_date" | "sex" | "experience_level" | "training_goal" | "weekly_availability" | "session_duration_preference" | "preferred_unit" | "created_at" | "updated_at", ExtArgs["result"]["profile"]>
+export type ProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "username" | "full_name" | "avatar_url" | "weight_kg" | "height_cm" | "birth_date" | "sex" | "experience_level" | "training_goal" | "weekly_availability" | "session_duration_preference" | "preferred_unit" | "locale" | "created_at" | "updated_at", ExtArgs["result"]["profile"]>
 export type ProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   mesocycle_templates?: boolean | Prisma.Profile$mesocycle_templatesArgs<ExtArgs>
@@ -1021,6 +1055,7 @@ export type $ProfilePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     weekly_availability: number | null
     session_duration_preference: number | null
     preferred_unit: string
+    locale: string
     created_at: Date
     updated_at: Date
   }, ExtArgs["result"]["profile"]>
@@ -1462,6 +1497,7 @@ export interface ProfileFieldRefs {
   readonly weekly_availability: Prisma.FieldRef<"Profile", 'Int'>
   readonly session_duration_preference: Prisma.FieldRef<"Profile", 'Int'>
   readonly preferred_unit: Prisma.FieldRef<"Profile", 'String'>
+  readonly locale: Prisma.FieldRef<"Profile", 'String'>
   readonly created_at: Prisma.FieldRef<"Profile", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"Profile", 'DateTime'>
 }

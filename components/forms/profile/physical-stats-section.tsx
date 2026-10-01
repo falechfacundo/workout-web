@@ -9,12 +9,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("physical-stats-section");
 
 export function PhysicalStatsSection() {
   const form = useFormContext();
+  const t = useTranslations("profileForm");
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -23,12 +25,12 @@ export function PhysicalStatsSection() {
         name="weight_kg"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Weight (kg)</FormLabel>
+            <FormLabel>{t("weightKg")}</FormLabel>
             <FormControl>
               <Input
                 type="number"
                 step="0.1"
-                placeholder="Weight in kg"
+                placeholder={t("weightPlaceholder")}
                 {...field}
                 value={field.value || ""}
                 onChange={(e) => {
@@ -50,11 +52,11 @@ export function PhysicalStatsSection() {
         name="height_cm"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Height (cm)</FormLabel>
+            <FormLabel>{t("heightCm")}</FormLabel>
             <FormControl>
               <Input
                 type="number"
-                placeholder="Height in cm"
+                placeholder={t("heightPlaceholder")}
                 {...field}
                 value={field.value || ""}
                 onChange={(e) => {

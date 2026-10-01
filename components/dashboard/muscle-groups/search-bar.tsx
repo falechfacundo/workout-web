@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 
 interface SearchBarProps {
@@ -6,6 +7,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ onSearch }: SearchBarProps) {
+  const t = useTranslations("muscleGroups");
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (onSearch) {
       onSearch(e.target.value);
@@ -17,7 +19,7 @@ export function SearchBar({ onSearch }: SearchBarProps) {
       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         type="search"
-        placeholder="Search muscle groups..."
+        placeholder={t("searchPlaceholder")}
         className="w-full bg-background pl-8"
         onChange={handleSearch}
       />

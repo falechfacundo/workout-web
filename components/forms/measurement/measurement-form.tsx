@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -34,6 +35,7 @@ export function MeasurementForm({
   profile,
   onSuccess,
 }: MeasurementFormProps) {
+  const t = useTranslations("measurementForm");
   const [isLoading, setIsLoading] = useState(false);
   const { addMeasurement, updateMeasurement } = useMeasurementsStore();
 
@@ -100,12 +102,12 @@ export function MeasurementForm({
           <DateSection />
 
           <div className="space-y-6">
-            <h3 className="text-lg font-medium">Body Measurements</h3>
+            <h3 className="text-lg font-medium">{t("bodyMeasurementsTitle")}</h3>
             <BodyMeasurementsSection />
           </div>
 
           <div className="space-y-6">
-            <h3 className="text-lg font-medium">Limb Measurements</h3>
+            <h3 className="text-lg font-medium">{t("limbMeasurementsTitle")}</h3>
             <LimbMeasurementsSection />
           </div>
 
@@ -114,10 +116,10 @@ export function MeasurementForm({
 
           <Button type="submit" disabled={isLoading}>
             {isLoading
-              ? "Saving..."
+              ? t("saving")
               : measurement
-              ? "Update Measurements"
-              : "Add Measurements"}
+              ? t("update")
+              : t("add")}
           </Button>
         </form>
       </Form>

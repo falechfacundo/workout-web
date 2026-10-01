@@ -1,4 +1,5 @@
 import { Target } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -10,6 +11,8 @@ import type { MuscleGroup as MuscleGroupRow } from "@/lib/schemas/muscle-group";
 type MuscleGroup = MuscleGroupRow;
 
 export function MuscleGroupCard({ muscleGroup }: { muscleGroup: MuscleGroup }) {
+  const t = useTranslations("muscleGroups");
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
@@ -22,7 +25,7 @@ export function MuscleGroupCard({ muscleGroup }: { muscleGroup: MuscleGroup }) {
       </CardHeader>
       <CardContent>
         <div className="text-sm text-muted-foreground">
-          <p>{muscleGroup.is_default ? "Default" : "Custom"}</p>
+          <p>{muscleGroup.is_default ? t("default") : t("custom")}</p>
         </div>
       </CardContent>
     </Card>

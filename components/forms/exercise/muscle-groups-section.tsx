@@ -33,6 +33,7 @@ import {
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
 import { createLogger } from "@/lib/utils/logger";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,6 +42,7 @@ const logger = createLogger("exercise-muscle-groups");
 
 export function MuscleGroupsSection() {
   const form = useFormContext();
+  const t = useTranslations("exercises");
   const { muscleGroups, isLoading, fetchMuscleGroups } =
     useMuscleGroupsStore();
 
@@ -56,7 +58,7 @@ export function MuscleGroupsSection() {
         name="primary_muscle_group_id"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Primary Muscle Group</FormLabel>
+            <FormLabel>{t("primaryMuscleGroup")}</FormLabel>
             {isLoading ? (
               <div className="space-y-2">
                 <Skeleton className="h-10 w-full" />
@@ -66,7 +68,7 @@ export function MuscleGroupsSection() {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a primary muscle group" />
+                    <SelectValue placeholder={t("primaryMuscleGroupPlaceholder")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -79,7 +81,7 @@ export function MuscleGroupsSection() {
               </Select>
             )}
             <FormDescription>
-              The main muscle group targeted by this exercise
+              {t("primaryMuscleGroupDescription")}
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -90,7 +92,7 @@ export function MuscleGroupsSection() {
         name="secondary_muscle_groups"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Secondary Muscle Groups</FormLabel>
+            <FormLabel>{t("secondaryMuscleGroups")}</FormLabel>
             {isLoading ? (
               <div className="space-y-2">
                 <Skeleton className="h-10 w-full" />
@@ -109,19 +111,19 @@ export function MuscleGroupsSection() {
                       )}
                     >
                       {field.value.length
-                        ? `${field.value.length} muscle group${
-                            field.value.length > 1 ? "s" : ""
-                          } selected`
-                        : "Select secondary muscle groups"}
+                        ? t("secondaryMuscleGroupsSelected", {
+                            count: field.value.length,
+                          })
+                        : t("secondaryMuscleGroupsPlaceholder")}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0">
                   <Command>
-                    <CommandInput placeholder="Search muscle groups..." />
+                    <CommandInput placeholder={t("searchMuscleGroups")} />
                     <CommandList>
-                      <CommandEmpty>No muscle group found.</CommandEmpty>
+                      <CommandEmpty>{t("noMuscleGroupFound")}</CommandEmpty>
                       <CommandGroup>
                         {muscleGroups
                           .filter(
@@ -167,7 +169,7 @@ export function MuscleGroupsSection() {
               </Popover>
             )}
             <FormDescription>
-              Other muscle groups that are also worked during this exercise
+              {t("secondaryMuscleGroupsDescription")}
             </FormDescription>
             <FormMessage />
           </FormItem>

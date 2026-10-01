@@ -9,9 +9,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 
 export function BodyMeasurementsSection() {
   const form = useFormContext();
+  const t = useTranslations("measurementForm");
 
   const handleNumberInput = (field: any, value: string) => {
     const parsedValue = value ? parseFloat(value) : null;
@@ -25,12 +27,12 @@ export function BodyMeasurementsSection() {
         name="weight_kg"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Weight (kg)</FormLabel>
+            <FormLabel>{t("weightKg")}</FormLabel>
             <FormControl>
               <Input
                 type="number"
                 step="0.1"
-                placeholder="Weight in kg"
+                placeholder={t("weightPlaceholder")}
                 {...field}
                 value={field.value || ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
@@ -46,12 +48,12 @@ export function BodyMeasurementsSection() {
         name="body_fat_percentage"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Body Fat Percentage (%)</FormLabel>
+            <FormLabel>{t("bodyFat")}</FormLabel>
             <FormControl>
               <Input
                 type="number"
                 step="0.1"
-                placeholder="Body fat %"
+                placeholder={t("bodyFatPlaceholder")}
                 {...field}
                 value={field.value || ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
@@ -67,12 +69,12 @@ export function BodyMeasurementsSection() {
         name="chest_cm"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Chest (cm)</FormLabel>
+            <FormLabel>{t("chest")}</FormLabel>
             <FormControl>
               <Input
                 type="number"
                 step="0.1"
-                placeholder="Chest measurement"
+                placeholder={t("chestPlaceholder")}
                 {...field}
                 value={field.value || ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
@@ -88,12 +90,12 @@ export function BodyMeasurementsSection() {
         name="waist_cm"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Waist (cm)</FormLabel>
+            <FormLabel>{t("waist")}</FormLabel>
             <FormControl>
               <Input
                 type="number"
                 step="0.1"
-                placeholder="Waist measurement"
+                placeholder={t("waistPlaceholder")}
                 {...field}
                 value={field.value || ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
@@ -109,12 +111,12 @@ export function BodyMeasurementsSection() {
         name="hips_cm"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Hips (cm)</FormLabel>
+            <FormLabel>{t("hips")}</FormLabel>
             <FormControl>
               <Input
                 type="number"
                 step="0.1"
-                placeholder="Hip measurement"
+                placeholder={t("hipsPlaceholder")}
                 {...field}
                 value={field.value || ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
