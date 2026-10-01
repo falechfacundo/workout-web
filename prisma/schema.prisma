@@ -59,6 +59,7 @@ model Profile {
   weekly_availability   Int?
   session_duration_preference Int?
   preferred_unit        String   @default("kg")
+  locale                String   @default("es")
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
 
