@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -34,6 +35,7 @@ interface MesocycleFormProps {
 }
 
 export function MesocycleForm({ initialData, userId }: MesocycleFormProps) {
+  const t = useTranslations("mesocycleForm");
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createMesocycle, updateMesocycle } = useMesocyclesStore();
@@ -83,7 +85,7 @@ export function MesocycleForm({ initialData, userId }: MesocycleFormProps) {
         logger.warn("Error submitting mesocycle form", { error: result.error });
         toast({
           variant: "destructive",
-          title: "Error",
+          title: t("errorTitle"),
           description: result.error,
         });
       } else {
@@ -92,10 +94,10 @@ export function MesocycleForm({ initialData, userId }: MesocycleFormProps) {
           isEdit: !!initialData?.id,
         });
         toast({
-          title: "Success",
+          title: t("successTitle"),
           description: initialData?.id
-            ? "Mesocycle updated successfully"
-            : "Mesocycle created successfully",
+            ? t("successUpdated")
+            : t("successCreated"),
         });
 
         router.push("/dashboard/mesocycles");
@@ -107,8 +109,8 @@ export function MesocycleForm({ initialData, userId }: MesocycleFormProps) {
       );
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: t("errorTitle"),
+        description: t("errorGeneric"),
       });
     } finally {
       setIsSubmitting(false);
@@ -131,10 +133,10 @@ export function MesocycleForm({ initialData, userId }: MesocycleFormProps) {
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
-                ? "Saving..."
+                ? t("saving")
                 : initialData?.id
-                ? "Update Mesocycle"
-                : "Create Mesocycle"}
+                ? t("updateMesocycle")
+                : t("createMesocycle")}
             </Button>
           </div>
         </form>

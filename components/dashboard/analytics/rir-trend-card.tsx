@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import { Activity } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   Card,
@@ -33,6 +34,7 @@ interface WeekStat {
 }
 
 export function RirTrendCard({ userId }: { userId: string }) {
+  const t = useTranslations("analytics");
   const [data, setData] = useState<WeekStat[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,10 +57,10 @@ export function RirTrendCard({ userId }: { userId: string }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Activity className="h-5 w-5 text-primary" />
-          Intensidad semanal
+          {t("rirTrendTitle")}
         </CardTitle>
         <CardDescription>
-          Sets totales vs efectivos (RIR ≤ 2) y RIR promedio por semana
+          {t("rirTrendDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -66,21 +68,21 @@ export function RirTrendCard({ userId }: { userId: string }) {
           <Skeleton className="h-[300px] w-full rounded-lg" />
         ) : data.length === 0 ? (
           <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-            Registrá sets con RIR para ver la tendencia de intensidad.
+            {t("emptyRirTrend")}
           </div>
         ) : (
           <ChartContainer
             config={{
               sets: {
-                label: "Sets",
+                label: t("setsLabel"),
                 color: "hsl(var(--chart-2))",
               },
               effectiveSets: {
-                label: "Efectivos",
+                label: t("effectiveLabel"),
                 color: "hsl(var(--primary))",
               },
               avgRir: {
-                label: "RIR prom.",
+                label: t("avgRirLabel"),
                 color: "hsl(var(--chart-2))",
               },
             }}
@@ -109,14 +111,14 @@ export function RirTrendCard({ userId }: { userId: string }) {
                   dataKey="sets"
                   fill="var(--color-sets)"
                   radius={4}
-                  name="Sets"
+                  name={t("setsLabel")}
                 />
                 <Bar
                   yAxisId="left"
                   dataKey="effectiveSets"
                   fill="var(--color-effectiveSets)"
                   radius={4}
-                  name="Efectivos"
+                  name={t("effectiveLabel")}
                 />
                 <Line
                   yAxisId="right"
@@ -125,7 +127,7 @@ export function RirTrendCard({ userId }: { userId: string }) {
                   stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   dot={false}
-                  name="RIR promedio"
+                  name={t("avgRirLabel")}
                 />
               </ComposedChart>
             </ResponsiveContainer>

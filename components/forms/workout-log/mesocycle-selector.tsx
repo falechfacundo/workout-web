@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,6 +30,7 @@ interface MesocycleSelectorProps {
 
 export function MesocycleSelector({ userId }: MesocycleSelectorProps) {
   const form = useFormContext();
+  const t = useTranslations("newWorkoutLog");
   const { activeMesocycles, isLoading, fetchActiveMesocycles } =
     useMesocyclesStore();
 
@@ -47,7 +49,7 @@ export function MesocycleSelector({ userId }: MesocycleSelectorProps) {
       name="mesocycle_id"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Mesocycle</FormLabel>
+          <FormLabel>{t("mesocycleLabel")}</FormLabel>
           <Select
             onValueChange={(value) => {
               logger.debug("Mesocycle selected", { mesocycleId: value });
@@ -57,11 +59,11 @@ export function MesocycleSelector({ userId }: MesocycleSelectorProps) {
           >
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select a mesocycle (optional)" />
+                <SelectValue placeholder={t("mesocyclePlaceholder")} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="none">None (Free Workout)</SelectItem>
+              <SelectItem value="none">{t("mesocycleNone")}</SelectItem>
               {activeMesocycles.filter((m) => m.id).map((mesocycle) => (
                 <SelectItem key={mesocycle.id!} value={mesocycle.id!}>
                   {mesocycle.name}
@@ -69,9 +71,7 @@ export function MesocycleSelector({ userId }: MesocycleSelectorProps) {
               ))}
             </SelectContent>
           </Select>
-          <FormDescription>
-            The mesocycle this workout belongs to
-          </FormDescription>
+          <FormDescription>{t("mesocycleDescription")}</FormDescription>
           <FormMessage />
         </FormItem>
       )}

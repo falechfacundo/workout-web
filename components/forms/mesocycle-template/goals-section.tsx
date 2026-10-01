@@ -18,21 +18,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 import type { MesocycleTemplateFormValues } from "@/lib/schemas/mesocycle-template";
 
 const logger = createLogger("template-goals-section");
 
-const GOAL_OPTIONS = [
-  { value: "strength", label: "Fuerza" },
-  { value: "hypertrophy", label: "Hipertrofia" },
-  { value: "endurance", label: "Resistencia" },
-  { value: "weight_loss", label: "Pérdida de peso" },
-  { value: "flexibility", label: "Flexibilidad" },
-];
+const GOAL_OPTION_KEYS = [
+  { value: "strength", key: "goalStrength" },
+  { value: "hypertrophy", key: "goalHypertrophy" },
+  { value: "endurance", key: "goalEndurance" },
+  { value: "weight_loss", key: "goalWeightLoss" },
+  { value: "flexibility", key: "goalFlexibility" },
+] as const;
 
 export function GoalsSection() {
   const form = useFormContext<MesocycleTemplateFormValues>();
+  const t = useTranslations("mesocycleTemplateForm");
+  const GOAL_OPTIONS = GOAL_OPTION_KEYS.map((g) => ({
+    value: g.value,
+    label: t(g.key),
+  }));
 
   const {
     fields: goalFields,
@@ -54,10 +60,8 @@ export function GoalsSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Objetivos</CardTitle>
-        <CardDescription>
-          Define los objetivos principales de este mesociclo
-        </CardDescription>
+        <CardTitle>{t("goalsTitle")}</CardTitle>
+        <CardDescription>{t("goalsDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -76,7 +80,7 @@ export function GoalsSection() {
                   name={`goals.${index}.priority`}
                   render={({ field: priorityField }) => (
                     <FormItem className="flex flex-row items-center gap-2">
-                      <FormLabel className="text-xs">Prioridad:</FormLabel>
+                      <FormLabel className="text-xs">{t("priorityLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"

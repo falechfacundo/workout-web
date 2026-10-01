@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { SignOutButton } from "@/components/auth/sign-out-button"
 import { useRequireAuth } from "@/hooks/use-require-auth"
@@ -20,15 +21,23 @@ import {
   unlinkGoogleAccount,
 } from "@/lib/actions/google-link"
 
-const LINK_ERROR_MESSAGES: Record<string, string> = {
-  invalid_state: "La sesión de vinculación expiró. Probá de nuevo.",
-  token_exchange_failed: "No se pudo confirmar la cuenta de Google. Probá de nuevo.",
-  email_mismatch: "Esa cuenta de Google usa un email distinto al de tu cuenta.",
-  already_linked_elsewhere: "Esa cuenta de Google ya está vinculada a otro usuario.",
-  unknown: "Ocurrió un error al vincular Google. Probá de nuevo.",
+const LINK_ERROR_KEYS: Record<
+  string,
+  | "linkErrorInvalidState"
+  | "linkErrorTokenExchangeFailed"
+  | "linkErrorEmailMismatch"
+  | "linkErrorAlreadyLinkedElsewhere"
+  | "linkErrorUnknown"
+> = {
+  invalid_state: "linkErrorInvalidState",
+  token_exchange_failed: "linkErrorTokenExchangeFailed",
+  email_mismatch: "linkErrorEmailMismatch",
+  already_linked_elsewhere: "linkErrorAlreadyLinkedElsewhere",
+  unknown: "linkErrorUnknown",
 }
 
 function GoogleAccountCard() {
+  const t = useTranslations("settings")
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<{ linked: boolean; canUnlink: boolean } | null>(null)
   const [isUnlinking, setIsUnlinking] = useState(false)
@@ -41,13 +50,13 @@ function GoogleAccountCard() {
 
   useEffect(() => {
     if (searchParams.get("linked") === "1") {
-      toast.success("Cuenta de Google vinculada")
+      toast.success(t("toastGoogleLinked"))
     }
     const linkError = searchParams.get("linkError")
     if (linkError) {
-      toast.error(LINK_ERROR_MESSAGES[linkError] ?? LINK_ERROR_MESSAGES.unknown)
+      toast.error(t(LINK_ERROR_KEYS[linkError] ?? "linkErrorUnknown"))
     }
-  }, [searchParams])
+  }, [searchParams, t])
 
   async function handleUnlink() {
     setIsUnlinking(true)
@@ -57,7 +66,7 @@ function GoogleAccountCard() {
         toast.error(result.error)
         return
       }
-      toast.success("Cuenta de Google desvinculada")
+      toast.success(t("toastGoogleUnlinked"))
       setStatus((prev) => (prev ? { ...prev, linked: false } : prev))
     } finally {
       setIsUnlinking(false)
@@ -67,13 +76,13 @@ function GoogleAccountCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Google</CardTitle>
+        <CardTitle>{t("googleTitle")}</CardTitle>
         <CardDescription>
           {status === null
-            ? "Cargando..."
+            ? t("googleLoading")
             : status.linked
-              ? "Tu cuenta está vinculada con Google. Podés iniciar sesión con Google o con tu contraseña."
-              : "Vinculá tu cuenta de Google para iniciar sesión sin contraseña."}
+              ? t("googleLinkedDescription")
+              : t("googleUnlinkedDescription")}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-start gap-2">
@@ -83,16 +92,14 @@ function GoogleAccountCard() {
             onClick={handleUnlink}
             disabled={isUnlinking || !status.canUnlink}
             title={
-              !status.canUnlink
-                ? "Establecé una contraseña antes de desvincular Google"
-                : undefined
+              !status.canUnlink ? t("unlinkDisabledTitle") : undefined
             }
           >
-            {isUnlinking ? "Desvinculando..." : "Desvincular Google"}
+            {isUnlinking ? t("unlinkingButton") : t("unlinkButton")}
           </Button>
         ) : (
           <Button asChild variant="outline">
-            <a href="/api/google-link">Vincular con Google</a>
+            <a href="/api/google-link">{t("linkButton")}</a>
           </Button>
         )}
       </CardContent>
@@ -101,6 +108,7 @@ function GoogleAccountCard() {
 }
 
 export default function SettingsPage() {
+  const t = useTranslations("settings")
   const { user, isLoading } = useRequireAuth()
 
   if (isLoading) {
@@ -133,22 +141,19 @@ export default function SettingsPage() {
     <DashboardLayout>
       <div className="flex flex-col gap-4 md:gap-8">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your account and session.
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Account</CardTitle>
+            <CardTitle>{t("accountTitle")}</CardTitle>
             <CardDescription>
-              Signed in as {user.email}. Manage your profile information from
-              the Profile page.
+              {t("accountDescription", { email: user.email ?? "" })}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-start gap-2">
-            <SignOutButton variant="destructive">Sign Out</SignOutButton>
+            <SignOutButton variant="destructive">{t("signOut")}</SignOutButton>
           </CardContent>
         </Card>
 

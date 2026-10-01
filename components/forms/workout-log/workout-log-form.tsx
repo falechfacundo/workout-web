@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -31,6 +32,7 @@ interface WorkoutLogFormProps {
 }
 
 export function WorkoutLogForm({ userId, initialSessionId }: WorkoutLogFormProps) {
+  const t = useTranslations("newWorkoutLog");
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -93,16 +95,16 @@ export function WorkoutLogForm({ userId, initialSessionId }: WorkoutLogFormProps
         logger.warn("Failed to create workout log");
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Failed to start workout. Please try again.",
+          title: t("errorTitle"),
+          description: t("errorStart"),
         });
         return;
       }
 
       logger.info("Workout log created successfully", { workoutLogId });
       toast({
-        title: "Success",
-        description: "Workout started successfully",
+        title: t("successTitle"),
+        description: t("successStart"),
       });
 
       router.push(`/dashboard/workout-logs/${workoutLogId}`);
@@ -115,8 +117,8 @@ export function WorkoutLogForm({ userId, initialSessionId }: WorkoutLogFormProps
 
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: t("errorTitle"),
+        description: t("errorGeneric"),
       });
     } finally {
       setIsSubmitting(false);
@@ -145,10 +147,10 @@ export function WorkoutLogForm({ userId, initialSessionId }: WorkoutLogFormProps
               onClick={() => router.back()}
               disabled={isSubmitting}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Starting..." : "Start Workout"}
+              {isSubmitting ? t("starting") : t("startWorkout")}
             </Button>
           </div>
         </form>

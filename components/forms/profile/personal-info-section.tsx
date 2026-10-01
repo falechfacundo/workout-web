@@ -26,12 +26,14 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("personal-info-section");
 
 export function PersonalInfoSection() {
   const form = useFormContext();
+  const t = useTranslations("profileForm");
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -40,7 +42,7 @@ export function PersonalInfoSection() {
         name="username"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Username</FormLabel>
+            <FormLabel>{t("username")}</FormLabel>
             <FormControl>
               <Input
                 placeholder="username"
@@ -58,10 +60,10 @@ export function PersonalInfoSection() {
         name="full_name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Full Name</FormLabel>
+            <FormLabel>{t("fullName")}</FormLabel>
             <FormControl>
               <Input
-                placeholder="Full Name"
+                placeholder={t("fullNamePlaceholder")}
                 {...field}
                 value={field.value || ""}
               />
@@ -76,7 +78,7 @@ export function PersonalInfoSection() {
         name="birth_date"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Date of Birth</FormLabel>
+            <FormLabel>{t("dateOfBirth")}</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -90,7 +92,7 @@ export function PersonalInfoSection() {
                     {field.value ? (
                       format(field.value, "PPP")
                     ) : (
-                      <span>Pick a date</span>
+                      <span>{t("pickDate")}</span>
                     )}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
@@ -121,22 +123,22 @@ export function PersonalInfoSection() {
         name="sex"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Sex</FormLabel>
+            <FormLabel>{t("sex")}</FormLabel>
             <Select
               onValueChange={field.onChange}
               defaultValue={field.value || undefined}
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select" />
+                  <SelectValue placeholder={t("select")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="male">{t("sexMale")}</SelectItem>
+                <SelectItem value="female">{t("sexFemale")}</SelectItem>
+                <SelectItem value="other">{t("sexOther")}</SelectItem>
                 <SelectItem value="prefer_not_to_say">
-                  Prefer not to say
+                  {t("sexPreferNotToSay")}
                 </SelectItem>
               </SelectContent>
             </Select>

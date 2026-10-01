@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MuscleGroup } from "@/lib/schemas/muscle-group";
 import { createLogger } from "@/lib/utils/logger";
@@ -19,6 +20,7 @@ const logger = createLogger("muscle-group-section");
 
 export function MuscleGroupSection() {
   const form = useFormContext();
+  const t = useTranslations("mesocycleForm");
   const { muscleGroups, isLoading, fetchMuscleGroups } = useMuscleGroupsStore();
 
   useEffect(() => {
@@ -29,9 +31,9 @@ export function MuscleGroupSection() {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-medium">Muscle Group Focus</h3>
+        <h3 className="text-lg font-medium">{t("muscleFocusTitle")}</h3>
         <p className="text-sm text-muted-foreground">
-          Select muscle groups to focus on during this mesocycle
+          {t("muscleFocusDescription")}
         </p>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+import { useTranslations } from "next-intl"
 import { getWorkoutFrequency } from "@/lib/actions/analytics"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -13,6 +14,7 @@ interface WorkoutFrequencyChartProps {
 }
 
 export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
+  const t = useTranslations("analytics")
   const [data, setData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [period, setPeriod] = useState<"week" | "month" | "year">("month")
@@ -41,17 +43,17 @@ export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-0.5">
-          <CardTitle>Workout Frequency</CardTitle>
-          <CardDescription>Number of workouts completed over time</CardDescription>
+          <CardTitle>{t("workoutFrequencyTitle")}</CardTitle>
+          <CardDescription>{t("workoutFrequencyDesc")}</CardDescription>
         </div>
         <Select defaultValue={period} onValueChange={handlePeriodChange}>
           <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Select period" />
+            <SelectValue placeholder={t("selectPeriod")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="week">Last Week</SelectItem>
-            <SelectItem value="month">Last Month</SelectItem>
-            <SelectItem value="year">Last Year</SelectItem>
+            <SelectItem value="week">{t("lastWeek")}</SelectItem>
+            <SelectItem value="month">{t("lastMonth")}</SelectItem>
+            <SelectItem value="year">{t("lastYear")}</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -60,13 +62,13 @@ export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
           <Skeleton className="h-[300px] w-full rounded-lg" />
         ) : data.length === 0 ? (
           <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-            No data available for this period
+            {t("noDataPeriod")}
           </div>
         ) : (
           <ChartContainer
             config={{
               count: {
-                label: "Workouts",
+                label: t("workoutsLabel"),
                 color: "hsl(var(--chart-1))",
               },
             }}
@@ -78,7 +80,7 @@ export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
                 <XAxis dataKey="date" tickLine={false} axisLine={false} />
                 <YAxis tickLine={false} axisLine={false} tickFormatter={(value: string | number) => `${value}`} />
                 <Tooltip content={<ChartTooltipContent indicator="dashed" />} />
-                <Bar dataKey="count" fill="var(--color-count)" radius={4} name="Workouts">
+                <Bar dataKey="count" fill="var(--color-count)" radius={4} name={t("workoutsLabel")}>
                   {data.map((_, index) => (
                     <Cell
                       key={index}

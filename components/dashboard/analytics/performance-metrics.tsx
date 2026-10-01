@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { getPerformanceMetrics } from "@/lib/actions/analytics"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { StatGridSkeleton } from "@/components/ui/data-skeletons"
@@ -11,6 +12,7 @@ interface PerformanceMetricsProps {
 }
 
 export function PerformanceMetrics({ userId }: PerformanceMetricsProps) {
+  const t = useTranslations("analytics")
   const [metrics, setMetrics] = useState<{
     totalWorkouts: number
     totalVolume: number
@@ -44,10 +46,10 @@ export function PerformanceMetrics({ userId }: PerformanceMetricsProps) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Error</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("errorTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground">Failed to load metrics</div>
+            <div className="text-sm text-muted-foreground">{t("errorLoadingMetrics")}</div>
           </CardContent>
         </Card>
       </div>
@@ -58,42 +60,42 @@ export function PerformanceMetrics({ userId }: PerformanceMetricsProps) {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Workouts</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("totalWorkouts")}</CardTitle>
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{metrics.totalWorkouts}</div>
-          <p className="text-xs text-muted-foreground">Completed training sessions</p>
+          <p className="text-xs text-muted-foreground">{t("totalWorkoutsCaption")}</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Volume</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("totalVolume")}</CardTitle>
           <Weight className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{metrics.totalVolume.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">Weight × reps across all workouts</p>
+          <p className="text-xs text-muted-foreground">{t("totalVolumeCaption")}</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Sets</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("totalSets")}</CardTitle>
           <Dumbbell className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{metrics.totalSets}</div>
-          <p className="text-xs text-muted-foreground">Sets performed across all workouts</p>
+          <p className="text-xs text-muted-foreground">{t("totalSetsCaption")}</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Avg. Workout Time</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("avgWorkoutTime")}</CardTitle>
           <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{metrics.avgDuration}m</div>
-          <p className="text-xs text-muted-foreground">Average workout duration</p>
+          <p className="text-xs text-muted-foreground">{t("avgWorkoutTimeCaption")}</p>
         </CardContent>
       </Card>
     </div>

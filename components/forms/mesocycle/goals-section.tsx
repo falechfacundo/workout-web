@@ -19,21 +19,23 @@ import {
 } from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("goals-section");
 
-const GOAL_TYPES = [
-  { value: "strength", label: "Strength" },
-  { value: "hypertrophy", label: "Hypertrophy" },
-  { value: "endurance", label: "Endurance" },
-  { value: "weight_loss", label: "Weight Loss" },
-  { value: "maintenance", label: "Maintenance" },
-  { value: "custom", label: "Custom" },
-];
+const GOAL_TYPE_KEYS = [
+  { value: "strength", key: "goalStrength" },
+  { value: "hypertrophy", key: "goalHypertrophy" },
+  { value: "endurance", key: "goalEndurance" },
+  { value: "weight_loss", key: "goalWeightLoss" },
+  { value: "maintenance", key: "goalMaintenance" },
+  { value: "custom", key: "goalCustom" },
+] as const;
 
 export function GoalsSection() {
   const form = useFormContext();
+  const t = useTranslations("mesocycleForm");
 
   const addGoal = () => {
     logger.debug("Adding new goal");
@@ -57,20 +59,20 @@ export function GoalsSection() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-medium">Mesocycle Goals</h3>
+          <h3 className="text-lg font-medium">{t("goalsTitle")}</h3>
           <p className="text-sm text-muted-foreground">
-            Define specific goals for this mesocycle
+            {t("goalsDescription")}
           </p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={addGoal}>
-          <Plus className="mr-2 h-4 w-4" /> Add Goal
+          <Plus className="mr-2 h-4 w-4" /> {t("addGoal")}
         </Button>
       </div>
 
       {form.watch("goals")?.map((_: any, index: number) => (
         <div key={index} className="space-y-4 rounded-lg border p-4">
           <div className="flex justify-between items-center">
-            <h4 className="font-medium">Goal {index + 1}</h4>
+            <h4 className="font-medium">{t("goalNumber", { number: index + 1 })}</h4>
             <Button
               type="button"
               variant="ghost"
@@ -86,20 +88,20 @@ export function GoalsSection() {
             name={`goals.${index}.type`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Goal Type</FormLabel>
+                <FormLabel>{t("goalType")}</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select goal type" />
+                      <SelectValue placeholder={t("selectGoalType")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {GOAL_TYPES.map((type) => (
+                    {GOAL_TYPE_KEYS.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
-                        {type.label}
+                        {t(type.key)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -114,10 +116,10 @@ export function GoalsSection() {
             name={`goals.${index}.description`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <FormLabel>{t("goalDescription")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="e.g., Increase bench press by 10kg"
+                    placeholder={t("goalDescriptionPlaceholder")}
                     {...field}
                   />
                 </FormControl>
@@ -131,16 +133,16 @@ export function GoalsSection() {
             name={`goals.${index}.target_value`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Target Value (optional)</FormLabel>
+                <FormLabel>{t("targetValue")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="e.g., 100kg"
+                    placeholder={t("targetValuePlaceholder")}
                     {...field}
                     value={field.value || ""}
                   />
                 </FormControl>
                 <FormDescription>
-                  Numerical target if applicable
+                  {t("targetValueDescription")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

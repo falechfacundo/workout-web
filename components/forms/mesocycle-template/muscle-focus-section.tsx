@@ -27,6 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createLogger } from "@/lib/utils/logger";
@@ -36,6 +37,7 @@ const logger = createLogger("template-muscle-focus-section");
 
 export function MuscleFocusSection() {
   const form = useFormContext<MesocycleTemplateFormValues>();
+  const t = useTranslations("mesocycleTemplateForm");
   const { muscleGroups, isLoading, fetchMuscleGroups } = useMuscleGroupsStore();
 
   useEffect(() => {
@@ -71,10 +73,8 @@ export function MuscleFocusSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Enfoque Muscular</CardTitle>
-        <CardDescription>
-          Selecciona los grupos musculares en los que se enfocará este mesociclo
-        </CardDescription>
+        <CardTitle>{t("muscleFocusTitle")}</CardTitle>
+        <CardDescription>{t("muscleFocusDescription")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -94,7 +94,7 @@ export function MuscleFocusSection() {
                   render={({ field: focusField }) => (
                     <FormItem className="flex flex-row items-center gap-2">
                       <FormLabel className="text-xs">
-                        Nivel de Enfoque:
+                        {t("focusLevelLabel")}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -116,7 +116,7 @@ export function MuscleFocusSection() {
                         />
                       </FormControl>
                       <FormDescription className="text-xs">
-                        (1-10)
+                        {t("focusLevelRange")}
                       </FormDescription>
                     </FormItem>
                   )}
@@ -160,7 +160,7 @@ export function MuscleFocusSection() {
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Añadir grupo muscular" />
+                  <SelectValue placeholder={t("addMuscleGroupPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {muscleGroups.map((group) => (
@@ -170,7 +170,7 @@ export function MuscleFocusSection() {
                       disabled={isMuscleGroupAlreadyAdded(group.id)}
                     >
                       {group.name}{" "}
-                      {isMuscleGroupAlreadyAdded(group.id) && "(Añadido)"}
+                      {isMuscleGroupAlreadyAdded(group.id) && t("added")}
                     </SelectItem>
                   ))}
                 </SelectContent>

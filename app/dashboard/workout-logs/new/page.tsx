@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { WorkoutLogForm } from "@/components/forms/workout-log/workout-log-form";
 import { ArrowLeft } from "lucide-react";
@@ -12,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ChartSkeleton } from "@/components/ui/data-skeletons";
 
 function NewWorkoutLogContent() {
+  const t = useTranslations("newWorkoutLog");
   // Use auth protection
   const { user, isLoading } = useRequireAuth();
 
@@ -49,16 +51,14 @@ function NewWorkoutLogContent() {
           <Button variant="outline" size="icon" asChild>
             <Link href="/dashboard/workout-logs">
               <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
+              <span className="sr-only">{t("back")}</span>
             </Link>
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Start New Workout
+              {t("pageTitle")}
             </h1>
-            <p className="text-muted-foreground">
-              Begin a new training session.
-            </p>
+            <p className="text-muted-foreground">{t("pageSubtitle")}</p>
           </div>
         </div>
 

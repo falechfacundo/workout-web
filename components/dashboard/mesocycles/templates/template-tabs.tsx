@@ -1,5 +1,6 @@
 import React from "react";
 import { User } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TemplateCard } from "./template-card";
 import { TemplateEmptyState } from "./template-empty-state";
@@ -10,12 +11,14 @@ interface TemplateTabsProps {
 }
 
 export function TemplateTabs({ userTemplates }: TemplateTabsProps) {
+  const t = useTranslations("mesocycleTemplates");
+
   return (
     <Tabs defaultValue="my-templates" className="w-full">
       <TabsList className="grid w-full max-w-md grid-cols-2">
         <TabsTrigger value="my-templates">
           <User className="h-4 w-4 mr-2" />
-          Mis Plantillas
+          {t("myTemplates")}
         </TabsTrigger>
         {/* <TabsTrigger value="public-templates">
           <Users className="h-4 w-4 mr-2" />

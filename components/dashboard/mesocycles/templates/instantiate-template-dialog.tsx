@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarPlus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,7 @@ export function InstantiateTemplateDialog({
   templateName,
   durationWeeks,
 }: InstantiateTemplateDialogProps) {
+  const t = useTranslations("mesocycleTemplates");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState(todayISO());
@@ -52,16 +54,16 @@ export function InstantiateTemplateDialog({
       );
 
       if (error || !data) {
-        toast.error(error || "No se pudo crear el mesociclo");
+        toast.error(error || t("errorCreate"));
         return;
       }
 
-      toast.success("Mesociclo creado desde la plantilla");
+      toast.success(t("successCreate"));
       setOpen(false);
       router.push(`/dashboard/mesocycles/${data.id}`);
     } catch (err) {
       console.error("Error instantiating template:", err);
-      toast.error("Error inesperado al crear el mesociclo");
+      toast.error(t("errorUnexpected"));
     } finally {
       setCreating(false);
     }
@@ -72,20 +74,21 @@ export function InstantiateTemplateDialog({
       <DialogTrigger asChild>
         <Button variant="outline">
           <CalendarPlus className="mr-2 h-4 w-4" />
-          Usar Plantilla
+          {t("useTemplate")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Crear mesociclo desde plantilla</DialogTitle>
+          <DialogTitle>{t("createFromTemplateTitle")}</DialogTitle>
           <DialogDescription>
-            Se generará un mesociclo de {durationWeeks ?? "—"} semana
-            {(durationWeeks ?? 0) === 1 ? "" : "s"} con sus sesiones y ejercicios.
+            {durationWeeks != null
+              ? t("createFromTemplateDesc", { weeks: durationWeeks })
+              : t("createFromTemplateDescUnknown")}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-2">
           <div className="grid gap-2">
-            <Label htmlFor="start-date">Fecha de inicio</Label>
+            <Label htmlFor="start-date">{t("startDate")}</Label>
             <Input
               id="start-date"
               type="date"
@@ -95,7 +98,7 @@ export function InstantiateTemplateDialog({
           </div>
           <div className="grid gap-2">
             <Label htmlFor="mesocycle-name">
-              Nombre <span className="text-muted-foreground">(opcional)</span>
+              {t("nameLabel")} <span className="text-muted-foreground">{t("optional")}</span>
             </Label>
             <Input
               id="mesocycle-name"
@@ -111,11 +114,11 @@ export function InstantiateTemplateDialog({
             onClick={() => setOpen(false)}
             disabled={creating}
           >
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button onClick={handleCreate} disabled={creating || !startDate}>
             {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Crear Mesociclo
+            {t("createMesocycleButton")}
           </Button>
         </DialogFooter>
       </DialogContent>

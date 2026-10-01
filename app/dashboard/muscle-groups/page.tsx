@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { ErrorMessage } from "@/components/error-message";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
@@ -11,6 +12,7 @@ import { SearchBar } from "@/components/dashboard/muscle-groups/search-bar";
 import { MuscleGroupList } from "@/components/dashboard/muscle-groups/muscle-group-list";
 
 export default function MuscleGroupsPage() {
+  const t = useTranslations("muscleGroups");
   const { user, isLoading: authLoading } = useRequireAuth();
   const { muscleGroups, isLoading, error, fetchMuscleGroups } =
     useMuscleGroupsStore();
@@ -43,11 +45,9 @@ export default function MuscleGroupsPage() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
-                Muscle Groups
+                {t("title")}
               </h1>
-              <p className="text-muted-foreground">
-                Manage your muscle groups for exercise categorization.
-              </p>
+              <p className="text-muted-foreground">{t("subtitle")}</p>
             </div>
             {/* BL-2: botón "Add Muscle Group" removido — la ruta /new no existe;
                 los grupos vienen del seed (post-MVP: crear ruta + form) */}
@@ -63,10 +63,8 @@ export default function MuscleGroupsPage() {
       <div className="grid gap-4 md:gap-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Muscle Groups</h1>
-            <p className="text-muted-foreground">
-              Manage your muscle groups for exercise categorization.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           {/* BL-2: botón "Add Muscle Group" removido — ver nota arriba */}
         </div>

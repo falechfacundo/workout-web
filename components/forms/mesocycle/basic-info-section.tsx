@@ -21,12 +21,14 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("basic-info-section");
 
 export function BasicInfoSection() {
   const form = useFormContext();
+  const t = useTranslations("mesocycleForm");
 
   return (
     <>
@@ -35,11 +37,11 @@ export function BasicInfoSection() {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>{t("name")}</FormLabel>
             <FormControl>
-              <Input placeholder="e.g., Hypertrophy Block" {...field} />
+              <Input placeholder={t("namePlaceholder")} {...field} />
             </FormControl>
-            <FormDescription>The name of your mesocycle</FormDescription>
+            <FormDescription>{t("nameDescription")}</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -50,7 +52,7 @@ export function BasicInfoSection() {
           name="start_date"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Start Date</FormLabel>
+              <FormLabel>{t("startDate")}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -64,7 +66,7 @@ export function BasicInfoSection() {
                       {field.value ? (
                         format(field.value, "PPP")
                       ) : (
-                        <span>Pick a date</span>
+                        <span>{t("pickDate")}</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -82,7 +84,7 @@ export function BasicInfoSection() {
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription>When your mesocycle begins</FormDescription>
+              <FormDescription>{t("startDateDescription")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -92,7 +94,7 @@ export function BasicInfoSection() {
           name="end_date"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>End Date</FormLabel>
+              <FormLabel>{t("endDate")}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -106,7 +108,7 @@ export function BasicInfoSection() {
                       {field.value ? (
                         format(field.value, "PPP")
                       ) : (
-                        <span>Pick a date</span>
+                        <span>{t("pickDate")}</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -125,7 +127,7 @@ export function BasicInfoSection() {
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription>When your mesocycle ends</FormDescription>
+              <FormDescription>{t("endDateDescription")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -136,17 +138,15 @@ export function BasicInfoSection() {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description</FormLabel>
+            <FormLabel>{t("description")}</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Describe your mesocycle goals and focus"
+                placeholder={t("descriptionPlaceholder")}
                 {...field}
                 value={field.value || ""}
               />
             </FormControl>
-            <FormDescription>
-              Detailed description of your mesocycle
-            </FormDescription>
+            <FormDescription>{t("descriptionDescription")}</FormDescription>
             <FormMessage />
           </FormItem>
         )}

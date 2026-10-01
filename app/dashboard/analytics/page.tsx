@@ -15,8 +15,10 @@ import {
   ChartSkeleton,
 } from "@/components/ui/data-skeletons";
 import { useRequireAuth } from "@/hooks/use-require-auth";
+import { useTranslations } from "next-intl";
 
 export default function AnalyticsPage() {
+  const t = useTranslations("analytics");
   // Use auth protection
   const { user, isLoading } = useRequireAuth();
 
@@ -47,10 +49,8 @@ export default function AnalyticsPage() {
     <DashboardLayout>
       <div className="grid gap-4 md:gap-8">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-          <p className="text-muted-foreground">
-            Track your progress and analyze your training data.
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         <PerformanceMetrics userId={user.id} />

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, Dumbbell, Target } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,17 +15,32 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useMesocycleTemplatesStore } from "@/lib/stores/mesocycle-templates-store";
-import { getGoalLabel } from "@/components/dashboard/mesocycles/templates/template-card";
 import { InstantiateTemplateDialog } from "@/components/dashboard/mesocycles/templates/instantiate-template-dialog";
 import { StatCardSkeleton } from "@/components/ui/data-skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MesocycleTemplateWithRelations } from "@/lib/schemas/mesocycle-template";
+
+const GOAL_KEYS: Record<
+  string,
+  | "goalStrength"
+  | "goalHypertrophy"
+  | "goalEndurance"
+  | "goalWeightLoss"
+  | "goalFlexibility"
+> = {
+  strength: "goalStrength",
+  hypertrophy: "goalHypertrophy",
+  endurance: "goalEndurance",
+  weight_loss: "goalWeightLoss",
+  flexibility: "goalFlexibility",
+};
 
 /**
  * BL-2: detalle de plantilla de mesociclo.
  * Antes el link "Ver Detalles" de cada card llevaba a un 404.
  */
 export default function TemplateDetailPage() {
+  const t = useTranslations("mesocycleTemplates");
   const params = useParams();
   const templateId = params.id as string;
   const { fetchTemplate, isLoading } = useMesocycleTemplatesStore();
@@ -32,28 +48,33 @@ export default function TemplateDetailPage() {
     useState<MesocycleTemplateWithRelations | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const goalLabel = (goalType: string) => {
+    const key = GOAL_KEYS[goalType];
+    return key ? t(key) : goalType;
+  };
+
   useEffect(() => {
     async function load() {
       try {
         const data = await fetchTemplate(templateId);
         if (!data) {
-          setError("No se encontró la plantilla.");
+          setError(t("notFound"));
           return;
         }
         setTemplate(data);
       } catch {
-        setError("Error al cargar la plantilla.");
+        setError(t("errorLoadingSingle"));
       }
     }
     load();
-  }, [templateId, fetchTemplate]);
+  }, [templateId, fetchTemplate, t]);
 
   return (
     <DashboardLayout>
       <div className="grid gap-4 md:gap-8">
         <Button variant="ghost" asChild className="w-fit px-2">
           <Link href="/dashboard/mesocycles/templates">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Plantillas
+            <ArrowLeft className="mr-2 h-4 w-4" /> {t("backToTemplates")}
           </Link>
         </Button>
 
@@ -86,18 +107,18 @@ export default function TemplateDetailPage() {
                   {template.name}
                 </h1>
                 <p className="text-muted-foreground">
-                  {template.description || "Sin descripción"}
+                  {template.description || t("noDescription")}
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <InstantiateTemplateDialog
                   templateId={template.id ?? ""}
-                  templateName={template.name ?? "Plantilla"}
+                  templateName={template.name ?? t("templateFallbackName")}
                   durationWeeks={template.duration_weeks}
                 />
                 <Button asChild>
                   <Link href={`/dashboard/mesocycles/templates/${template.id}/edit`}>
-                    Editar
+                    {t("editButton")}
                   </Link>
                 </Button>
               </div>
@@ -107,12 +128,12 @@ export default function TemplateDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Calendar className="h-4 w-4" /> Duración
+                    <Calendar className="h-4 w-4" /> {t("duration")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold">
-                    {template.duration_weeks} semanas
+                    {template.duration_weeks} {t("weeks")}
                   </p>
                 </CardContent>
               </Card>
@@ -120,7 +141,7 @@ export default function TemplateDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Dumbbell className="h-4 w-4" /> Sesiones
+                    <Dumbbell className="h-4 w-4" /> {t("sessions")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -133,18 +154,18 @@ export default function TemplateDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Target className="h-4 w-4" /> Objetivos
+                    <Target className="h-4 w-4" /> {t("goals")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-1">
                   {(template.goals || []).length > 0 ? (
                     (template.goals || []).map((goal) => (
                       <Badge key={goal.id} variant="outline" className="text-xs">
-                        {getGoalLabel(goal.goal_type)}
+                        {goalLabel(goal.goal_type)}
                       </Badge>
                     ))
                   ) : (
-                    <p className="text-muted-foreground text-sm">Sin objetivos</p>
+                    <p className="text-muted-foreground text-sm">{t("noGoals")}</p>
                   )}
                 </CardContent>
               </Card>

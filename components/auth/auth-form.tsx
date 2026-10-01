@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -30,12 +31,8 @@ interface AuthFormProps {
   mode: "signin" | "signup";
 }
 
-const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
-  OAuthAccountNotLinked:
-    "Ese email ya tiene una cuenta con contraseña. Iniciá sesión con tu contraseña y vinculá Google desde Configuración.",
-};
-
 export function AuthForm({ mode }: AuthFormProps) {
+  const t = useTranslations("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -45,14 +42,17 @@ export function AuthForm({ mode }: AuthFormProps) {
     const error = searchParams.get("error");
     if (!error) return;
 
+    const description =
+      error === "OAuthAccountNotLinked"
+        ? t("googleErrorAccountNotLinked")
+        : t("googleErrorGeneric");
+
     toast({
       variant: "destructive",
-      title: "No se pudo iniciar sesión con Google",
-      description:
-        GOOGLE_ERROR_MESSAGES[error] ??
-        "Ocurrió un error durante el inicio de sesión con Google.",
+      title: t("googleErrorTitle"),
+      description,
     });
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   async function onGoogleSignIn() {
     setIsGoogleLoading(true);
@@ -90,16 +90,15 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (result?.error) {
         toast({
           variant: "destructive",
-          title: "Error de inicio de sesión",
-          description:
-            "Credenciales inválidas. Verifica tu email y contraseña.",
+          title: t("loginErrorTitle"),
+          description: t("loginErrorInvalid"),
         });
         return;
       }
 
       toast({
-        title: "Inicio de sesión exitoso",
-        description: "¡Bienvenido de nuevo a GymTrack!",
+        title: t("loginSuccessTitle"),
+        description: t("loginSuccessDescription"),
       });
 
       router.push("/dashboard");
@@ -107,8 +106,8 @@ export function AuthForm({ mode }: AuthFormProps) {
     } catch {
       toast({
         variant: "destructive",
-        title: "Error de inicio de sesión",
-        description: "Ocurrió un error durante el inicio de sesión.",
+        title: t("loginErrorTitle"),
+        description: t("loginErrorGeneric"),
       });
     } finally {
       setIsLoading(false);
@@ -128,7 +127,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (result.error) {
         toast({
           variant: "destructive",
-          title: "Error de registro",
+          title: t("registerErrorTitle"),
           description: result.error,
         });
         return;
@@ -143,17 +142,16 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       if (signInResult?.error) {
         toast({
-          title: "Registro exitoso",
-          description:
-            "Tu cuenta fue creada. Ya puedes iniciar sesión.",
+          title: t("registerSuccessTitle"),
+          description: t("registerSuccessNeedsLogin"),
         });
         router.push("/auth/login");
         return;
       }
 
       toast({
-        title: "Registro exitoso",
-        description: "¡Bienvenido a GymTrack!",
+        title: t("registerSuccessTitle"),
+        description: t("registerSuccessDescription"),
       });
 
       router.push("/dashboard");
@@ -161,8 +159,8 @@ export function AuthForm({ mode }: AuthFormProps) {
     } catch {
       toast({
         variant: "destructive",
-        title: "Error de registro",
-        description: "Ocurrió un error durante el registro.",
+        title: t("registerErrorTitle"),
+        description: t("registerErrorGeneric"),
       });
     } finally {
       setIsLoading(false);
@@ -181,7 +179,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{t("email")}</FormLabel>
                 <FormControl>
                   <Input placeholder="you@example.com" {...field} />
                 </FormControl>
@@ -194,7 +192,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Contraseña</FormLabel>
+                <FormLabel>{t("password")}</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="••••••••" {...field} />
                 </FormControl>
@@ -203,7 +201,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             )}
           />
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+            {isLoading ? t("signingIn") : t("signIn")}
           </Button>
         </form>
         <GoogleButton onClick={onGoogleSignIn} isLoading={isGoogleLoading} />
@@ -222,13 +220,11 @@ export function AuthForm({ mode }: AuthFormProps) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t("email")}</FormLabel>
               <FormControl>
                 <Input placeholder="tu@ejemplo.com" {...field} />
               </FormControl>
-              <FormDescription>
-                Tu cuenta será creada con este email.
-              </FormDescription>
+              <FormDescription>{t("emailDescription")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -238,7 +234,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contraseña</FormLabel>
+              <FormLabel>{t("password")}</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="••••••••" {...field} />
               </FormControl>
@@ -251,7 +247,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirmar contraseña</FormLabel>
+              <FormLabel>{t("confirmPassword")}</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="••••••••" {...field} />
               </FormControl>
@@ -264,7 +260,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           name="preferred_unit"
           render={({ field }) => (
             <FormItem className="space-y-3">
-              <FormLabel>Unidad de peso preferida</FormLabel>
+              <FormLabel>{t("preferredUnit")}</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
@@ -276,7 +272,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                       <RadioGroupItem value="kg" />
                     </FormControl>
                     <FormLabel className="font-normal cursor-pointer">
-                      Kilogramos (kg)
+                      {t("kilograms")}
                     </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-2 space-y-0">
@@ -284,7 +280,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                       <RadioGroupItem value="lb" />
                     </FormControl>
                     <FormLabel className="font-normal cursor-pointer">
-                      Libras (lb)
+                      {t("pounds")}
                     </FormLabel>
                   </FormItem>
                 </RadioGroup>
@@ -294,7 +290,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           )}
         />
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Creando cuenta..." : "Crear cuenta"}
+          {isLoading ? t("creatingAccount") : t("createAccount")}
         </Button>
       </form>
       <GoogleButton onClick={onGoogleSignIn} isLoading={isGoogleLoading} />
@@ -309,6 +305,8 @@ function GoogleButton({
   onClick: () => void;
   isLoading: boolean;
 }) {
+  const t = useTranslations("auth");
+
   return (
     <div className="mt-6 space-y-4">
       <div className="relative">
@@ -317,7 +315,7 @@ function GoogleButton({
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            O continuá con
+            {t("orContinueWith")}
           </span>
         </div>
       </div>
@@ -328,7 +326,7 @@ function GoogleButton({
         disabled={isLoading}
         onClick={onClick}
       >
-        {isLoading ? "Redirigiendo..." : "Continuar con Google"}
+        {isLoading ? t("redirecting") : t("continueWithGoogle")}
       </Button>
     </div>
   );

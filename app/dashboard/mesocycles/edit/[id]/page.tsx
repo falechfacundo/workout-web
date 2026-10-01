@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 interface EditMesocyclePageProps {
   params: Promise<{
@@ -16,6 +17,7 @@ export default async function EditMesocyclePage({
   params,
 }: EditMesocyclePageProps) {
   const { id } = await params;
+  const t = await getTranslations("mesocycleForm");
   const { data: mesocycle, error } = await getMesocycle(id);
 
   if (error || !mesocycle) {
@@ -29,16 +31,14 @@ export default async function EditMesocyclePage({
           <Button variant="outline" size="icon" asChild>
             <Link href="/dashboard/mesocycles">
               <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
+              <span className="sr-only">{t("back")}</span>
             </Link>
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Edit Mesocycle
+              {t("editPageTitle")}
             </h1>
-            <p className="text-muted-foreground">
-              Update your training program.
-            </p>
+            <p className="text-muted-foreground">{t("editPageSubtitle")}</p>
           </div>
         </div>
 

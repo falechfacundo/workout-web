@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { MuscleGroupCard } from "./muscle-group-card";
 import { MuscleGroupSkeleton } from "./muscle-group-skeleton";
 import type { MuscleGroup as MuscleGroupRow } from "@/lib/schemas/muscle-group";
@@ -13,6 +14,8 @@ export function MuscleGroupList({
   muscleGroups,
   isLoading,
 }: MuscleGroupListProps) {
+  const t = useTranslations("muscleGroups");
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {isLoading ? (
@@ -27,7 +30,7 @@ export function MuscleGroupList({
         ))
       ) : (
         <div className="col-span-full text-center text-muted-foreground">
-          No muscle groups found
+          {t("empty")}
         </div>
       )}
     </div>

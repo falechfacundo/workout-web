@@ -12,12 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("template-basic-info-section");
 
 export function BasicInfoSection() {
   const form = useFormContext();
+  const t = useTranslations("mesocycleTemplateForm");
 
   return (
     <>
@@ -27,13 +29,11 @@ export function BasicInfoSection() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre de la Plantilla</FormLabel>
+              <FormLabel>{t("templateName")}</FormLabel>
               <FormControl>
-                <Input placeholder="Mi Plantilla de Mesociclo" {...field} />
+                <Input placeholder={t("templateNamePlaceholder")} {...field} />
               </FormControl>
-              <FormDescription>
-                Un nombre descriptivo para esta plantilla
-              </FormDescription>
+              <FormDescription>{t("templateNameDescription")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -44,7 +44,7 @@ export function BasicInfoSection() {
           name="duration_weeks"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Duración (semanas)</FormLabel>
+              <FormLabel>{t("durationWeeks")}</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -68,10 +68,10 @@ export function BasicInfoSection() {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Descripción</FormLabel>
+            <FormLabel>{t("description")}</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Descripción detallada de esta plantilla de mesociclo..."
+                placeholder={t("descriptionPlaceholder")}
                 {...field}
                 value={field.value || ""}
               />
@@ -87,11 +87,8 @@ export function BasicInfoSection() {
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <FormLabel className="text-base">Plantilla Pública</FormLabel>
-              <FormDescription>
-                Si está habilitado, otros usuarios podrán ver y usar esta
-                plantilla
-              </FormDescription>
+              <FormLabel className="text-base">{t("isPublicLabel")}</FormLabel>
+              <FormDescription>{t("isPublicDescription")}</FormDescription>
             </div>
             <FormControl>
               <Switch

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Search, Target } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { type MuscleGroup } from "@/lib/schemas/muscle-group";
 
 interface ExerciseFiltersProps {
@@ -26,6 +27,8 @@ export function ExerciseFilters({
   selectedMuscleGroupId,
   onMuscleGroupSelect,
 }: ExerciseFiltersProps) {
+  const t = useTranslations("exercises");
+  const tMuscle = useTranslations("muscleGroups");
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -36,7 +39,7 @@ export function ExerciseFilters({
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search exercises..."
+          placeholder={t("searchPlaceholder")}
           className="w-full bg-background pl-8"
           value={searchQuery}
           onChange={handleSearchChange}
@@ -48,19 +51,19 @@ export function ExerciseFilters({
             <Target className="mr-2 h-4 w-4" />
             {selectedMuscleGroupId
               ? muscleGroups.find((mg) => mg.id === selectedMuscleGroupId)
-                  ?.name || "Filter by Muscle Group"
-              : "Filter by Muscle Group"}
+                  ?.name || t("filterByMuscleGroup")
+              : t("filterByMuscleGroup")}
             <ChevronDown className="ml-2 h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Muscle Groups</DropdownMenuLabel>
+          <DropdownMenuLabel>{tMuscle("title")}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuCheckboxItem
             checked={!selectedMuscleGroupId}
             onClick={() => onMuscleGroupSelect("")}
           >
-            All
+            {t("all")}
           </DropdownMenuCheckboxItem>
           {muscleGroups.map((muscleGroup) => (
             <DropdownMenuCheckboxItem

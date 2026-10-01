@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -27,6 +28,7 @@ interface ExerciseFormProps {
 }
 
 export function ExerciseForm({ initialData }: ExerciseFormProps) {
+  const t = useTranslations("exercises");
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoading } = useMuscleGroupsStore();
@@ -63,7 +65,7 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
         });
         toast({
           variant: "destructive",
-          title: "Error",
+          title: t("errorTitle"),
           description: result.error,
         });
       } else {
@@ -73,10 +75,10 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
           exerciseName: values.name,
         });
         toast({
-          title: "Success",
+          title: t("successTitle"),
           description: initialData?.id
-            ? "Exercise updated successfully"
-            : "Exercise created successfully",
+            ? t("successUpdated")
+            : t("successCreated"),
         });
         router.push("/dashboard/exercises");
         router.refresh();
@@ -89,8 +91,8 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
       );
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: t("errorTitle"),
+        description: t("errorGeneric"),
       });
     } finally {
       setIsSubmitting(false);
@@ -98,7 +100,7 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
   }
 
   if (isLoading) {
-    return <div className="flex justify-center p-8">Loading form data...</div>;
+    return <div className="flex justify-center p-8">{t("loadingForm")}</div>;
   }
 
   return (
@@ -118,14 +120,14 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
               onClick={() => router.back()}
               disabled={isSubmitting}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
-                ? "Saving..."
+                ? t("saving")
                 : initialData?.id
-                ? "Update"
-                : "Create"}
+                ? t("update")
+                : t("create")}
             </Button>
           </div>
         </form>

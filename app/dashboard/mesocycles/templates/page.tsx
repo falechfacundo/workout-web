@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useMesocycleTemplatesStore } from "@/lib/stores/mesocycle-templates-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
@@ -11,6 +12,7 @@ import { DefaultTemplates } from "@/components/dashboard/mesocycles/templates/de
 import { LoadingState } from "@/components/dashboard/mesocycles/templates/loading-state";
 
 export default function MesocycleTemplatesPage() {
+  const t = useTranslations("mesocycleTemplates");
   const [loading, setLoading] = useState(true);
   const { user, isLoading: authLoading } = useRequireAuth();
 
@@ -53,7 +55,7 @@ export default function MesocycleTemplatesPage() {
       <div className="container py-6 space-y-6">
         <TemplatePageHeader />
         <div className="bg-destructive/10 border border-destructive/50 text-destructive p-4 rounded-md">
-          Error al cargar las plantillas: {templatesError}
+          {t("errorLoading")}: {templatesError}
         </div>
       </div>
     );

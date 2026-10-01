@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Trash2, Edit, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,7 @@ interface MeasurementHistoryProps {
 }
 
 export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
+  const t = useTranslations("measurementHistory");
   const {
     measurements,
     isLoading,
@@ -75,7 +77,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
     : null;
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this measurement record?"))
+    if (!confirm(t("confirmDelete")))
       return;
     await deleteMeasurement(id);
   };
@@ -108,7 +110,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center p-8">
-        Loading measurement history...
+        {t("loading")}
       </div>
     );
   }
@@ -126,23 +128,19 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Body Measurements</CardTitle>
-            <CardDescription>
-              Track your physical progress over time
-            </CardDescription>
+            <CardTitle>{t("title")}</CardTitle>
+            <CardDescription>{t("description")}</CardDescription>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" /> Add Measurement
+                <Plus className="h-4 w-4 mr-2" /> {t("addMeasurement")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl">
               <DialogHeader>
-                <DialogTitle>Add New Measurement</DialogTitle>
-                <DialogDescription>
-                  Record your current body measurements to track your progress.
-                </DialogDescription>
+                <DialogTitle>{t("addDialogTitle")}</DialogTitle>
+                <DialogDescription>{t("addDialogDescription")}</DialogDescription>
               </DialogHeader>
               <MeasurementForm profile={profile} onSuccess={handleAddSuccess} />
             </DialogContent>
@@ -152,30 +150,27 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
       <CardContent>
         <Tabs defaultValue="table">
           <TabsList className="mb-4">
-            <TabsTrigger value="table">Table View</TabsTrigger>
-            <TabsTrigger value="charts">Charts</TabsTrigger>
+            <TabsTrigger value="table">{t("tableView")}</TabsTrigger>
+            <TabsTrigger value="charts">{t("chartsView")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="table">
             {measurements.length === 0 ? (
               <div className="text-center p-8 text-muted-foreground">
-                <p>
-                  No measurement history yet. Start tracking your progress by
-                  adding measurements.
-                </p>
+                <p>{t("emptyTable")}</p>
               </div>
             ) : (
               <div className="rounded-md border overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Weight (kg)</TableHead>
-                      <TableHead>Body Fat (%)</TableHead>
-                      <TableHead>Chest (cm)</TableHead>
-                      <TableHead>Waist (cm)</TableHead>
-                      <TableHead>Hips (cm)</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t("date")}</TableHead>
+                      <TableHead>{t("weightKg")}</TableHead>
+                      <TableHead>{t("bodyFatPercent")}</TableHead>
+                      <TableHead>{t("chestCm")}</TableHead>
+                      <TableHead>{t("waistCm")}</TableHead>
+                      <TableHead>{t("hipsCm")}</TableHead>
+                      <TableHead>{t("actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -223,16 +218,13 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
           <TabsContent value="charts">
             {measurements.length < 2 ? (
               <div className="text-center p-8 text-muted-foreground">
-                <p>
-                  You need at least two measurement entries to display charts.
-                  Add more measurements to visualize your progress.
-                </p>
+                <p>{t("emptyCharts")}</p>
               </div>
             ) : (
               <div className="space-y-8">
                 <div>
                   <h3 className="text-lg font-medium mb-2">
-                    Weight & Body Fat
+                    {t("weightBodyFatChart")}
                   </h3>
                   <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -250,7 +242,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                           yAxisId="left"
                           type="monotone"
                           dataKey="weight"
-                          name="Weight (kg)"
+                          name={t("weightLegend")}
                           stroke="#8884d8"
                           activeDot={{ r: 8 }}
                         />
@@ -258,7 +250,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                           yAxisId="right"
                           type="monotone"
                           dataKey="bodyFat"
-                          name="Body Fat (%)"
+                          name={t("bodyFatLegend")}
                           stroke="#82ca9d"
                         />
                       </CustomLineChart>
@@ -268,7 +260,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
 
                 <div>
                   <h3 className="text-lg font-medium mb-2">
-                    Body Measurements
+                    {t("bodyMeasurementsChart")}
                   </h3>
                   <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -284,19 +276,19 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                         <Line
                           type="monotone"
                           dataKey="chest"
-                          name="Chest (cm)"
+                          name={t("chestLegend")}
                           stroke="#8884d8"
                         />
                         <Line
                           type="monotone"
                           dataKey="waist"
-                          name="Waist (cm)"
+                          name={t("waistLegend")}
                           stroke="#82ca9d"
                         />
                         <Line
                           type="monotone"
                           dataKey="hips"
-                          name="Hips (cm)"
+                          name={t("hipsLegend")}
                           stroke="#ffc658"
                         />
                       </CustomLineChart>
@@ -305,7 +297,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium mb-2">Arms & Legs</h3>
+                  <h3 className="text-lg font-medium mb-2">{t("armsLegsChart")}</h3>
                   <div className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <CustomLineChart
@@ -320,25 +312,25 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                         <Line
                           type="monotone"
                           dataKey="armLeft"
-                          name="Left Arm (cm)"
+                          name={t("leftArmLegend")}
                           stroke="#8884d8"
                         />
                         <Line
                           type="monotone"
                           dataKey="armRight"
-                          name="Right Arm (cm)"
+                          name={t("rightArmLegend")}
                           stroke="#82ca9d"
                         />
                         <Line
                           type="monotone"
                           dataKey="thighLeft"
-                          name="Left Thigh (cm)"
+                          name={t("leftThighLegend")}
                           stroke="#ffc658"
                         />
                         <Line
                           type="monotone"
                           dataKey="thighRight"
-                          name="Right Thigh (cm)"
+                          name={t("rightThighLegend")}
                           stroke="#ff8042"
                         />
                       </CustomLineChart>
@@ -355,10 +347,8 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Edit Measurement</DialogTitle>
-            <DialogDescription>
-              Update your body measurements record.
-            </DialogDescription>
+            <DialogTitle>{t("editDialogTitle")}</DialogTitle>
+            <DialogDescription>{t("editDialogDescription")}</DialogDescription>
           </DialogHeader>
           {selectedMeasurement && (
             <MeasurementForm

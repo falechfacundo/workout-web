@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   Card,
@@ -23,6 +24,7 @@ interface PersonalRecord {
 }
 
 export function PersonalRecordsCard({ userId }: { userId: string }) {
+  const t = useTranslations("analytics");
   const [records, setRecords] = useState<PersonalRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,10 +47,10 @@ export function PersonalRecordsCard({ userId }: { userId: string }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-primary" />
-          Personal Records
+          {t("personalRecordsTitle")}
         </CardTitle>
         <CardDescription>
-          Best set per exercise by estimated 1RM
+          {t("personalRecordsDesc")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -60,7 +62,7 @@ export function PersonalRecordsCard({ userId }: { userId: string }) {
           </div>
         ) : records.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Log workouts with weight to see your records here.
+            {t("emptyRecords")}
           </p>
         ) : (
           <div className="space-y-1">
@@ -74,7 +76,7 @@ export function PersonalRecordsCard({ userId }: { userId: string }) {
                     {pr.exercise_name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {pr.best_weight} kg × {pr.best_reps} reps —{" "}
+                    {pr.best_weight} kg × {pr.best_reps} {t("reps")} —{" "}
                     {new Date(pr.achieved_at).toLocaleDateString()}
                   </p>
                 </div>
@@ -82,7 +84,7 @@ export function PersonalRecordsCard({ userId }: { userId: string }) {
                   <div className="text-sm font-bold tabular-nums text-primary">
                     {Math.round(pr.estimated_1rm)} kg
                   </div>
-                  <p className="text-xs text-muted-foreground">est. 1RM</p>
+                  <p className="text-xs text-muted-foreground">{t("est1rm")}</p>
                 </div>
               </div>
             ))}

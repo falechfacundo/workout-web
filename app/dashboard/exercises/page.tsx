@@ -6,6 +6,7 @@ import { ErrorMessage } from "@/components/error-message";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useExercisesStore } from "@/lib/stores/exercises-store";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
 import { ExerciseFilters } from "@/components/dashboard/exercises/exercise-filters";
@@ -13,6 +14,7 @@ import { ExerciseList } from "@/components/dashboard/exercises/exercise-list";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 
 export default function ExercisesPage() {
+  const t = useTranslations("exercises");
   const { user, isLoading: authLoading } = useRequireAuth();
   const [loading, setLoading] = useState(true);
 
@@ -58,15 +60,13 @@ export default function ExercisesPage() {
         <div className="grid gap-4 md:gap-8">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Exercises</h1>
-              <p className="text-muted-foreground">
-                Manage your exercise library for your training programs.
-              </p>
+              <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+              <p className="text-muted-foreground">{t("subtitle")}</p>
             </div>
             <Button asChild>
               <Link href="/dashboard/exercises/new">
                 <Plus className="mr-2 h-4 w-4" />
-                Add Exercise
+                {t("addExercise")}
               </Link>
             </Button>
           </div>
@@ -81,15 +81,13 @@ export default function ExercisesPage() {
       <div className="grid gap-4 md:gap-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Exercises</h1>
-            <p className="text-muted-foreground">
-              Manage your exercise library for your training programs.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           <Button asChild>
             <Link href="/dashboard/exercises/new">
               <Plus className="mr-2 h-4 w-4" />
-              Add Exercise
+              {t("addExercise")}
             </Link>
           </Button>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
@@ -11,6 +12,7 @@ import { EmptyState } from "@/components/dashboard/mesocycles/empty-state";
 import { MesocycleCardSkeleton } from "@/components/ui/data-skeletons";
 
 export default function MesocyclesPage() {
+  const t = useTranslations("mesocycles");
   const { user } = useRequireAuth();
   const [loading, setLoading] = useState(true);
   const [, setUserId] = useState<string | null>(null);
@@ -83,7 +85,7 @@ export default function MesocyclesPage() {
     return (
       <DashboardLayout>
         <div className="text-destructive">
-          Error loading mesocycles: {mesocyclesError}
+          {t("errorLoading")}: {mesocyclesError}
         </div>
       </DashboardLayout>
     );
@@ -117,7 +119,7 @@ export default function MesocyclesPage() {
               </div>
             ) : (
               <div className="text-center p-8 text-muted-foreground">
-                No mesocycles found matching your search criteria.
+                {t("emptyFilteredSearch")}
               </div>
             )}
           </>

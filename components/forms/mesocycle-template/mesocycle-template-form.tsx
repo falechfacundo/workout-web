@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -40,6 +41,7 @@ export function MesocycleTemplateForm({
   onSuccess,
   onCancel,
 }: MesocycleTemplateFormProps) {
+  const t = useTranslations("mesocycleTemplateForm");
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -76,7 +78,7 @@ export function MesocycleTemplateForm({
     if (error) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("errorTitle"),
         description: error,
       });
     }
@@ -96,8 +98,8 @@ export function MesocycleTemplateForm({
         logger.warn("Authentication error - missing user ID");
         toast({
           variant: "destructive",
-          title: "Error de autenticación",
-          description: "No se pudo obtener tu información de usuario",
+          title: t("errorAuthTitle"),
+          description: t("errorAuthDescription"),
         });
         return;
       }
@@ -120,8 +122,8 @@ export function MesocycleTemplateForm({
 
         if (success) {
           toast({
-            title: "Plantilla actualizada",
-            description: "La plantilla se ha actualizado correctamente",
+            title: t("successUpdatedTitle"),
+            description: t("successUpdatedDescription"),
           });
 
           if (onSuccess) {
@@ -140,8 +142,8 @@ export function MesocycleTemplateForm({
 
         if (templateId) {
           toast({
-            title: "Plantilla creada",
-            description: "La plantilla se ha creado correctamente",
+            title: t("successCreatedTitle"),
+            description: t("successCreatedDescription"),
           });
 
           if (onSuccess) {
@@ -160,11 +162,9 @@ export function MesocycleTemplateForm({
 
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t("errorTitle"),
         description:
-          typeof error === "string"
-            ? error
-            : "Ha ocurrido un error al guardar la plantilla",
+          typeof error === "string" ? error : t("errorGeneric"),
       });
     }
   }
@@ -185,15 +185,15 @@ export function MesocycleTemplateForm({
           <div className="flex justify-end gap-4">
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel}>
-                Cancelar
+                {t("cancel")}
               </Button>
             )}
             <Button type="submit" disabled={isLoading}>
               {isLoading
-                ? "Guardando..."
+                ? t("saving")
                 : initialTemplate
-                ? "Actualizar Plantilla"
-                : "Crear Plantilla"}
+                ? t("updateTemplate")
+                : t("createTemplate")}
             </Button>
           </div>
         </form>
