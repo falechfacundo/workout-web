@@ -1,0 +1,10 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@prisma/engines': true
+  '@swc/core': true
+  esbuild: true
+  prisma: true
+  unrs-resolver: false
+overrides:
+  next>postcss: 8.5.25
+  next>sharp: ^0.35.0
