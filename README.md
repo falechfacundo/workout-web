@@ -105,7 +105,7 @@ Bienvenido al repositorio de **Workout App** (también llamada GymTrack), una ap
 ### Prerrequisitos
 
 - **Node.js**: >= 20.x
-- **npm**: >= 9.x
+- **pnpm**: >= 10 (`corepack enable`)
 - **Git**: Para clonar el repositorio
 - **Credenciales de la DB**: el repo usa la base PostgreSQL de Supabase (ver [Variables de Entorno](#-variables-de-entorno))
 
@@ -114,7 +114,7 @@ Bienvenido al repositorio de **Workout App** (también llamada GymTrack), una ap
 ```bash
 git clone https://github.com/falechfacundo/workout-web.git
 cd workout-app
-npm install
+pnpm install
 ```
 
 ### Base de datos (Supabase PostgreSQL vía Prisma)
@@ -123,15 +123,15 @@ npm install
 
 ```bash
 cp .env.example .env        # completar DATABASE_URL / DIRECT_URL / NEXTAUTH_SECRET
-npx prisma generate
-npx prisma db push          # aplicar schema (CUIDADO: va contra la DB del .env)
-npx prisma db seed          # crear demo user + catálogos + datos demo (borra y re-crea todo)
+pnpm exec prisma generate
+pnpm exec prisma db push          # aplicar schema (CUIDADO: va contra la DB del .env)
+pnpm exec prisma db seed          # crear demo user + catálogos + datos demo (borra y re-crea todo)
 ```
 
 ### Iniciar servidor de desarrollo
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 El servidor estará en [http://localhost:3000](http://localhost:3000).
@@ -139,8 +139,8 @@ El servidor estará en [http://localhost:3000](http://localhost:3000).
 ### Build para Producción
 
 ```bash
-npm run build
-npm start
+pnpm build
+pnpm start
 ```
 
 ---
@@ -230,7 +230,7 @@ Para más detalles, consulta [AUTH-SYSTEM.md](./AUTH-SYSTEM.md).
 
 ### 🔑 Cuenta de demostración
 
-Para probar la app sin registrarte, usá la cuenta demo que crea `npm run db:seed` (borra y re-crea la base). También aparece listada en la página de login con botones para copiar al portapapeles:
+Para probar la app sin registrarte, usá la cuenta demo que crea `pnpm db:seed` (borra y re-crea la base). También aparece listada en la página de login con botones para copiar al portapapeles:
 
 | Campo | Valor |
 |---|---|
@@ -246,14 +246,14 @@ Para probar la app sin registrarte, usá la cuenta demo que crea `npm run db:see
 
 | Comando | Acción |
 |---|---|
-| npm run dev | Servidor de desarrollo |
-| npm run build | Build de producción (incluye typecheck) |
-| npm start | Modo producción |
-| npm run lint | Linting |
-| npm run db:push | `prisma db push` (⚠️ apunta a la DB del `.env` → producción) |
-| npm run db:migrate | `prisma migrate dev` (⚠️ idem) |
-| npm run db:seed | `prisma db seed` (**borra y re-crea TODA la DB**) |
-| npm run db:studio | `prisma studio` |
+| pnpm dev | Servidor de desarrollo |
+| pnpm build | Build de producción (incluye typecheck) |
+| pnpm start | Modo producción |
+| pnpm lint | Linting |
+| pnpm db:push | `prisma db push` (⚠️ apunta a la DB del `.env` → producción) |
+| pnpm db:migrate | `prisma migrate dev` (⚠️ idem) |
+| pnpm db:seed | `prisma db seed` (**borra y re-crea TODA la DB**) |
+| pnpm db:studio | `prisma studio` |
 
 ### Convenciones
 
@@ -293,15 +293,15 @@ npx -y vercel@latest --prod -y
 
 El proyecto Supabase se usa **solo como PostgreSQL**. El schema y el seed viven en `prisma/`:
 
-- `npx prisma db push` aplica el schema (producción: considerar migraciones versionadas con `prisma migrate deploy`).
-- `npx prisma db seed` crea la cuenta demo + catálogos + datos demo.
+- `pnpm exec prisma db push` aplica el schema (producción: considerar migraciones versionadas con `prisma migrate deploy`).
+- `pnpm exec prisma db seed` crea la cuenta demo + catálogos + datos demo.
 - En Vercel se setean `DATABASE_URL` (pooler 6543), `DIRECT_URL` (5432), `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `NEXT_PUBLIC_APP_URL`. Eliminar cualquier `NEXT_PUBLIC_SUPABASE_*` antigua.
 
 ---
 
 ## 📊 Estado del MVP
 
-En producción. Estado por feature y deuda técnica pendiente en [MVP-COMPLETENESS.md](./docs/MVP-COMPLETENESS.md). Verificación base: `npx tsc --noEmit` (0 errores), `npm run lint` (0 errores, ~135 warnings de `any` no bloqueantes), `npm run build` (pasa).
+En producción. Estado por feature y deuda técnica pendiente en [MVP-COMPLETENESS.md](./docs/MVP-COMPLETENESS.md). Verificación base: `npx tsc --noEmit` (0 errores), `pnpm lint` (0 errores, ~135 warnings de `any` no bloqueantes), `pnpm build` (pasa).
 
 ---
 
@@ -311,7 +311,7 @@ En producción. Estado por feature y deuda técnica pendiente en [MVP-COMPLETENE
 
 1. **Fork** el repositorio
 2. **Crear rama**: `git checkout -b feature/nombre`
-3. **Hacer cambios** y probar: `npm run dev`
+3. **Hacer cambios** y probar: `pnpm dev`
 4. **Commit**: `git commit -m "feat: descripción"`
 5. **Push**: `git push origin feature/nombre`
 6. **Pull Request** en GitHub
