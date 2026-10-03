@@ -1,6 +1,8 @@
-# MVP Completeness Checklist — Estado en Producción
+# MVP Completeness Checklist — estado por feature
 
-Estado: **En producción.** Actualizado al 2026-09-17 (fix de bug de datos en Mediciones, rate limiting real de login, Google Sign-In). Deploy en Vercel (Supabase solo como Postgres vía Prisma + NextAuth v4).
+> **Deploy:** hay un deploy de prueba en Vercel (`workout-web-tau.vercel.app`) pero **no está operativo**: no hay dominio propio. Donde este doc dice "producción", leer "la base compartida" (el `.env` local y ese deploy usan la misma DB).
+
+Actualizado al 2026-09-17 (fix de bug de datos en Mediciones, rate limiting real de login, Google Sign-In). Deploy en Vercel (Supabase solo como Postgres vía Prisma + NextAuth v4).
 
 Este doc es la fuente de verdad del estado por feature y de la deuda técnica. Para agentes/desarrolladores: leé también [AGENTS.md](../AGENTS.md) (advertencias de producción y verificación obligatoria).
 

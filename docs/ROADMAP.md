@@ -1,4 +1,6 @@
-# Pendientes
+# Roadmap (pendientes)
+
+Otros pendientes: deuda técnica en [`MVP-COMPLETENESS.md`](./MVP-COMPLETENESS.md#deuda-técnica-post-mvp) y pasos manuales de push en [`PUSH-NOTIFICATIONS.md`](./PUSH-NOTIFICATIONS.md).
 
 ## Google Sign-In (código listo, falta config + aplicar a producción)
 
