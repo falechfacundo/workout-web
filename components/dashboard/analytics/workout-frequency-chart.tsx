@@ -23,7 +23,7 @@ export function WorkoutFrequencyChart({ userId }: WorkoutFrequencyChartProps) {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        const result = await getWorkoutFrequency(userId, period)
+        const result = await getWorkoutFrequency(period)
         setData(Array.isArray(result.data) ? result.data : [])
       } catch (error) {
         console.error("Failed to fetch workout frequency:", error)

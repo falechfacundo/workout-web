@@ -13,7 +13,7 @@ const logger = createLogger("workout-logs-actions");
 // Schema for validation
 const WorkoutLogSchema = z.object({
   id: z.string().optional(),
-  user_id: z.string(),
+  user_id: z.string().optional(),
   training_session_id: z.string().optional(),
   mesocycle_id: z.string().optional(),
   date: z.string().default(() => new Date().toISOString().split("T")[0]),
@@ -55,6 +55,11 @@ export async function createWorkoutLog(
   formData: WorkoutLogFormData
 ): Promise<{ data: WorkoutLogWithSets | null; error: string | null }> {
   try {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     logger.debug("Iniciando creación de workout log", {
       trainingSessionId: formData.training_session_id,
       mesocycleId: formData.mesocycle_id,
@@ -63,15 +68,48 @@ export async function createWorkoutLog(
 
     const validatedData = WorkoutLogSchema.parse(formData);
 
+    if (validatedData.training_session_id) {
+      const session = await db.trainingSession.findFirst({
+        where: {
+          id: validatedData.training_session_id,
+          mesocycle: { user_id: user.id },
+        },
+        select: { id: true },
+      });
+      if (!session) {
+        return { data: null, error: "Sesión no encontrada" };
+      }
+    }
+
+    if (validatedData.mesocycle_id) {
+      const mesocycle = await db.mesocycle.findFirst({
+        where: { id: validatedData.mesocycle_id, user_id: user.id },
+        select: { id: true },
+      });
+      if (!mesocycle) {
+        return { data: null, error: "Mesociclo no encontrado" };
+      }
+    }
+
+    const startedAt = validatedData.start_time
+      ? new Date(validatedData.start_time)
+      : new Date();
+
+    const existing = await db.workoutLog.findFirst({
+      where: { user_id: user.id, start_time: startedAt },
+      include: { exercise_logs: true },
+    });
+    if (existing) {
+      return { data: existing as WorkoutLogWithSets, error: null };
+    }
+
     const workoutLog = await db.workoutLog.create({
       data: {
-        user_id: validatedData.user_id,
+        user_id: user.id,
         training_session_id: validatedData.training_session_id || null,
         mesocycle_id: validatedData.mesocycle_id || null,
         date: new Date(validatedData.date),
-        start_time: validatedData.start_time
-          ? new Date(validatedData.start_time)
-          : new Date(),
+        start_time: startedAt,
         notes: validatedData.notes || null,
         duration_minutes: validatedData.duration_minutes || null,
         rating: validatedData.rating || null,
@@ -194,12 +232,18 @@ export async function getWorkoutLog(
   }
 }
 
-export async function getWorkoutLogs(
-  userId: string
-): Promise<{ data: WorkoutLogWithSets[] | null; error: string | null }> {
+export async function getWorkoutLogs(): Promise<{
+  data: WorkoutLogWithSets[] | null;
+  error: string | null;
+}> {
   try {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const workoutLogs = await db.workoutLog.findMany({
-      where: { user_id: userId },
+      where: { user_id: user.id },
       include: {
         exercise_logs: true,
         training_session: { select: { name: true } },
@@ -225,14 +269,18 @@ export async function getWorkoutLogs(
 }
 
 export async function getWorkoutLogsByDateRange(
-  userId: string,
   startDate: string,
   endDate: string
 ): Promise<{ data: WorkoutLogWithSets[] | null; error: string | null }> {
   try {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const workoutLogs = await db.workoutLog.findMany({
       where: {
-        user_id: userId,
+        user_id: user.id,
         date: {
           gte: new Date(startDate),
           lte: new Date(endDate),
@@ -446,40 +494,52 @@ export async function saveLiveWorkout(input: LiveWorkoutInput) {
       return { data: null, error: "Mesociclo no encontrado" };
     }
 
-    const log = await db.$transaction(async (tx) => {
-      const created = await tx.workoutLog.create({
-        data: {
-          user_id: user.id,
-          training_session_id: session.id,
-          mesocycle_id: mesocycleId,
-          date: new Date(data.date),
-          start_time: new Date(data.start_time),
-          end_time: new Date(data.end_time),
-          duration_minutes: data.duration_minutes,
-        },
-        select: { id: true },
-      });
-
-      if (data.sets.length > 0) {
-        await tx.exerciseLog.createMany({
-          data: data.sets.map((s) => ({
-            workout_log_id: created.id,
-            exercise_id: s.exercise_id,
-            set_number: s.set_number,
-            reps: s.reps,
-            weight: s.weight ?? null,
-            rir: s.rir ?? null,
-          })),
+    let log: { id: string };
+    try {
+      log = await db.$transaction(async (tx) => {
+        const created = await tx.workoutLog.create({
+          data: {
+            user_id: user.id,
+            training_session_id: session.id,
+            mesocycle_id: mesocycleId,
+            date: new Date(data.date),
+            start_time: new Date(data.start_time),
+            end_time: new Date(data.end_time),
+            duration_minutes: data.duration_minutes,
+          },
+          select: { id: true },
         });
-      }
 
-      await tx.trainingSession.update({
-        where: { id: session.id },
-        data: { status: "completed", completed_date: new Date(data.date) },
+        if (data.sets.length > 0) {
+          await tx.exerciseLog.createMany({
+            data: data.sets.map((s) => ({
+              workout_log_id: created.id,
+              exercise_id: s.exercise_id,
+              set_number: s.set_number,
+              reps: s.reps,
+              weight: s.weight ?? null,
+              rir: s.rir ?? null,
+            })),
+          });
+        }
+
+        await tx.trainingSession.update({
+          where: { id: session.id },
+          data: { status: "completed", completed_date: new Date(data.date) },
+        });
+
+        return created;
       });
-
-      return created;
-    });
+    } catch (error) {
+      if ((error as { code?: string })?.code === "P2002") {
+        const existing = await db.workoutLog.findFirst({
+          where: { user_id: user.id, start_time: new Date(data.start_time) },
+          select: { id: true },
+        });
+        if (existing) return { data: existing, error: null };
+      }
+      throw error;
+    }
 
     logger.info("Live workout guardado", {
       logId: log.id,
@@ -509,9 +569,11 @@ export async function getWorkoutSets(workoutId: string) {
 }
 
 export async function getWorkoutStats(
-  userId: string,
   period: "week" | "month" | "year" = "month"
 ) {
+  const user = await getServerUser();
+  if (!user?.id) return [];
+
   const startDate = new Date();
 
   if (period === "week") {
@@ -524,7 +586,7 @@ export async function getWorkoutStats(
 
   const data = await db.workoutLog.findMany({
     where: {
-      user_id: userId,
+      user_id: user.id,
       date: { gte: startDate },
     },
     select: {

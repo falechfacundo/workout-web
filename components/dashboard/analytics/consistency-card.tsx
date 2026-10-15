@@ -45,8 +45,8 @@ export function ConsistencyCard({ userId }: { userId: string }) {
     async function load() {
       try {
         const [heatResult, streakResult] = await Promise.all([
-          getWorkoutHeatmap(userId, WEEKS),
-          getWorkoutStreak(userId),
+          getWorkoutHeatmap(WEEKS),
+          getWorkoutStreak(),
         ]);
         setHeatmap((heatResult.data as HeatmapEntry[]) || []);
         setStreak((streakResult.data as unknown as StreakData) || null);

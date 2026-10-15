@@ -57,8 +57,16 @@ export async function getMuscleGroup(id: string) {
 
 export async function getExerciseCountByMuscleGroup(id: string) {
   return safeAction(async () => {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const count = await db.exerciseMuscleGroup.count({
-      where: { muscle_group_id: id },
+      where: {
+        muscle_group_id: id,
+        exercise: { OR: [{ user_id: user.id }, { is_default: true }] },
+      },
     });
 
     return {

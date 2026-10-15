@@ -41,7 +41,6 @@ export function BodyMapCard({ userId, mesocycleId }: BodyMapCardProps) {
       setLoading(true);
       try {
         const result = await getMuscleVolumeByRegion(
-          userId,
           mesocycleId ? { mesocycleId } : { period }
         );
         setData((result.data as RegionStat[]) || []);

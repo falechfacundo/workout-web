@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getApiUser } from "@/lib/auth";
-import { getActiveMesocycles } from "@/lib/actions/mesocycles";
-import { getPerformanceMetrics, getVolumeByMuscleGroup } from "@/lib/actions/analytics";
+import { getActiveMesocycles } from "@/lib/queries/mesocycles";
+import { getPerformanceMetrics, getVolumeByMuscleGroup } from "@/lib/queries/analytics";
 import { successResponse, unauthorizedResponse, serverErrorResponse } from "@/lib/apiResponse";
 
 export async function GET(request: NextRequest) {

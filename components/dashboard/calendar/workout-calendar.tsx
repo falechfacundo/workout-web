@@ -62,8 +62,8 @@ export function WorkoutCalendar() {
         const endDate = format(endOfMonth(currentMonth), "yyyy-MM-dd");
 
         const [sessionsResult, logsResult] = await Promise.all([
-          getScheduledSessionsByDateRange(user.id, startDate, endDate),
-          getWorkoutLogsByDateRange(user.id, startDate, endDate),
+          getScheduledSessionsByDateRange(startDate, endDate),
+          getWorkoutLogsByDateRange(startDate, endDate),
         ]);
 
         setScheduledSessions(sessionsResult.data as any[]);

@@ -31,7 +31,7 @@ export function PersonalRecordsCard({ userId }: { userId: string }) {
   useEffect(() => {
     async function load() {
       try {
-        const result = await getPersonalRecords(userId, 8);
+        const result = await getPersonalRecords(8);
         setRecords((result.data as PersonalRecord[]) || []);
       } catch (err) {
         console.error("Error loading personal records:", err);

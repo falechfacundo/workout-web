@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { getServerUser } from "@/lib/auth";
 import { safeAction } from "@/lib/utils/safe-action";
 import { createLogger } from "@/lib/utils/logger";
+import * as queries from "@/lib/queries/mesocycles";
 import {
   mesocycleSchema,
   type Mesocycle,
@@ -15,78 +16,16 @@ import {
 // Crear logger específico para mesociclos
 const logger = createLogger("mesocycles-actions");
 
-export async function getMesocycles(userId: string) {
-  return safeAction(async () => {
-    logger.debug("Obteniendo mesociclos para usuario", { userId });
-    const startTime = performance.now();
-
-    try {
-      const data = await db.mesocycle.findMany({
-        where: { user_id: userId },
-        orderBy: { start_date: "desc" },
-      });
-
-      const duration = Math.round(performance.now() - startTime);
-      logger.info("Mesociclos obtenidos exitosamente", {
-        userId,
-        count: data.length,
-        duration,
-      });
-
-      return {
-        data: data as unknown as Mesocycle[],
-        error: null,
-      };
-    } catch (error) {
-      logger.error(
-        "Error al obtener mesociclos",
-        error instanceof Error ? error : new Error(String(error)),
-        { userId }
-      );
-
-      return {
-        data: null,
-        error: `Error fetching mesocycles: ${error instanceof Error ? error.message : String(error)}`,
-      };
-    }
-  });
+export async function getMesocycles() {
+  const user = await getServerUser();
+  if (!user?.id) return { data: null, error: "Debes iniciar sesión" };
+  return queries.getMesocycles(user.id);
 }
 
-export async function getActiveMesocycles(userId: string) {
-  return safeAction(async () => {
-    logger.debug("Obteniendo mesociclos activos para usuario", { userId });
-    const startTime = performance.now();
-
-    try {
-      const data = await db.mesocycle.findMany({
-        where: { user_id: userId, status: "in_progress" },
-        orderBy: { start_date: "asc" },
-      });
-
-      const duration = Math.round(performance.now() - startTime);
-      logger.info("Mesociclos activos obtenidos exitosamente", {
-        userId,
-        count: data.length,
-        duration,
-      });
-
-      return {
-        data: data as unknown as Mesocycle[],
-        error: null,
-      };
-    } catch (error) {
-      logger.error(
-        "Error al obtener mesociclos activos",
-        error instanceof Error ? error : new Error(String(error)),
-        { userId }
-      );
-
-      return {
-        data: null,
-        error: `Error fetching active mesocycles: ${error instanceof Error ? error.message : String(error)}`,
-      };
-    }
-  });
+export async function getActiveMesocycles() {
+  const user = await getServerUser();
+  if (!user?.id) return { data: null, error: "Debes iniciar sesión" };
+  return queries.getActiveMesocycles(user.id);
 }
 
 export async function getMesocycle(id: string) {
