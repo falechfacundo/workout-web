@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
+import { enUS, es } from "date-fns/locale";
+import { useLocale, useTranslations } from "next-intl";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +49,8 @@ export function WorkoutCalendar() {
   const [isLoading, setIsLoading] = useState(true);
 
   const { user } = useRequireAuth();
+  const t = useTranslations("workoutCalendar");
+  const dateLocale = useLocale() === "es" ? es : enUS;
 
   useEffect(() => {
     async function loadData() {
@@ -91,23 +95,23 @@ export function WorkoutCalendar() {
     <div className="grid gap-4 md:grid-cols-[1fr_350px]">
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 p-4 sm:p-6">
-          <CardTitle>Workout Calendar</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="icon"
-              aria-label="Previous month"
+              aria-label={t("previousMonth")}
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="min-w-[7.5rem] text-center text-sm font-medium">
-              {format(currentMonth, "MMMM yyyy")}
+              {format(currentMonth, "MMMM yyyy", { locale: dateLocale })}
             </span>
             <Button
               variant="outline"
               size="icon"
-              aria-label="Next month"
+              aria-label={t("nextMonth")}
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
             >
               <ChevronRight className="h-4 w-4" />
@@ -117,6 +121,7 @@ export function WorkoutCalendar() {
         <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           <Calendar
             mode="single"
+            locale={dateLocale}
             month={currentMonth}
             onMonthChange={setCurrentMonth}
             hideNavigation
@@ -148,11 +153,11 @@ export function WorkoutCalendar() {
           <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-primary/20" />
-              <span>Scheduled</span>
+              <span>{t("scheduled")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="h-3 w-3 rounded-full bg-primary/40" />
-              <span>Completed</span>
+              <span>{t("completed")}</span>
             </div>
           </div>
         </CardContent>
@@ -161,7 +166,7 @@ export function WorkoutCalendar() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {selectedDay ? format(selectedDay.date, "MMMM d, yyyy") : "Select a Day"}
+            {selectedDay ? format(selectedDay.date, "PPP", { locale: dateLocale }) : t("selectDay")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -173,7 +178,7 @@ export function WorkoutCalendar() {
                 <div>
                   <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    Scheduled Sessions
+                    {t("scheduledSessions")}
                   </h4>
                   <div className="space-y-2">
                     {selectedDay.scheduledSessions.map(session => (
@@ -184,7 +189,7 @@ export function WorkoutCalendar() {
                         <div>
                           <p className="text-sm font-medium">{session.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {session.mesocycle?.name || "No mesocycle"}
+                            {session.mesocycle?.name || t("noMesocycle")}
                           </p>
                         </div>
                         <Badge variant={session.status === "completed" ? "default" : "secondary"}>
@@ -200,7 +205,7 @@ export function WorkoutCalendar() {
                 <div>
                   <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4" />
-                    Completed Workouts
+                    {t("completedWorkouts")}
                   </h4>
                   <div className="space-y-2">
                     {selectedDay.workoutLogs.map(log => (
@@ -211,15 +216,15 @@ export function WorkoutCalendar() {
                       >
                         <div>
                           <p className="text-sm font-medium">
-                            {log.session?.name || "Workout"}
+                            {log.session?.name || t("workoutFallback")}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {log.exercise_logs?.length || 0} exercises
+                            {t("exercisesCount", { count: log.exercise_logs?.length || 0 })}
                           </p>
                         </div>
                         <Badge variant="default">
                           <Dumbbell className="h-3 w-3 mr-1" />
-                          Completed
+                          {t("completed")}
                         </Badge>
                       </Link>
                     ))}
@@ -229,13 +234,13 @@ export function WorkoutCalendar() {
 
               {selectedDay.scheduledSessions.length === 0 && selectedDay.workoutLogs.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  No events for this day
+                  {t("noEvents")}
                 </p>
               )}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Click on a day to see details
+              {t("tapDay")}
             </p>
           )}
         </CardContent>

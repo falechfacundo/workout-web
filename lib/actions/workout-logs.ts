@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { createLogger } from "@/lib/utils/logger";
 import { getServerUser } from "@/lib/auth";
+import { safeAction } from "@/lib/utils/safe-action";
 
 const logger = createLogger("workout-logs-actions");
 
@@ -395,6 +396,101 @@ export async function completeWorkoutLog(
 
   revalidatePath("/dashboard/workout-logs");
   redirect("/dashboard/workout-logs");
+}
+
+const LiveWorkoutSchema = z.object({
+  training_session_id: z.string().uuid(),
+  mesocycle_id: z.string().uuid().optional(),
+  date: z.string().min(1),
+  start_time: z.string().min(1),
+  end_time: z.string().min(1),
+  duration_minutes: z.number().int().min(0),
+  sets: z
+    .array(
+      z.object({
+        exercise_id: z.string().uuid(),
+        set_number: z.number().int().min(1),
+        reps: z.number().int().min(0),
+        weight: z.number().min(0).nullable().optional(),
+        rir: z.number().int().min(0).max(10).nullable().optional(),
+      })
+    )
+    .default([]),
+});
+
+export type LiveWorkoutInput = z.input<typeof LiveWorkoutSchema>;
+
+export async function saveLiveWorkout(input: LiveWorkoutInput) {
+  return safeAction<{ id: string }>(async () => {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
+    const parsed = LiveWorkoutSchema.safeParse(input);
+    if (!parsed.success) {
+      return { data: null, error: parsed.error.errors[0].message };
+    }
+    const data = parsed.data;
+
+    const session = await db.trainingSession.findFirst({
+      where: { id: data.training_session_id, mesocycle: { user_id: user.id } },
+      select: { id: true, mesocycle_id: true },
+    });
+    if (!session) {
+      return { data: null, error: "Sesión no encontrada" };
+    }
+
+    const mesocycleId = data.mesocycle_id ?? session.mesocycle_id;
+    if (mesocycleId !== session.mesocycle_id) {
+      return { data: null, error: "Mesociclo no encontrado" };
+    }
+
+    const log = await db.$transaction(async (tx) => {
+      const created = await tx.workoutLog.create({
+        data: {
+          user_id: user.id,
+          training_session_id: session.id,
+          mesocycle_id: mesocycleId,
+          date: new Date(data.date),
+          start_time: new Date(data.start_time),
+          end_time: new Date(data.end_time),
+          duration_minutes: data.duration_minutes,
+        },
+        select: { id: true },
+      });
+
+      if (data.sets.length > 0) {
+        await tx.exerciseLog.createMany({
+          data: data.sets.map((s) => ({
+            workout_log_id: created.id,
+            exercise_id: s.exercise_id,
+            set_number: s.set_number,
+            reps: s.reps,
+            weight: s.weight ?? null,
+            rir: s.rir ?? null,
+          })),
+        });
+      }
+
+      await tx.trainingSession.update({
+        where: { id: session.id },
+        data: { status: "completed", completed_date: new Date(data.date) },
+      });
+
+      return created;
+    });
+
+    logger.info("Live workout guardado", {
+      logId: log.id,
+      sets: data.sets.length,
+    });
+
+    revalidatePath("/dashboard/workout-logs");
+    revalidatePath("/dashboard/mesocycles");
+
+    return { data: log, error: null };
+  });
 }
 
 export async function getWorkoutSets(workoutId: string) {

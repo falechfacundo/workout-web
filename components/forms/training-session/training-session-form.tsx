@@ -7,7 +7,7 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { createLogger } from "@/lib/utils/logger";
 
 import {
@@ -77,16 +77,13 @@ export function TrainingSessionForm({
           error: result.error,
         });
 
-        toast({
-          variant: "destructive",
-          title: "Error",
+        toast.error("Error", {
           description: result.error,
         });
         return;
       }
 
-      toast({
-        title: "Success",
+      toast.success("Success", {
         description: initialData?.id
           ? "Training session updated successfully"
           : "Training session created successfully",
@@ -101,9 +98,7 @@ export function TrainingSessionForm({
         { sessionName: values.name }
       );
 
-      toast({
-        variant: "destructive",
-        title: "Error",
+      toast.error("Error", {
         description: "An unexpected error occurred. Please try again.",
       });
     } finally {

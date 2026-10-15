@@ -59,10 +59,9 @@ export async function GET(request: NextRequest) {
 
 /**
  * Crea un workout log + todos sus sets en una sola transacción atómica.
- * A diferencia del flujo web (que hace createWorkoutLog + N x
- * createExerciseLogSet + updateWorkoutLog en llamadas secuenciales), acá va
- * todo en un solo request: en una red mobile inestable, una falla a mitad
- * de esa secuencia dejaría un log sin sets o sin duración. El cliente mobile
+ * Todo va en un solo request (el live workout web hace lo mismo vía
+ * saveLiveWorkout): en una red mobile inestable, una falla a mitad
+ * de una secuencia de llamadas dejaría un log sin sets o sin duración. El cliente mobile
  * mantiene el estado del entrenamiento 100% local hasta terminar y lo manda
  * completo recién al finalizar (ver docs/MOBILE-API-CONTRACT.md).
  */

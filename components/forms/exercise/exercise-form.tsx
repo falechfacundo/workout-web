@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useExercisesStore } from "@/lib/stores/exercises-store";
 import { useMuscleGroupsStore } from "@/lib/stores/muscle-groups-store";
 import { createLogger } from "@/lib/utils/logger";
@@ -63,9 +63,7 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
           error: result.error,
           exerciseName: values.name,
         });
-        toast({
-          variant: "destructive",
-          title: t("errorTitle"),
+        toast.error(t("errorTitle"), {
           description: result.error,
         });
       } else {
@@ -74,8 +72,7 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
           isEdit: !!initialData?.id,
           exerciseName: values.name,
         });
-        toast({
-          title: t("successTitle"),
+        toast.success(t("successTitle"), {
           description: initialData?.id
             ? t("successUpdated")
             : t("successCreated"),
@@ -89,9 +86,7 @@ export function ExerciseForm({ initialData }: ExerciseFormProps) {
         error instanceof Error ? error : new Error(String(error)),
         { exerciseName: values.name }
       );
-      toast({
-        variant: "destructive",
-        title: t("errorTitle"),
+      toast.error(t("errorTitle"), {
         description: t("errorGeneric"),
       });
     } finally {

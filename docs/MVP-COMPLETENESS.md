@@ -46,7 +46,7 @@ Este doc es la fuente de verdad del estado por feature y de la deuda técnica. P
 ## Deuda técnica (post-MVP)
 
 - [ ] **~132 warnings `no-explicit-any`**: tipar contra `lib/schemas/*` (Zod) o los tipos de Prisma. No agregar `any` nuevos.
-- [ ] **Toasts duplicados**: `hooks/use-toast.ts` vs `components/ui/use-toast.ts` — unificar.
+- [x] **Toasts duplicados**: unificado en Sonner (`components/ui/sonner.tsx`); se eliminaron Radix Toast y los dos `use-toast.ts`.
 - [ ] **Unlink de Google sin passkey de respaldo**: si un usuario se registró directo con Google y nunca puso password, no puede desvincular (quedaría sin forma de entrar). Sería bueno ofrecer "set a password" desde Settings para destrabar ese caso.
 - [ ] **Migraciones versionadas**: hoy se usa `prisma db push` contra prod. Considerar `prisma migrate dev`/`deploy` con archivos de migración.
 - [ ] **Sin test suite**: agregar al menos smoke tests de auth + CRUD básico.

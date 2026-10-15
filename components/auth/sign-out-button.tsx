@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface SignOutButtonProps {
   children: React.ReactNode;
@@ -30,9 +30,7 @@ export function SignOutButton({
     try {
       await signOut({ callbackUrl: "/auth/login" });
     } catch {
-      toast({
-        variant: "destructive",
-        title: "Error",
+      toast.error("Error", {
         description: "Ocurrió un error al cerrar sesión.",
       });
     } finally {
