@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Check,
@@ -20,6 +20,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import {
   createExerciseLogSet,
@@ -81,6 +91,33 @@ function formatSeconds(total: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+interface WorkoutDraft {
+  startedAt: string;
+  setsByExercise: Record<string, PerformedSet[]>;
+}
+
+function draftKey(sessionId: string) {
+  return `gymtrack:live-workout:${sessionId}`;
+}
+
+function readDraft(sessionId: string): WorkoutDraft | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(draftKey(sessionId));
+    return raw ? (JSON.parse(raw) as WorkoutDraft) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearDraft(sessionId: string) {
+  try {
+    window.sessionStorage.removeItem(draftKey(sessionId));
+  } catch {
+    return;
+  }
+}
+
 function playChime() {
   try {
     const ctx = new AudioContext();
@@ -125,10 +162,23 @@ export function LiveWorkout({
   lastPerformance,
   onSaved,
 }: LiveWorkoutProps) {
-  const [startedAt] = useState(() => new Date());
+  const router = useRouter();
+  const [initialDraft] = useState(() => readDraft(sessionId));
+  const [startedAt] = useState(() =>
+    initialDraft ? new Date(initialDraft.startedAt) : new Date()
+  );
   const [saving, setSaving] = useState(false);
-  const [restSeconds, setRestSeconds] = useState<number | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [confirmFinishOpen, setConfirmFinishOpen] = useState(false);
+  const [confirmLeaveOpen, setConfirmLeaveOpen] = useState(false);
+  const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const prevRest = useRef<number | null>(null);
+
+  const restSeconds =
+    restEndsAt === null
+      ? null
+      : Math.max(0, Math.ceil((restEndsAt - now) / 1000));
 
   const [setsByExercise, setSetsByExercise] = useState<
     Record<string, PerformedSet[]>
@@ -136,20 +186,94 @@ export function LiveWorkout({
     Object.fromEntries(
       exercises.map((ex) => [
         ex.id,
-        initialSets(ex, lastPerformance?.[ex.exercise_id]),
+        initialDraft?.setsByExercise[ex.id] ??
+          initialSets(ex, lastPerformance?.[ex.exercise_id]),
       ])
     )
   );
 
-  const restActive = restSeconds !== null;
+  const isDirty = Object.values(setsByExercise).some((sets) =>
+    sets.some(
+      (s) => s.isDone || s.weight.trim() !== "" || s.reps.trim() !== ""
+    )
+  );
 
   useEffect(() => {
-    if (!restActive) return;
-    const t = setInterval(() => {
-      setRestSeconds((s) => (s === null ? null : Math.max(0, s - 1)));
-    }, 1000);
-    return () => clearInterval(t);
-  }, [restActive]);
+    if (restEndsAt === null) return;
+    const tick = () => setNow(Date.now());
+    const t = setInterval(tick, 250);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [restEndsAt]);
+
+  useEffect(() => {
+    if (saved) return;
+    try {
+      const draft: WorkoutDraft = {
+        startedAt: startedAt.toISOString(),
+        setsByExercise,
+      };
+      window.sessionStorage.setItem(draftKey(sessionId), JSON.stringify(draft));
+    } catch {
+      return;
+    }
+  }, [saved, sessionId, setsByExercise, startedAt]);
+
+  useEffect(() => {
+    if (!isDirty || saving || saved) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty, saving, saved]);
+
+  useEffect(() => {
+    if (!("wakeLock" in navigator)) return;
+    let sentinel: WakeLockSentinel | null = null;
+    let cancelled = false;
+    const request = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const lock = await navigator.wakeLock.request("screen");
+        if (cancelled) {
+          void lock.release();
+          return;
+        }
+        sentinel = lock;
+      } catch {
+        return;
+      }
+    };
+    void request();
+    document.addEventListener("visibilitychange", request);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", request);
+      void sentinel?.release();
+    };
+  }, []);
+
+  function startRest(seconds: number) {
+    const start = Date.now();
+    setNow(start);
+    setRestEndsAt(start + seconds * 1000);
+  }
+
+  function handleBack() {
+    if (isDirty && !saved) {
+      setConfirmLeaveOpen(true);
+      return;
+    }
+    router.push(sessionHref);
+  }
+
+  function leaveWithoutSaving() {
+    clearDraft(sessionId);
+    setSaved(true);
+    router.push(sessionHref);
+  }
 
   useEffect(() => {
     if (prevRest.current !== null && prevRest.current > 0 && restSeconds === 0) {
@@ -198,7 +322,7 @@ export function LiveWorkout({
       ),
     }));
     if (!wasDone && restBetween && restBetween > 0) {
-      setRestSeconds(restBetween);
+      startRest(restBetween);
     }
   }
 
@@ -272,6 +396,8 @@ export function LiveWorkout({
 
       await updateTrainingSessionStatus(sessionId, "completed");
 
+      setSaved(true);
+      clearDraft(sessionId);
       toast.success("Entrenamiento guardado");
       onSaved?.({ logId });
     } catch (err) {
@@ -286,27 +412,25 @@ export function LiveWorkout({
     <div className="grid gap-4 md:gap-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
-            <Link href={sessionHref}>
-              <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
-            </Link>
+          <Button variant="outline" size="icon" className="shrink-0" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{sessionName}</h1>
+          <div className="min-w-0">
+            <h1 className="break-words text-3xl font-bold tracking-tight">{sessionName}</h1>
             <p className="text-muted-foreground">
               {totals.done}/{totals.planned} sets completados
             </p>
           </div>
         </div>
-        <Button onClick={handleFinish} disabled={saving}>
+        <Button onClick={() => setConfirmFinishOpen(true)} disabled={saving}>
           <Square className="mr-2 h-4 w-4" />
           {saving ? "Guardando..." : "Finish Workout"}
         </Button>
       </div>
 
       {restSeconds !== null && (
-        <Card className="border-primary/50">
+        <Card className="sticky top-16 z-20 border-primary/50">
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <Timer className="h-8 w-8 text-primary" />
@@ -323,12 +447,16 @@ export function LiveWorkout({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setRestSeconds((s) => (s ?? 0) + 30)}
+                onClick={() => {
+                  const current = Date.now();
+                  setNow(current);
+                  setRestEndsAt((e) => Math.max(e ?? current, current) + 30_000);
+                }}
               >
                 <Plus className="mr-1 h-3 w-3" />
                 30s
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setRestSeconds(null)}>
+              <Button variant="outline" size="sm" onClick={() => setRestEndsAt(null)}>
                 Skip
               </Button>
             </div>
@@ -348,7 +476,7 @@ export function LiveWorkout({
           const sets = setsByExercise[exercise.id] ?? [];
           return (
             <Card key={exercise.id}>
-              <CardHeader className="pb-3">
+              <CardHeader className="px-4 pb-3 sm:px-6">
                 <div className="flex items-center gap-2">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
                     {exIdx + 1}
@@ -372,9 +500,9 @@ export function LiveWorkout({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 sm:px-6">
                 <div className="space-y-2">
-                  <div className="grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] items-center gap-2 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-[2rem_1fr_1fr_3rem_2.75rem] items-center gap-2 text-xs text-muted-foreground">
                     <span>Set</span>
                     <span>Peso (kg)</span>
                     <span>Reps</span>
@@ -385,7 +513,7 @@ export function LiveWorkout({
                     <div
                       key={setIdx}
                       className={cn(
-                        "grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] items-center gap-2",
+                        "grid grid-cols-[2rem_1fr_1fr_3rem_2.75rem] items-center gap-2",
                         set.isDone && "opacity-60"
                       )}
                     >
@@ -397,7 +525,8 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { weight: e.target.value })
                         }
                         placeholder={setIdx > 0 ? sets[setIdx - 1].weight || "—" : "0"}
-                        className="h-9"
+                        aria-label={`Peso set ${setIdx + 1}`}
+                        className="h-11 px-2"
                       />
                       <Input
                         inputMode="numeric"
@@ -406,7 +535,8 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { reps: e.target.value })
                         }
                         placeholder={String(exercise.reps)}
-                        className="h-9"
+                        aria-label={`Reps set ${setIdx + 1}`}
+                        className="h-11 px-2"
                       />
                       <Input
                         inputMode="numeric"
@@ -415,13 +545,16 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { rir: e.target.value })
                         }
                         placeholder={exercise.rir != null ? String(exercise.rir) : ""}
-                        className="h-9"
+                        aria-label={`RIR set ${setIdx + 1}`}
+                        className="h-11 px-2"
                       />
                       <Button
                         type="button"
                         variant={set.isDone ? "default" : "outline"}
                         size="icon"
-                        className="h-9 w-9"
+                        className="h-11 w-11"
+                        aria-pressed={set.isDone}
+                        aria-label={`Set ${setIdx + 1} completado`}
                         onClick={() =>
                           toggleSetDone(
                             exercise.id,
@@ -455,6 +588,44 @@ export function LiveWorkout({
           );
         })
       )}
+
+      <AlertDialog open={confirmFinishOpen} onOpenChange={setConfirmFinishOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Terminar el entrenamiento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se van a guardar {totals.done}/{totals.planned} sets completados y
+              la sesión quedará marcada como completada.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Seguir entrenando</AlertDialogCancel>
+            <AlertDialogAction onClick={handleFinish}>
+              Guardar y terminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmLeaveOpen} onOpenChange={setConfirmLeaveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Salir sin guardar?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vas a perder los sets cargados en este entrenamiento.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Seguir entrenando</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={leaveWithoutSaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Salir sin guardar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -30,9 +30,10 @@ export function PhysicalStatsSection() {
               <Input
                 type="number"
                 step="0.1"
+                inputMode="decimal"
                 placeholder={t("weightPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => {
                   const value = e.target.value
                     ? parseFloat(e.target.value)
@@ -56,9 +57,10 @@ export function PhysicalStatsSection() {
             <FormControl>
               <Input
                 type="number"
+                inputMode="numeric"
                 placeholder={t("heightPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => {
                   const value = e.target.value
                     ? parseInt(e.target.value)

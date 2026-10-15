@@ -78,7 +78,11 @@
     "registerErrorGeneric": "An error occurred while creating your account.",
     "registerSuccessTitle": "Registration successful",
     "registerSuccessDescription": "Welcome to GymTrack!",
-    "registerSuccessNeedsLogin": "Your account was created. You can now sign in."
+    "registerSuccessNeedsLogin": "Your account was created. You can now sign in.",
+    "noAccount": "Don't have an account?",
+    "signUpLink": "Sign up",
+    "haveAccount": "Already have an account?",
+    "signInLink": "Sign in"
   },
   "bodyMap": {
     "frontal": "Front",
@@ -276,7 +280,12 @@
     "leftArmLegend": "Left Arm (cm)",
     "rightArmLegend": "Right Arm (cm)",
     "leftThighLegend": "Left Thigh (cm)",
-    "rightThighLegend": "Right Thigh (cm)"
+    "rightThighLegend": "Right Thigh (cm)",
+    "editAction": "Edit measurement",
+    "deleteAction": "Delete measurement",
+    "deleteTitle": "Delete measurement",
+    "cancel": "Cancel",
+    "confirmDeleteAction": "Delete"
   },
   "measurementForm": {
     "bodyMeasurementsTitle": "Body Measurements",

@@ -119,7 +119,7 @@ export function MuscleGroupsSection() {
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                   <Command>
                     <CommandInput placeholder={t("searchMuscleGroups")} />
                     <CommandList>

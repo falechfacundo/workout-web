@@ -30,11 +30,11 @@ export function LimbMeasurementsSection() {
             <FormLabel>{t("armLeft")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("armLeftPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>
@@ -51,11 +51,11 @@ export function LimbMeasurementsSection() {
             <FormLabel>{t("armRight")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("armRightPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>
@@ -72,11 +72,11 @@ export function LimbMeasurementsSection() {
             <FormLabel>{t("thighLeft")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("thighLeftPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>
@@ -93,11 +93,11 @@ export function LimbMeasurementsSection() {
             <FormLabel>{t("thighRight")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("thighRightPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>

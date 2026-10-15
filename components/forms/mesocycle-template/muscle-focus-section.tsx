@@ -98,7 +98,7 @@ export function MuscleFocusSection() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
+                          type="number" inputMode="numeric"
                           min={1}
                           max={10}
                           className="w-16 h-8"

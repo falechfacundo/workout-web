@@ -43,6 +43,16 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { type Profile } from "@/lib/schemas/profile";
 
@@ -65,6 +75,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
   >(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     // Cargar mediciones cuando se monta el componente
@@ -76,9 +87,10 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
     ? measurements.find((m) => m.id === selectedMeasurementId)
     : null;
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t("confirmDelete")))
-      return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const id = deleteId;
+    setDeleteId(null);
     await deleteMeasurement(id);
   };
 
@@ -126,7 +138,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <CardTitle>{t("title")}</CardTitle>
             <CardDescription>{t("description")}</CardDescription>
@@ -170,7 +182,7 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                       <TableHead>{t("chestCm")}</TableHead>
                       <TableHead>{t("waistCm")}</TableHead>
                       <TableHead>{t("hipsCm")}</TableHead>
-                      <TableHead>{t("actions")}</TableHead>
+                      <TableHead className="sticky right-0 bg-card">{t("actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -186,11 +198,12 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                         <TableCell>{measurement.chest_cm || "-"}</TableCell>
                         <TableCell>{measurement.waist_cm || "-"}</TableCell>
                         <TableCell>{measurement.hips_cm || "-"}</TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
+                        <TableCell className="sticky right-0 bg-card">
+                          <div className="flex gap-2">
                             <Button
                               variant="outline"
                               size="icon"
+                              aria-label={t("editAction")}
                               onClick={() => {
                                 setSelectedMeasurementId(measurement.id);
                                 setIsEditDialogOpen(true);
@@ -201,7 +214,8 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                             <Button
                               variant="outline"
                               size="icon"
-                              onClick={() => handleDelete(measurement.id)}
+                              aria-label={t("deleteAction")}
+                              onClick={() => setDeleteId(measurement.id)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -230,14 +244,14 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                     <ResponsiveContainer width="100%" height="100%">
                       <CustomLineChart
                         data={chartData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        margin={{ top: 5, right: 0, left: -16, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis yAxisId="left" orientation="left" />
-                        <YAxis yAxisId="right" orientation="right" />
+                        <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                        <YAxis yAxisId="left" orientation="left" tick={{ fontSize: 11 }} />
+                        <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
                         <Tooltip />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: 12 }} />
                         <Line
                           yAxisId="left"
                           type="monotone"
@@ -266,13 +280,13 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                     <ResponsiveContainer width="100%" height="100%">
                       <CustomLineChart
                         data={chartData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        margin={{ top: 5, right: 0, left: -16, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
+                        <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                        <YAxis tick={{ fontSize: 11 }} />
                         <Tooltip />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: 12 }} />
                         <Line
                           type="monotone"
                           dataKey="chest"
@@ -302,13 +316,13 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
                     <ResponsiveContainer width="100%" height="100%">
                       <CustomLineChart
                         data={chartData}
-                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        margin={{ top: 5, right: 0, left: -16, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
+                        <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                        <YAxis tick={{ fontSize: 11 }} />
                         <Tooltip />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: 12 }} />
                         <Line
                           type="monotone"
                           dataKey="armLeft"
@@ -342,6 +356,24 @@ export function MeasurementHistory({ profile }: MeasurementHistoryProps) {
           </TabsContent>
         </Tabs>
       </CardContent>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("confirmDelete")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("confirmDeleteAction")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Measurement Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

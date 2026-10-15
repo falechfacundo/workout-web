@@ -90,34 +90,44 @@ export function WorkoutCalendar() {
   return (
     <div className="grid gap-4 md:grid-cols-[1fr_350px]">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 p-4 sm:p-6">
           <CardTitle>Workout Calendar</CardTitle>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="icon"
+              aria-label="Previous month"
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-medium min-w-[140px] text-center">
+            <span className="min-w-[7.5rem] text-center text-sm font-medium">
               {format(currentMonth, "MMMM yyyy")}
             </span>
             <Button
               variant="outline"
               size="icon"
+              aria-label="Next month"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
           <Calendar
             mode="single"
+            month={currentMonth}
+            onMonthChange={setCurrentMonth}
+            hideNavigation
             selected={selectedDay?.date}
             onDayClick={handleDayClick}
-            className="rounded-md border"
+            className="w-full rounded-md border p-2 sm:p-3"
+            classNames={{
+              month_caption: "hidden",
+              weekday: "flex-1 rounded-md text-[0.8rem] font-normal text-muted-foreground",
+              day: "relative aspect-square flex-1 p-0 text-center text-sm focus-within:relative focus-within:z-20",
+            }}
             modifiers={{
               hasScheduled: (date) =>
                 scheduledSessions.some(s => s.scheduled_date === format(date, "yyyy-MM-dd")),

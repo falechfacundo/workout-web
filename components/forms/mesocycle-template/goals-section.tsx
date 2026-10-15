@@ -83,7 +83,7 @@ export function GoalsSection() {
                       <FormLabel className="text-xs">{t("priorityLabel")}</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
+                          type="number" inputMode="numeric"
                           min={1}
                           max={5}
                           className="w-16 h-8"

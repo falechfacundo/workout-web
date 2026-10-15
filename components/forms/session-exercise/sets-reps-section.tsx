@@ -27,7 +27,7 @@ export function SetsRepsSection() {
             <FormLabel>Sets</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="numeric"
                 min={1}
                 {...field}
                 onChange={(e) => {
@@ -50,7 +50,7 @@ export function SetsRepsSection() {
             <FormLabel>Reps</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="numeric"
                 min={1}
                 {...field}
                 onChange={(e) => {

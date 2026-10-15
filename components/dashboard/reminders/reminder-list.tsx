@@ -143,10 +143,11 @@ export function ReminderList() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="Edit reminder"
                     onClick={() => handleEdit(reminder)}
                   >
                     <Edit className="h-4 w-4" />
@@ -154,6 +155,7 @@ export function ReminderList() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="Delete reminder"
                     onClick={() => setDeleteId(reminder.id)}
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />

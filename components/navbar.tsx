@@ -10,16 +10,16 @@ export function Navbar() {
 
   return (
     <header className="flex h-16 items-center px-4 md:px-6">
-      <Link href="/" className="flex items-center gap-2 font-semibold">
+      <Link href="/" aria-label="GymTrack" className="flex items-center gap-2 font-semibold">
         <BrandMark className="h-8 w-8 text-primary" />
-        <span>GymTrack</span>
+        <span className="hidden sm:inline">GymTrack</span>
       </Link>
       <div className="ml-auto flex items-center gap-2">
         <LocaleToggle />
-        <Button variant="outline" asChild>
+        <Button variant="outline" size="sm" className="hidden sm:inline-flex" asChild>
           <Link href="/auth/login">{t("signIn")}</Link>
         </Button>
-        <Button asChild>
+        <Button size="sm" asChild>
           <Link href="/auth/register">{t("signUp")}</Link>
         </Button>
       </div>

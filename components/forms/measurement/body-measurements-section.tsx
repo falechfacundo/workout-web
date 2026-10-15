@@ -30,11 +30,11 @@ export function BodyMeasurementsSection() {
             <FormLabel>{t("weightKg")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("weightPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>
@@ -51,11 +51,11 @@ export function BodyMeasurementsSection() {
             <FormLabel>{t("bodyFat")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("bodyFatPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>
@@ -72,11 +72,11 @@ export function BodyMeasurementsSection() {
             <FormLabel>{t("chest")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("chestPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>
@@ -93,11 +93,11 @@ export function BodyMeasurementsSection() {
             <FormLabel>{t("waist")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("waistPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>
@@ -114,11 +114,11 @@ export function BodyMeasurementsSection() {
             <FormLabel>{t("hips")}</FormLabel>
             <FormControl>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 step="0.1"
                 placeholder={t("hipsPlaceholder")}
                 {...field}
-                value={field.value || ""}
+                value={field.value ?? ""}
                 onChange={(e) => handleNumberInput(field, e.target.value)}
               />
             </FormControl>

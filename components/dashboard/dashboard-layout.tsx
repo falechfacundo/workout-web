@@ -11,7 +11,7 @@ import { BarChart3, Calendar, ClipboardList, Dumbbell, LayoutDashboard, LogOut, 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { SignOutButton } from "@/components/auth/sign-out-button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,7 +95,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <span className="sr-only">{t("toggleNav")}</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="flex flex-col">
+          <SheetContent side="left" className="flex flex-col overflow-y-auto" aria-describedby={undefined}>
+            <SheetTitle className="sr-only">{t("toggleNav")}</SheetTitle>
             <nav className="grid gap-2 text-lg font-medium">
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold" onClick={() => setOpen(false)}>
                 <BrandMark className="h-8 w-8 text-primary" />
@@ -184,7 +185,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </SignOutButton>
           </nav>
         </aside>
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
       </div>
     </div>
   )

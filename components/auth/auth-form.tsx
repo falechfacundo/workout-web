@@ -171,6 +171,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     return (
       <Form {...signInForm}>
         <form
+          noValidate
           onSubmit={signInForm.handleSubmit(onSignIn)}
           className="space-y-6"
         >
@@ -181,7 +182,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               <FormItem>
                 <FormLabel>{t("email")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="you@example.com" {...field} />
+                  <Input type="email" autoComplete="email" placeholder="you@example.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -194,7 +195,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               <FormItem>
                 <FormLabel>{t("password")}</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
+                  <Input type="password" autoComplete="current-password" placeholder="••••••••" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -212,6 +213,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <Form {...signUpForm}>
       <form
+        noValidate
         onSubmit={signUpForm.handleSubmit(onSignUp)}
         className="space-y-6"
       >
@@ -222,7 +224,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <FormItem>
               <FormLabel>{t("email")}</FormLabel>
               <FormControl>
-                <Input placeholder="tu@ejemplo.com" {...field} />
+                <Input type="email" autoComplete="email" placeholder="tu@ejemplo.com" {...field} />
               </FormControl>
               <FormDescription>{t("emailDescription")}</FormDescription>
               <FormMessage />
@@ -236,7 +238,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <FormItem>
               <FormLabel>{t("password")}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input type="password" autoComplete="new-password" placeholder="••••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -249,7 +251,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <FormItem>
               <FormLabel>{t("confirmPassword")}</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input type="password" autoComplete="new-password" placeholder="••••••••" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
