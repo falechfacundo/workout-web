@@ -17,12 +17,26 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RowListSkeleton } from "@/components/ui/data-skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MuscleGroupVolumeChart } from "@/components/dashboard/workout/muscle-group-volume-chart";
-import { WorkoutFrequencyChart } from "@/components/dashboard/analytics/workout-frequency-chart";
+import dynamic from "next/dynamic";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useWorkoutLogsStore } from "@/lib/stores/workout-logs-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { getPerformanceMetrics, getVolumeByMuscleGroup } from "@/lib/actions/analytics";
+
+const MuscleGroupVolumeChart = dynamic(
+  () =>
+    import("@/components/dashboard/workout/muscle-group-volume-chart").then(
+      (m) => m.MuscleGroupVolumeChart
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-lg" /> }
+);
+const WorkoutFrequencyChart = dynamic(
+  () =>
+    import("@/components/dashboard/analytics/workout-frequency-chart").then(
+      (m) => m.WorkoutFrequencyChart
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-lg" /> }
+);
 
 function MetricCard({
   title,
@@ -391,15 +405,15 @@ export default function DashboardPage() {
 
         <Tabs defaultValue="volume">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="volume">Muscle Group Volume</TabsTrigger>
-            <TabsTrigger value="frequency">Workout Frequency</TabsTrigger>
+            <TabsTrigger value="volume">{t("volumeTab")}</TabsTrigger>
+            <TabsTrigger value="frequency">{t("frequencyTab")}</TabsTrigger>
           </TabsList>
           <TabsContent value="volume" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Volume by Muscle Group</CardTitle>
+                <CardTitle>{t("volumeTitle")}</CardTitle>
                 <CardDescription>
-                  Training volume distribution across muscle groups this month
+                  {t("volumeDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="h-80">
@@ -414,9 +428,9 @@ export default function DashboardPage() {
           <TabsContent value="frequency" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Workout Frequency</CardTitle>
+                <CardTitle>{t("frequencyTitle")}</CardTitle>
                 <CardDescription>
-                  Number of workouts completed over time
+                  {t("frequencyDescription")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="h-80">

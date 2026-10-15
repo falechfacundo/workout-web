@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useMesocycleTemplatesStore } from "@/lib/stores/mesocycle-templates-store";
 import { MesocycleTemplateFormData } from "@/lib/actions/mesocycle-templates";
 import { createLogger } from "@/lib/utils/logger";
@@ -76,9 +76,7 @@ export function MesocycleTemplateForm({
   // Show error messages from store
   useState(() => {
     if (error) {
-      toast({
-        variant: "destructive",
-        title: t("errorTitle"),
+      toast.error(t("errorTitle"), {
         description: error,
       });
     }
@@ -96,9 +94,7 @@ export function MesocycleTemplateForm({
 
       if (!userId) {
         logger.warn("Authentication error - missing user ID");
-        toast({
-          variant: "destructive",
-          title: t("errorAuthTitle"),
+        toast.error(t("errorAuthTitle"), {
           description: t("errorAuthDescription"),
         });
         return;
@@ -121,8 +117,7 @@ export function MesocycleTemplateForm({
         const success = await updateTemplate(formData);
 
         if (success) {
-          toast({
-            title: t("successUpdatedTitle"),
+          toast.success(t("successUpdatedTitle"), {
             description: t("successUpdatedDescription"),
           });
 
@@ -141,8 +136,7 @@ export function MesocycleTemplateForm({
         const templateId = await createTemplate(formData);
 
         if (templateId) {
-          toast({
-            title: t("successCreatedTitle"),
+          toast.success(t("successCreatedTitle"), {
             description: t("successCreatedDescription"),
           });
 
@@ -160,11 +154,8 @@ export function MesocycleTemplateForm({
         error instanceof Error ? error : new Error(String(error))
       );
 
-      toast({
-        variant: "destructive",
-        title: t("errorTitle"),
-        description:
-          typeof error === "string" ? error : t("errorGeneric"),
+      toast.error(t("errorTitle"), {
+        description: typeof error === "string" ? error : t("errorGeneric"),
       });
     }
   }

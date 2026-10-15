@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { type MesocycleFormData } from "@/lib/actions/mesocycles";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import {
@@ -83,9 +83,7 @@ export function MesocycleForm({ initialData, userId }: MesocycleFormProps) {
 
       if (result?.error) {
         logger.warn("Error submitting mesocycle form", { error: result.error });
-        toast({
-          variant: "destructive",
-          title: t("errorTitle"),
+        toast.error(t("errorTitle"), {
           description: result.error,
         });
       } else {
@@ -93,8 +91,7 @@ export function MesocycleForm({ initialData, userId }: MesocycleFormProps) {
           id: result?.data?.id,
           isEdit: !!initialData?.id,
         });
-        toast({
-          title: t("successTitle"),
+        toast.success(t("successTitle"), {
           description: initialData?.id
             ? t("successUpdated")
             : t("successCreated"),
@@ -107,9 +104,7 @@ export function MesocycleForm({ initialData, userId }: MesocycleFormProps) {
         "Exception in mesocycle form submission",
         error instanceof Error ? error : new Error(String(error))
       );
-      toast({
-        variant: "destructive",
-        title: t("errorTitle"),
+      toast.error(t("errorTitle"), {
         description: t("errorGeneric"),
       });
     } finally {

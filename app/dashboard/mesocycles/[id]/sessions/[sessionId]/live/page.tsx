@@ -114,7 +114,6 @@ export default function LiveSessionPage() {
   return (
     <DashboardLayout>
       <LiveWorkout
-        userId={user.id}
         sessionId={sessionId}
         mesocycleId={id}
         sessionName={currentSession.name}

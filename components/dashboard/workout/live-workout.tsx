@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   ArrowLeft,
   Check,
@@ -31,12 +32,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import {
-  createExerciseLogSet,
-  createWorkoutLog,
-  updateWorkoutLog,
-} from "@/lib/actions/workout-logs";
-import { updateTrainingSessionStatus } from "@/lib/actions/training-sessions";
+import { format } from "date-fns";
+import { saveLiveWorkout } from "@/lib/actions/workout-logs";
 
 export interface PlayerExercise {
   id: string;
@@ -142,7 +139,6 @@ function playChime() {
 }
 
 interface LiveWorkoutProps {
-  userId: string;
   sessionId: string;
   mesocycleId: string;
   sessionName: string;
@@ -153,7 +149,6 @@ interface LiveWorkoutProps {
 }
 
 export function LiveWorkout({
-  userId,
   sessionId,
   mesocycleId,
   sessionName,
@@ -163,6 +158,7 @@ export function LiveWorkout({
   onSaved,
 }: LiveWorkoutProps) {
   const router = useRouter();
+  const t = useTranslations("liveWorkout");
   const [initialDraft] = useState(() => readDraft(sessionId));
   const [startedAt] = useState(() =>
     initialDraft ? new Date(initialDraft.startedAt) : new Date()
@@ -337,72 +333,50 @@ export function LiveWorkout({
     setSaving(true);
     try {
       const end = new Date();
-      const { data: log, error } = await createWorkoutLog({
-        user_id: userId,
+      const sets = exercises.flatMap((exercise) =>
+        (setsByExercise[exercise.id] ?? []).flatMap((set, idx) => {
+          if (set.reps.trim() === "" && set.weight.trim() === "") return [];
+          const reps = Number.parseInt(set.reps, 10);
+          if (Number.isNaN(reps)) return [];
+          const weight = Number.parseFloat(set.weight);
+          const rir = Number.parseInt(set.rir, 10);
+          return [
+            {
+              exercise_id: exercise.exercise_id,
+              set_number: idx + 1,
+              reps,
+              weight: Number.isNaN(weight) ? null : weight,
+              rir: Number.isNaN(rir) ? null : rir,
+            },
+          ];
+        })
+      );
+
+      const { data: log, error } = await saveLiveWorkout({
         training_session_id: sessionId,
         mesocycle_id: mesocycleId,
-        date: end.toISOString().split("T")[0],
+        date: format(end, "yyyy-MM-dd"),
         start_time: startedAt.toISOString(),
         end_time: end.toISOString(),
+        duration_minutes: Math.max(
+          1,
+          Math.round((end.getTime() - startedAt.getTime()) / 60000)
+        ),
+        sets,
       });
 
       if (error || !log) {
-        toast.error(error || "No se pudo guardar el entrenamiento");
-        setSaving(false);
+        toast.error(error || t("saveError"));
         return;
       }
 
-      const logId = log.id;
-
-      for (const exercise of exercises) {
-        const performed = setsByExercise[exercise.id] ?? [];
-        for (const [idx, set] of performed.entries()) {
-          const hasData = set.reps.trim() !== "" || set.weight.trim() !== "";
-          if (!hasData) continue;
-          const reps = Number.parseInt(set.reps, 10);
-          if (Number.isNaN(reps)) continue;
-          const weight =
-            set.weight.trim() === ""
-              ? undefined
-              : Number.parseFloat(set.weight);
-          const rir =
-            set.rir.trim() === "" ? undefined : Number.parseInt(set.rir, 10);
-
-          await createExerciseLogSet({
-            workout_log_id: logId,
-            exercise_id: exercise.exercise_id,
-            set_number: idx + 1,
-            reps,
-            weight:
-              weight !== undefined && !Number.isNaN(weight) ? weight : undefined,
-            rir: rir !== undefined && !Number.isNaN(rir) ? rir : undefined,
-          });
-        }
-      }
-
-      const duration = Math.max(
-        1,
-        Math.round((end.getTime() - startedAt.getTime()) / 60000)
-      );
-      await updateWorkoutLog(logId, {
-        user_id: userId,
-        training_session_id: sessionId,
-        mesocycle_id: mesocycleId,
-        date: end.toISOString().split("T")[0],
-        start_time: startedAt.toISOString(),
-        end_time: end.toISOString(),
-        duration_minutes: duration,
-      });
-
-      await updateTrainingSessionStatus(sessionId, "completed");
-
       setSaved(true);
       clearDraft(sessionId);
-      toast.success("Entrenamiento guardado");
-      onSaved?.({ logId });
+      toast.success(t("saved"));
+      onSaved?.({ logId: log.id });
     } catch (err) {
       console.error("Error saving live workout:", err);
-      toast.error("Error inesperado al guardar el entrenamiento");
+      toast.error(t("saveUnexpected"));
     } finally {
       setSaving(false);
     }
@@ -414,18 +388,18 @@ export function LiveWorkout({
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" className="shrink-0" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back</span>
+            <span className="sr-only">{t("back")}</span>
           </Button>
           <div className="min-w-0">
             <h1 className="break-words text-3xl font-bold tracking-tight">{sessionName}</h1>
             <p className="text-muted-foreground">
-              {totals.done}/{totals.planned} sets completados
+              {t("setsCompleted", { done: totals.done, planned: totals.planned })}
             </p>
           </div>
         </div>
         <Button onClick={() => setConfirmFinishOpen(true)} disabled={saving}>
           <Square className="mr-2 h-4 w-4" />
-          {saving ? "Guardando..." : "Finish Workout"}
+          {saving ? t("saving") : t("finish")}
         </Button>
       </div>
 
@@ -439,7 +413,7 @@ export function LiveWorkout({
                   {formatSeconds(restSeconds)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Descanso en curso
+                  {t("restInProgress")}
                 </p>
               </div>
             </div>
@@ -457,7 +431,7 @@ export function LiveWorkout({
                 30s
               </Button>
               <Button variant="outline" size="sm" onClick={() => setRestEndsAt(null)}>
-                Skip
+                {t("skip")}
               </Button>
             </div>
           </CardContent>
@@ -467,8 +441,7 @@ export function LiveWorkout({
       {exercises.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center text-muted-foreground">
-            Esta sesión no tiene ejercicios. Agregalos desde el detalle de la
-            sesión antes de entrenar.
+            {t("noExercises")}
           </CardContent>
         </Card>
       ) : (
@@ -482,19 +455,23 @@ export function LiveWorkout({
                     {exIdx + 1}
                   </span>
                   <div>
-                    <CardTitle>{exercise.exercise?.name ?? "Ejercicio"}</CardTitle>
+                    <CardTitle>{exercise.exercise?.name ?? t("exerciseFallback")}</CardTitle>
                     <CardDescription>
                       {exercise.sets} × {exercise.reps}
                       {exercise.rir != null ? ` @ RIR ${exercise.rir}` : ""}
                       {exercise.rest_between_sets
-                        ? ` — descanso ${exercise.rest_between_sets}s`
+                        ? ` — ${t("restInfo", { seconds: exercise.rest_between_sets })}`
                         : ""}
                     </CardDescription>
                     {lastPerformance?.[exercise.exercise_id] && (
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Última vez ({new Date(
-                          lastPerformance[exercise.exercise_id].date
-                        ).toLocaleDateString()}): {lastPerformance[exercise.exercise_id].weight ?? "—"} kg × {lastPerformance[exercise.exercise_id].reps}
+                        {t("lastTime", {
+                          date: new Date(
+                            lastPerformance[exercise.exercise_id].date
+                          ).toLocaleDateString(),
+                          weight: lastPerformance[exercise.exercise_id].weight ?? "—",
+                          reps: lastPerformance[exercise.exercise_id].reps,
+                        })}
                       </p>
                     )}
                   </div>
@@ -503,10 +480,10 @@ export function LiveWorkout({
               <CardContent className="px-4 sm:px-6">
                 <div className="space-y-2">
                   <div className="grid grid-cols-[2rem_1fr_1fr_3rem_2.75rem] items-center gap-2 text-xs text-muted-foreground">
-                    <span>Set</span>
-                    <span>Peso (kg)</span>
-                    <span>Reps</span>
-                    <span>RIR</span>
+                    <span>{t("colSet")}</span>
+                    <span>{t("colWeight")}</span>
+                    <span>{t("colReps")}</span>
+                    <span>{t("colRir")}</span>
                     <span />
                   </div>
                   {sets.map((set, setIdx) => (
@@ -525,7 +502,7 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { weight: e.target.value })
                         }
                         placeholder={setIdx > 0 ? sets[setIdx - 1].weight || "—" : "0"}
-                        aria-label={`Peso set ${setIdx + 1}`}
+                        aria-label={t("weightLabel", { n: setIdx + 1 })}
                         className="h-11 px-2"
                       />
                       <Input
@@ -535,7 +512,7 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { reps: e.target.value })
                         }
                         placeholder={String(exercise.reps)}
-                        aria-label={`Reps set ${setIdx + 1}`}
+                        aria-label={t("repsLabel", { n: setIdx + 1 })}
                         className="h-11 px-2"
                       />
                       <Input
@@ -545,7 +522,7 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { rir: e.target.value })
                         }
                         placeholder={exercise.rir != null ? String(exercise.rir) : ""}
-                        aria-label={`RIR set ${setIdx + 1}`}
+                        aria-label={t("rirLabel", { n: setIdx + 1 })}
                         className="h-11 px-2"
                       />
                       <Button
@@ -554,7 +531,7 @@ export function LiveWorkout({
                         size="icon"
                         className="h-11 w-11"
                         aria-pressed={set.isDone}
-                        aria-label={`Set ${setIdx + 1} completado`}
+                        aria-label={t("doneLabel", { n: setIdx + 1 })}
                         onClick={() =>
                           toggleSetDone(
                             exercise.id,
@@ -580,7 +557,7 @@ export function LiveWorkout({
                     onClick={() => addSet(exercise.id)}
                   >
                     <Plus className="mr-1 h-3 w-3" />
-                    Add set
+                    {t("addSet")}
                   </Button>
                 </div>
               </CardContent>
@@ -592,16 +569,15 @@ export function LiveWorkout({
       <AlertDialog open={confirmFinishOpen} onOpenChange={setConfirmFinishOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Terminar el entrenamiento?</AlertDialogTitle>
+            <AlertDialogTitle>{t("finishTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Se van a guardar {totals.done}/{totals.planned} sets completados y
-              la sesión quedará marcada como completada.
+              {t("finishDescription", { done: totals.done, planned: totals.planned })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Seguir entrenando</AlertDialogCancel>
+            <AlertDialogCancel>{t("keepTraining")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleFinish}>
-              Guardar y terminar
+              {t("saveAndFinish")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -610,18 +586,18 @@ export function LiveWorkout({
       <AlertDialog open={confirmLeaveOpen} onOpenChange={setConfirmLeaveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Salir sin guardar?</AlertDialogTitle>
+            <AlertDialogTitle>{t("leaveTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Vas a perder los sets cargados en este entrenamiento.
+              {t("leaveDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Seguir entrenando</AlertDialogCancel>
+            <AlertDialogCancel>{t("keepTraining")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={leaveWithoutSaving}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Salir sin guardar
+              {t("leaveConfirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

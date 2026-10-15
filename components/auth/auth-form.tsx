@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   signInSchema,
@@ -47,10 +47,8 @@ export function AuthForm({ mode }: AuthFormProps) {
         ? t("googleErrorAccountNotLinked")
         : t("googleErrorGeneric");
 
-    toast({
-      variant: "destructive",
-      title: t("googleErrorTitle"),
-      description,
+    toast.error(t("googleErrorTitle"), {
+      description: description,
     });
   }, [searchParams, t]);
 
@@ -88,25 +86,20 @@ export function AuthForm({ mode }: AuthFormProps) {
       });
 
       if (result?.error) {
-        toast({
-          variant: "destructive",
-          title: t("loginErrorTitle"),
+        toast.error(t("loginErrorTitle"), {
           description: t("loginErrorInvalid"),
         });
         return;
       }
 
-      toast({
-        title: t("loginSuccessTitle"),
+      toast.success(t("loginSuccessTitle"), {
         description: t("loginSuccessDescription"),
       });
 
       router.push("/dashboard");
       router.refresh();
     } catch {
-      toast({
-        variant: "destructive",
-        title: t("loginErrorTitle"),
+      toast.error(t("loginErrorTitle"), {
         description: t("loginErrorGeneric"),
       });
     } finally {
@@ -125,9 +118,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       });
 
       if (result.error) {
-        toast({
-          variant: "destructive",
-          title: t("registerErrorTitle"),
+        toast.error(t("registerErrorTitle"), {
           description: result.error,
         });
         return;
@@ -141,25 +132,21 @@ export function AuthForm({ mode }: AuthFormProps) {
       });
 
       if (signInResult?.error) {
-        toast({
-          title: t("registerSuccessTitle"),
+        toast.success(t("registerSuccessTitle"), {
           description: t("registerSuccessNeedsLogin"),
         });
         router.push("/auth/login");
         return;
       }
 
-      toast({
-        title: t("registerSuccessTitle"),
+      toast.success(t("registerSuccessTitle"), {
         description: t("registerSuccessDescription"),
       });
 
       router.push("/dashboard");
       router.refresh();
     } catch {
-      toast({
-        variant: "destructive",
-        title: t("registerErrorTitle"),
+      toast.error(t("registerErrorTitle"), {
         description: t("registerErrorGeneric"),
       });
     } finally {

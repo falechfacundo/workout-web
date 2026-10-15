@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { createLogger } from "@/lib/utils/logger";
 
 import {
@@ -93,17 +93,14 @@ export function WorkoutLogForm({ userId, initialSessionId }: WorkoutLogFormProps
 
       if (!workoutLogId) {
         logger.warn("Failed to create workout log");
-        toast({
-          variant: "destructive",
-          title: t("errorTitle"),
+        toast.error(t("errorTitle"), {
           description: t("errorStart"),
         });
         return;
       }
 
       logger.info("Workout log created successfully", { workoutLogId });
-      toast({
-        title: t("successTitle"),
+      toast.success(t("successTitle"), {
         description: t("successStart"),
       });
 
@@ -115,9 +112,7 @@ export function WorkoutLogForm({ userId, initialSessionId }: WorkoutLogFormProps
         error instanceof Error ? error : new Error(String(error))
       );
 
-      toast({
-        variant: "destructive",
-        title: t("errorTitle"),
+      toast.error(t("errorTitle"), {
         description: t("errorGeneric"),
       });
     } finally {

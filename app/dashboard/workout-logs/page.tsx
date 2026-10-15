@@ -32,12 +32,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MuscleGroupVolumeChart } from "@/components/dashboard/workout/muscle-group-volume-chart";
+import dynamic from "next/dynamic";
 import { useWorkoutLogsStore } from "@/lib/stores/workout-logs-store";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
 import { useRequireAuth } from "@/hooks/use-require-auth";
 import { ListCardSkeleton } from "@/components/ui/data-skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const MuscleGroupVolumeChart = dynamic(
+  () =>
+    import("@/components/dashboard/workout/muscle-group-volume-chart").then(
+      (m) => m.MuscleGroupVolumeChart
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-lg" /> }
+);
 
 export default function WorkoutLogsPage() {
   const t = useTranslations("workoutLogs");

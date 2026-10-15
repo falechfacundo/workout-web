@@ -6,8 +6,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/providers/theme-provider";
 import { AuthProvider } from "@/lib/providers/auth-provider";
 import { resolveLocale } from "@/i18n/request";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,7 +36,6 @@ export default async function RootLayout({
             >
               {children}
               <Toaster />
-              <SonnerToaster />
             </ThemeProvider>
           </AuthProvider>
         </NextIntlClientProvider>

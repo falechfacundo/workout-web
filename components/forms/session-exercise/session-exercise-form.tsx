@@ -7,7 +7,7 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { type SessionExerciseFormData } from "@/lib/actions/training-sessions";
 import { useExercisesStore } from "@/lib/stores/exercises-store";
 import { useTrainingSessionsStore } from "@/lib/stores/training-sessions-store";
@@ -76,9 +76,7 @@ export function SessionExerciseForm({
           isEdit: !!initialData?.id,
         });
 
-        toast({
-          variant: "destructive",
-          title: "Error",
+        toast.error("Error", {
           description: result.error,
         });
       } else {
@@ -88,8 +86,7 @@ export function SessionExerciseForm({
           exerciseId: values.exercise_id,
         });
 
-        toast({
-          title: "Success",
+        toast.success("Success", {
           description: initialData?.id
             ? "Exercise updated successfully"
             : "Exercise added successfully",
@@ -107,9 +104,7 @@ export function SessionExerciseForm({
         { sessionId, exerciseId: values.exercise_id }
       );
 
-      toast({
-        variant: "destructive",
-        title: "Error",
+      toast.error("Error", {
         description: "An unexpected error occurred. Please try again.",
       });
     } finally {

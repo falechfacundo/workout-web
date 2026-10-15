@@ -9,7 +9,7 @@ import Model, {
 } from "react-body-highlighter";
 
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface BodyMapProps {
   intensityByName: Record<string, number>;
@@ -87,7 +87,7 @@ export function BodyMap({ intensityByName, formatStat, className }: BodyMapProps
 
   const handleClick = ({ data: stat }: IMuscleStats) => {
     const label = stat.exercises[stat.exercises.length - 1];
-    if (label) toast({ description: label });
+    if (label) toast(label);
   };
 
   return (

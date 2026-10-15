@@ -222,13 +222,11 @@ en un único `db.$transaction`.
 // response 201: WorkoutLog completo con exercise_logs
 ```
 
-**Por qué transaccional y no incremental (a diferencia del flujo web):** el
-componente web (`components/dashboard/workout/live-workout.tsx`) hace
-`createWorkoutLog` y después un `createExerciseLogSet` por set, secuencial,
-más un `updateWorkoutLog` y un `updateTrainingSessionStatus` al final — 4+N
-llamadas de red. Sobre wifi de oficina eso nunca falla a la mitad. Sobre una
-red mobile eso sí puede pasar, y dejaría un `WorkoutLog` sin `end_time`/sets
-o una sesión sin marcar completada. El cliente mobile mantiene el
+**Por qué transaccional y no incremental:** guardar con una llamada por set
+(4+N llamadas de red) puede fallar a la mitad sobre una red mobile y dejar un
+`WorkoutLog` sin `end_time`/sets o una sesión sin marcar completada. El
+componente web (`components/dashboard/workout/live-workout.tsx`) usa la misma
+semántica vía la server action `saveLiveWorkout` (`lib/actions/workout-logs.ts`). El cliente mobile mantiene el
 entrenamiento **100% en estado local** (sin pegarle a la red) mientras el
 usuario entrena, y recién al tocar "Finalizar" manda todo junto en un solo
 POST. Si ese POST falla, no hay estado parcial server-side que limpiar — el
