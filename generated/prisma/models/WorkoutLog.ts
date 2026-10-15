@@ -303,6 +303,7 @@ export type WorkoutLogOrderByWithRelationInput = {
 
 export type WorkoutLogWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  user_id_start_time?: Prisma.WorkoutLogUser_idStart_timeCompoundUniqueInput
   AND?: Prisma.WorkoutLogWhereInput | Prisma.WorkoutLogWhereInput[]
   OR?: Prisma.WorkoutLogWhereInput[]
   NOT?: Prisma.WorkoutLogWhereInput | Prisma.WorkoutLogWhereInput[]
@@ -321,7 +322,7 @@ export type WorkoutLogWhereUniqueInput = Prisma.AtLeast<{
   training_session?: Prisma.XOR<Prisma.TrainingSessionNullableScalarRelationFilter, Prisma.TrainingSessionWhereInput> | null
   mesocycle?: Prisma.XOR<Prisma.MesocycleNullableScalarRelationFilter, Prisma.MesocycleWhereInput> | null
   exercise_logs?: Prisma.ExerciseLogListRelationFilter
-}, "id">
+}, "id" | "user_id_start_time">
 
 export type WorkoutLogOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -475,6 +476,11 @@ export type WorkoutLogListRelationFilter = {
 
 export type WorkoutLogOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type WorkoutLogUser_idStart_timeCompoundUniqueInput = {
+  user_id: string
+  start_time: Date | string
 }
 
 export type WorkoutLogCountOrderByAggregateInput = {

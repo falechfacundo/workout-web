@@ -267,6 +267,7 @@ model WorkoutLog {
   mesocycle       Mesocycle?      @relation(fields: [mesocycle_id], references: [id], onDelete: SetNull)
   exercise_logs   ExerciseLog[]
 
+  @@unique([user_id, start_time])
   @@index([user_id])
   @@index([training_session_id])
   @@map("workout_logs")
