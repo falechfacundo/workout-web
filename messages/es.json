@@ -78,7 +78,11 @@
     "registerErrorGeneric": "Ocurrió un error durante el registro.",
     "registerSuccessTitle": "Registro exitoso",
     "registerSuccessDescription": "¡Bienvenido a GymTrack!",
-    "registerSuccessNeedsLogin": "Tu cuenta fue creada. Ya podés iniciar sesión."
+    "registerSuccessNeedsLogin": "Tu cuenta fue creada. Ya podés iniciar sesión.",
+    "noAccount": "¿No tenés cuenta?",
+    "signUpLink": "Registrate",
+    "haveAccount": "¿Ya tenés cuenta?",
+    "signInLink": "Iniciá sesión"
   },
   "bodyMap": {
     "frontal": "Frontal",

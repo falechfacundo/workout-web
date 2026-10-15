@@ -184,7 +184,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </SignOutButton>
           </nav>
         </aside>
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-4 md:p-6">{children}</main>
       </div>
     </div>
   )
