@@ -2,6 +2,11 @@
 
 Otros pendientes: deuda técnica en [`MVP-COMPLETENESS.md`](./MVP-COMPLETENESS.md#deuda-técnica-post-mvp) y pasos manuales de push en [`PUSH-NOTIFICATIONS.md`](./PUSH-NOTIFICATIONS.md).
 
+## Server Components y seguridad de server actions
+
+- [ ] **Urgente:** fase 0 de [`REFACTOR-SERVER-COMPONENTS.md`](./REFACTOR-SERVER-COMPONENTS.md#fase-0-seguridad-hacer-primero-pr-propio). Varias server actions no verifican la sesión (`deleteMesocycleTemplate` borra cualquier plantilla sin login; `createWorkoutLog` y las lecturas por `userId` confían en el cliente).
+- [ ] Migrar las páginas cliente del dashboard a Server Components, empezando por las de prioridad 1 del mismo documento.
+
 ## Google Sign-In (código listo, falta config + aplicar a producción)
 
 - [ ] Confirmar que el client secret de Google OAuth compartido en el chat con Claude fue **rotado** en Google Cloud Console (quedó expuesto en el historial de esa conversación).
