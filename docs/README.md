@@ -10,6 +10,7 @@
 | [`PUSH-NOTIFICATIONS.md`](./PUSH-NOTIFICATIONS.md) | Recordatorios push: qué se construyó, decisiones y pasos manuales (secrets). |
 | [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Runbook de deploy en Vercel + Supabase (para cuando haya dominio). |
 | [`MVP-COMPLETENESS.md`](./MVP-COMPLETENESS.md) | Estado por feature, calidad y deuda técnica. |
+| [`REFACTOR-SERVER-COMPONENTS.md`](./REFACTOR-SERVER-COMPONENTS.md) | Plan para pasar el dashboard a Server Components, con una fase 0 de seguridad (server actions sin chequeo de sesión). |
 | [`ROADMAP.md`](./ROADMAP.md) | Pendientes (Google Sign-In, coordinación, decisión estratégica). |
 | [`archive/`](./archive/) | Checklists de lanzamiento del 14/09/2026 y gaps de schema viejos. Contexto histórico. |
 | [`../lib/docs/`](../lib/docs/README.md) | Sistema de logging y estructura de `lib/`. |
