@@ -280,7 +280,12 @@
     "leftArmLegend": "Left Arm (cm)",
     "rightArmLegend": "Right Arm (cm)",
     "leftThighLegend": "Left Thigh (cm)",
-    "rightThighLegend": "Right Thigh (cm)"
+    "rightThighLegend": "Right Thigh (cm)",
+    "editAction": "Edit measurement",
+    "deleteAction": "Delete measurement",
+    "deleteTitle": "Delete measurement",
+    "cancel": "Cancel",
+    "confirmDeleteAction": "Delete"
   },
   "measurementForm": {
     "bodyMeasurementsTitle": "Body Measurements",

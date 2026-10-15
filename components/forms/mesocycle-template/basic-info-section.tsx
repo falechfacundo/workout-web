@@ -47,7 +47,7 @@ export function BasicInfoSection() {
               <FormLabel>{t("durationWeeks")}</FormLabel>
               <FormControl>
                 <Input
-                  type="number"
+                  type="number" inputMode="numeric"
                   min={1}
                   {...field}
                   onChange={(e) => {

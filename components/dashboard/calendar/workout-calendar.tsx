@@ -96,6 +96,7 @@ export function WorkoutCalendar() {
             <Button
               variant="outline"
               size="icon"
+              aria-label="Previous month"
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -106,6 +107,7 @@ export function WorkoutCalendar() {
             <Button
               variant="outline"
               size="icon"
+              aria-label="Next month"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
             >
               <ChevronRight className="h-4 w-4" />

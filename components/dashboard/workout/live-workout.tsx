@@ -229,6 +229,32 @@ export function LiveWorkout({
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [isDirty, saving, saved]);
 
+  useEffect(() => {
+    if (!("wakeLock" in navigator)) return;
+    let sentinel: WakeLockSentinel | null = null;
+    let cancelled = false;
+    const request = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const lock = await navigator.wakeLock.request("screen");
+        if (cancelled) {
+          void lock.release();
+          return;
+        }
+        sentinel = lock;
+      } catch {
+        return;
+      }
+    };
+    void request();
+    document.addEventListener("visibilitychange", request);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", request);
+      void sentinel?.release();
+    };
+  }, []);
+
   function startRest(seconds: number) {
     const start = Date.now();
     setNow(start);
@@ -386,12 +412,12 @@ export function LiveWorkout({
     <div className="grid gap-4 md:gap-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handleBack}>
+          <Button variant="outline" size="icon" className="shrink-0" onClick={handleBack}>
             <ArrowLeft className="h-4 w-4" />
             <span className="sr-only">Back</span>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{sessionName}</h1>
+          <div className="min-w-0">
+            <h1 className="break-words text-3xl font-bold tracking-tight">{sessionName}</h1>
             <p className="text-muted-foreground">
               {totals.done}/{totals.planned} sets completados
             </p>
@@ -404,7 +430,7 @@ export function LiveWorkout({
       </div>
 
       {restSeconds !== null && (
-        <Card className="border-primary/50">
+        <Card className="sticky top-16 z-20 border-primary/50">
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <Timer className="h-8 w-8 text-primary" />
@@ -450,7 +476,7 @@ export function LiveWorkout({
           const sets = setsByExercise[exercise.id] ?? [];
           return (
             <Card key={exercise.id}>
-              <CardHeader className="pb-3">
+              <CardHeader className="px-4 pb-3 sm:px-6">
                 <div className="flex items-center gap-2">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
                     {exIdx + 1}
@@ -474,9 +500,9 @@ export function LiveWorkout({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 sm:px-6">
                 <div className="space-y-2">
-                  <div className="grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] items-center gap-2 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-[2rem_1fr_1fr_3rem_2.75rem] items-center gap-2 text-xs text-muted-foreground">
                     <span>Set</span>
                     <span>Peso (kg)</span>
                     <span>Reps</span>
@@ -487,7 +513,7 @@ export function LiveWorkout({
                     <div
                       key={setIdx}
                       className={cn(
-                        "grid grid-cols-[2.5rem_1fr_1fr_3.5rem_2.5rem] items-center gap-2",
+                        "grid grid-cols-[2rem_1fr_1fr_3rem_2.75rem] items-center gap-2",
                         set.isDone && "opacity-60"
                       )}
                     >
@@ -499,7 +525,8 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { weight: e.target.value })
                         }
                         placeholder={setIdx > 0 ? sets[setIdx - 1].weight || "—" : "0"}
-                        className="h-9"
+                        aria-label={`Peso set ${setIdx + 1}`}
+                        className="h-11 px-2"
                       />
                       <Input
                         inputMode="numeric"
@@ -508,7 +535,8 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { reps: e.target.value })
                         }
                         placeholder={String(exercise.reps)}
-                        className="h-9"
+                        aria-label={`Reps set ${setIdx + 1}`}
+                        className="h-11 px-2"
                       />
                       <Input
                         inputMode="numeric"
@@ -517,13 +545,16 @@ export function LiveWorkout({
                           updateSet(exercise.id, setIdx, { rir: e.target.value })
                         }
                         placeholder={exercise.rir != null ? String(exercise.rir) : ""}
-                        className="h-9"
+                        aria-label={`RIR set ${setIdx + 1}`}
+                        className="h-11 px-2"
                       />
                       <Button
                         type="button"
                         variant={set.isDone ? "default" : "outline"}
                         size="icon"
-                        className="h-9 w-9"
+                        className="h-11 w-11"
+                        aria-pressed={set.isDone}
+                        aria-label={`Set ${setIdx + 1} completado`}
                         onClick={() =>
                           toggleSetDone(
                             exercise.id,

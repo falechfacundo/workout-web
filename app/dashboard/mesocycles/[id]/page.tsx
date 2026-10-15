@@ -22,7 +22,7 @@ import { ComplianceCard } from "@/components/dashboard/mesocycles/compliance-car
 import { BodyMapCard } from "@/components/dashboard/analytics/body-map-card";
 import { BlockComparisonCard } from "@/components/dashboard/mesocycles/block-comparison-card";
 import { useMesocyclesStore } from "@/lib/stores/mesocycles-store";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   StatCardSkeleton,
@@ -32,6 +32,7 @@ import {
 export default function MesocycleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const [duplicating, setDuplicating] = useState(false);
   const t = useTranslations("mesocycleDetail");
   const { currentMesocycle, fetchMesocycle, isLoading, error } =
     useMesocyclesStore();
@@ -146,14 +147,14 @@ export default function MesocycleDetailPage() {
       <div className="grid gap-4 md:gap-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" asChild>
+            <Button variant="outline" size="icon" className="shrink-0" asChild>
               <Link href="/dashboard/mesocycles">
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
               </Link>
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
+            <div className="min-w-0">
+              <h1 className="break-words text-3xl font-bold tracking-tight">
                 {currentMesocycle.name}
               </h1>
               <p className="text-muted-foreground">
@@ -166,8 +167,11 @@ export default function MesocycleDetailPage() {
               variant="outline"
               size="icon"
               title="Duplicar mesociclo"
+              disabled={duplicating}
               onClick={async () => {
+                setDuplicating(true);
                 const result = await duplicateMesocycle(id);
+                setDuplicating(false);
                 if (result.error || !result.data) {
                   toast.error(result.error || "Error al duplicar el mesociclo");
                 } else {

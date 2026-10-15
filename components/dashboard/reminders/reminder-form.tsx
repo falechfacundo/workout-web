@@ -76,7 +76,7 @@ export function ReminderForm({ reminder, onClose }: ReminderFormProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button variant="ghost" size="icon" aria-label="Back" onClick={onClose}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <CardTitle>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { useTrainingSessionsStore } from "@/lib/stores/training-sessions-store";
 import { ArrowLeft, Copy, Dumbbell, Play, Plus } from "lucide-react";
@@ -22,6 +22,7 @@ import { ListCardSkeleton } from "@/components/ui/data-skeletons";
 export default function TrainingSessionDetailPage() {
   const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
   const router = useRouter();
+  const [duplicating, setDuplicating] = useState(false);
   const {
     currentSession,
     sessionExercises,
@@ -113,14 +114,14 @@ export default function TrainingSessionDetailPage() {
       <div className="grid gap-4 md:gap-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" asChild>
+            <Button variant="outline" size="icon" className="shrink-0" asChild>
               <Link href={`/dashboard/mesocycles/${id}`}>
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Back</span>
               </Link>
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
+            <div className="min-w-0">
+              <h1 className="break-words text-3xl font-bold tracking-tight">
                 {currentSession.name}
               </h1>
               <p className="text-muted-foreground">
@@ -138,8 +139,11 @@ export default function TrainingSessionDetailPage() {
               variant="outline"
               size="icon"
               title="Duplicar sesión"
+              disabled={duplicating}
               onClick={async () => {
+                setDuplicating(true);
                 const result = await duplicateTrainingSession(sessionId);
+                setDuplicating(false);
                 if (result.error || !result.data) {
                   toast.error(result.error || "Error al duplicar la sesión");
                 } else {
