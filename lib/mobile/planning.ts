@@ -21,14 +21,26 @@ const mesocycleFields = {
   end_date: isoDate,
   status: z.enum(STATUSES).optional(),
   focus_muscle_groups: z.array(z.string().uuid()).max(30).optional(),
+  rir_start: z.number().int().min(0).max(5).nullable().optional(),
+  rir_end: z.number().int().min(0).max(5).nullable().optional(),
+  deload_last_week: z.boolean().optional(),
 };
 
 const endAfterStart = (v: { start_date?: string; end_date?: string }) =>
   !v.start_date || !v.end_date || v.end_date >= v.start_date;
 const END_MESSAGE = { message: "La fecha de fin no puede ser anterior a la de inicio.", path: ["end_date"] };
 
-export const mesocycleInputSchema = z.object(mesocycleFields).refine(endAfterStart, END_MESSAGE);
-export const mesocyclePatchSchema = z.object(mesocycleFields).partial().refine(endAfterStart, END_MESSAGE);
+// La rampa necesita los dos extremos: con uno solo no hay progresión que calcular.
+const rampComplete = (v: { rir_start?: number | null; rir_end?: number | null }) =>
+  v.rir_start === undefined && v.rir_end === undefined ? true : (v.rir_start == null) === (v.rir_end == null);
+const RAMP_MESSAGE = { message: "Definí el RIR de inicio y el de fin, o ninguno.", path: ["rir_end"] };
+
+export const mesocycleInputSchema = z.object(mesocycleFields).refine(endAfterStart, END_MESSAGE).refine(rampComplete, RAMP_MESSAGE);
+export const mesocyclePatchSchema = z
+  .object(mesocycleFields)
+  .partial()
+  .refine(endAfterStart, END_MESSAGE)
+  .refine(rampComplete, RAMP_MESSAGE);
 
 export const sessionExerciseInputSchema = z.object({
   exercise_id: z.string().uuid(),
@@ -108,6 +120,9 @@ export async function createMesocycle(userId: string, input: MesocycleInput) {
       start_date: toDate(input.start_date),
       end_date: toDate(input.end_date),
       status: input.status ?? "planned",
+      rir_start: input.rir_start ?? null,
+      rir_end: input.rir_end ?? null,
+      deload_last_week: input.deload_last_week ?? false,
       mesocycle_muscle_group_focus: {
         create: [...new Set(input.focus_muscle_groups ?? [])].map((muscle_group_id) => ({ muscle_group_id })),
       },
@@ -140,6 +155,9 @@ export async function updateMesocycle(userId: string, id: string, patch: Mesocyc
         ...(patch.start_date && { start_date: toDate(patch.start_date) }),
         ...(patch.end_date && { end_date: toDate(patch.end_date) }),
         ...(patch.status && { status: patch.status }),
+        ...(patch.rir_start !== undefined && { rir_start: patch.rir_start }),
+        ...(patch.rir_end !== undefined && { rir_end: patch.rir_end }),
+        ...(patch.deload_last_week !== undefined && { deload_last_week: patch.deload_last_week }),
       },
     });
   });
@@ -174,6 +192,9 @@ export async function duplicateMesocycle(userId: string, id: string) {
       start_date: source.start_date,
       end_date: source.end_date,
       status: "planned",
+      rir_start: source.rir_start,
+      rir_end: source.rir_end,
+      deload_last_week: source.deload_last_week,
       mesocycle_goals: {
         create: source.mesocycle_goals.map((g) => ({
           goal_type: g.goal_type,

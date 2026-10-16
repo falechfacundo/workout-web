@@ -20,8 +20,20 @@ export type MesocycleModel = runtime.Types.Result.DefaultSelection<Prisma.$Mesoc
 
 export type AggregateMesocycle = {
   _count: MesocycleCountAggregateOutputType | null
+  _avg: MesocycleAvgAggregateOutputType | null
+  _sum: MesocycleSumAggregateOutputType | null
   _min: MesocycleMinAggregateOutputType | null
   _max: MesocycleMaxAggregateOutputType | null
+}
+
+export type MesocycleAvgAggregateOutputType = {
+  rir_start: number | null
+  rir_end: number | null
+}
+
+export type MesocycleSumAggregateOutputType = {
+  rir_start: number | null
+  rir_end: number | null
 }
 
 export type MesocycleMinAggregateOutputType = {
@@ -32,6 +44,9 @@ export type MesocycleMinAggregateOutputType = {
   start_date: Date | null
   end_date: Date | null
   status: string | null
+  rir_start: number | null
+  rir_end: number | null
+  deload_last_week: boolean | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -44,6 +59,9 @@ export type MesocycleMaxAggregateOutputType = {
   start_date: Date | null
   end_date: Date | null
   status: string | null
+  rir_start: number | null
+  rir_end: number | null
+  deload_last_week: boolean | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -56,11 +74,24 @@ export type MesocycleCountAggregateOutputType = {
   start_date: number
   end_date: number
   status: number
+  rir_start: number
+  rir_end: number
+  deload_last_week: number
   created_at: number
   updated_at: number
   _all: number
 }
 
+
+export type MesocycleAvgAggregateInputType = {
+  rir_start?: true
+  rir_end?: true
+}
+
+export type MesocycleSumAggregateInputType = {
+  rir_start?: true
+  rir_end?: true
+}
 
 export type MesocycleMinAggregateInputType = {
   id?: true
@@ -70,6 +101,9 @@ export type MesocycleMinAggregateInputType = {
   start_date?: true
   end_date?: true
   status?: true
+  rir_start?: true
+  rir_end?: true
+  deload_last_week?: true
   created_at?: true
   updated_at?: true
 }
@@ -82,6 +116,9 @@ export type MesocycleMaxAggregateInputType = {
   start_date?: true
   end_date?: true
   status?: true
+  rir_start?: true
+  rir_end?: true
+  deload_last_week?: true
   created_at?: true
   updated_at?: true
 }
@@ -94,6 +131,9 @@ export type MesocycleCountAggregateInputType = {
   start_date?: true
   end_date?: true
   status?: true
+  rir_start?: true
+  rir_end?: true
+  deload_last_week?: true
   created_at?: true
   updated_at?: true
   _all?: true
@@ -137,6 +177,18 @@ export type MesocycleAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inte
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: MesocycleAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: MesocycleSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: MesocycleMinAggregateInputType
@@ -167,6 +219,8 @@ export type MesocycleGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   _count?: MesocycleCountAggregateInputType | true
+  _avg?: MesocycleAvgAggregateInputType
+  _sum?: MesocycleSumAggregateInputType
   _min?: MesocycleMinAggregateInputType
   _max?: MesocycleMaxAggregateInputType
 }
@@ -179,9 +233,14 @@ export type MesocycleGroupByOutputType = {
   start_date: Date
   end_date: Date
   status: string
+  rir_start: number | null
+  rir_end: number | null
+  deload_last_week: boolean
   created_at: Date
   updated_at: Date
   _count: MesocycleCountAggregateOutputType | null
+  _avg: MesocycleAvgAggregateOutputType | null
+  _sum: MesocycleSumAggregateOutputType | null
   _min: MesocycleMinAggregateOutputType | null
   _max: MesocycleMaxAggregateOutputType | null
 }
@@ -212,6 +271,9 @@ export type MesocycleWhereInput = {
   start_date?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   end_date?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   status?: Prisma.StringFilter<"Mesocycle"> | string
+  rir_start?: Prisma.IntNullableFilter<"Mesocycle"> | number | null
+  rir_end?: Prisma.IntNullableFilter<"Mesocycle"> | number | null
+  deload_last_week?: Prisma.BoolFilter<"Mesocycle"> | boolean
   created_at?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -229,6 +291,9 @@ export type MesocycleOrderByWithRelationInput = {
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  rir_start?: Prisma.SortOrderInput | Prisma.SortOrder
+  rir_end?: Prisma.SortOrderInput | Prisma.SortOrder
+  deload_last_week?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -249,6 +314,9 @@ export type MesocycleWhereUniqueInput = Prisma.AtLeast<{
   start_date?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   end_date?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   status?: Prisma.StringFilter<"Mesocycle"> | string
+  rir_start?: Prisma.IntNullableFilter<"Mesocycle"> | number | null
+  rir_end?: Prisma.IntNullableFilter<"Mesocycle"> | number | null
+  deload_last_week?: Prisma.BoolFilter<"Mesocycle"> | boolean
   created_at?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -266,11 +334,16 @@ export type MesocycleOrderByWithAggregationInput = {
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  rir_start?: Prisma.SortOrderInput | Prisma.SortOrder
+  rir_end?: Prisma.SortOrderInput | Prisma.SortOrder
+  deload_last_week?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   _count?: Prisma.MesocycleCountOrderByAggregateInput
+  _avg?: Prisma.MesocycleAvgOrderByAggregateInput
   _max?: Prisma.MesocycleMaxOrderByAggregateInput
   _min?: Prisma.MesocycleMinOrderByAggregateInput
+  _sum?: Prisma.MesocycleSumOrderByAggregateInput
 }
 
 export type MesocycleScalarWhereWithAggregatesInput = {
@@ -284,6 +357,9 @@ export type MesocycleScalarWhereWithAggregatesInput = {
   start_date?: Prisma.DateTimeWithAggregatesFilter<"Mesocycle"> | Date | string
   end_date?: Prisma.DateTimeWithAggregatesFilter<"Mesocycle"> | Date | string
   status?: Prisma.StringWithAggregatesFilter<"Mesocycle"> | string
+  rir_start?: Prisma.IntNullableWithAggregatesFilter<"Mesocycle"> | number | null
+  rir_end?: Prisma.IntNullableWithAggregatesFilter<"Mesocycle"> | number | null
+  deload_last_week?: Prisma.BoolWithAggregatesFilter<"Mesocycle"> | boolean
   created_at?: Prisma.DateTimeWithAggregatesFilter<"Mesocycle"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"Mesocycle"> | Date | string
 }
@@ -295,6 +371,9 @@ export type MesocycleCreateInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMesocyclesInput
@@ -312,6 +391,9 @@ export type MesocycleUncheckedCreateInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedCreateNestedManyWithoutMesocycleInput
@@ -327,6 +409,9 @@ export type MesocycleUpdateInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMesocyclesNestedInput
@@ -344,6 +429,9 @@ export type MesocycleUncheckedUpdateInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedUpdateManyWithoutMesocycleNestedInput
@@ -360,6 +448,9 @@ export type MesocycleCreateManyInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -371,6 +462,9 @@ export type MesocycleUpdateManyMutationInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -383,6 +477,9 @@ export type MesocycleUncheckedUpdateManyInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -405,8 +502,16 @@ export type MesocycleCountOrderByAggregateInput = {
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  rir_start?: Prisma.SortOrder
+  rir_end?: Prisma.SortOrder
+  deload_last_week?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+}
+
+export type MesocycleAvgOrderByAggregateInput = {
+  rir_start?: Prisma.SortOrder
+  rir_end?: Prisma.SortOrder
 }
 
 export type MesocycleMaxOrderByAggregateInput = {
@@ -417,6 +522,9 @@ export type MesocycleMaxOrderByAggregateInput = {
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  rir_start?: Prisma.SortOrder
+  rir_end?: Prisma.SortOrder
+  deload_last_week?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -429,8 +537,16 @@ export type MesocycleMinOrderByAggregateInput = {
   start_date?: Prisma.SortOrder
   end_date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  rir_start?: Prisma.SortOrder
+  rir_end?: Prisma.SortOrder
+  deload_last_week?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
+}
+
+export type MesocycleSumOrderByAggregateInput = {
+  rir_start?: Prisma.SortOrder
+  rir_end?: Prisma.SortOrder
 }
 
 export type MesocycleScalarRelationFilter = {
@@ -550,6 +666,9 @@ export type MesocycleCreateWithoutUserInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_goals?: Prisma.MesocycleGoalCreateNestedManyWithoutMesocycleInput
@@ -565,6 +684,9 @@ export type MesocycleUncheckedCreateWithoutUserInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedCreateNestedManyWithoutMesocycleInput
@@ -610,6 +732,9 @@ export type MesocycleScalarWhereInput = {
   start_date?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   end_date?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   status?: Prisma.StringFilter<"Mesocycle"> | string
+  rir_start?: Prisma.IntNullableFilter<"Mesocycle"> | number | null
+  rir_end?: Prisma.IntNullableFilter<"Mesocycle"> | number | null
+  deload_last_week?: Prisma.BoolFilter<"Mesocycle"> | boolean
   created_at?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"Mesocycle"> | Date | string
 }
@@ -621,6 +746,9 @@ export type MesocycleCreateWithoutMesocycle_goalsInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMesocyclesInput
@@ -637,6 +765,9 @@ export type MesocycleUncheckedCreateWithoutMesocycle_goalsInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_muscle_group_focus?: Prisma.MesocycleMuscleGroupFocusUncheckedCreateNestedManyWithoutMesocycleInput
@@ -667,6 +798,9 @@ export type MesocycleUpdateWithoutMesocycle_goalsInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMesocyclesNestedInput
@@ -683,6 +817,9 @@ export type MesocycleUncheckedUpdateWithoutMesocycle_goalsInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_muscle_group_focus?: Prisma.MesocycleMuscleGroupFocusUncheckedUpdateManyWithoutMesocycleNestedInput
@@ -697,6 +834,9 @@ export type MesocycleCreateWithoutMesocycle_muscle_group_focusInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMesocyclesInput
@@ -713,6 +853,9 @@ export type MesocycleUncheckedCreateWithoutMesocycle_muscle_group_focusInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedCreateNestedManyWithoutMesocycleInput
@@ -743,6 +886,9 @@ export type MesocycleUpdateWithoutMesocycle_muscle_group_focusInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMesocyclesNestedInput
@@ -759,6 +905,9 @@ export type MesocycleUncheckedUpdateWithoutMesocycle_muscle_group_focusInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedUpdateManyWithoutMesocycleNestedInput
@@ -773,6 +922,9 @@ export type MesocycleCreateWithoutTraining_sessionsInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMesocyclesInput
@@ -789,6 +941,9 @@ export type MesocycleUncheckedCreateWithoutTraining_sessionsInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedCreateNestedManyWithoutMesocycleInput
@@ -819,6 +974,9 @@ export type MesocycleUpdateWithoutTraining_sessionsInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMesocyclesNestedInput
@@ -835,6 +993,9 @@ export type MesocycleUncheckedUpdateWithoutTraining_sessionsInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedUpdateManyWithoutMesocycleNestedInput
@@ -849,6 +1010,9 @@ export type MesocycleCreateWithoutWorkout_logsInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   user: Prisma.UserCreateNestedOneWithoutMesocyclesInput
@@ -865,6 +1029,9 @@ export type MesocycleUncheckedCreateWithoutWorkout_logsInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedCreateNestedManyWithoutMesocycleInput
@@ -895,6 +1062,9 @@ export type MesocycleUpdateWithoutWorkout_logsInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutMesocyclesNestedInput
@@ -911,6 +1081,9 @@ export type MesocycleUncheckedUpdateWithoutWorkout_logsInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedUpdateManyWithoutMesocycleNestedInput
@@ -925,6 +1098,9 @@ export type MesocycleCreateManyUserInput = {
   start_date: Date | string
   end_date: Date | string
   status?: string
+  rir_start?: number | null
+  rir_end?: number | null
+  deload_last_week?: boolean
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -936,6 +1112,9 @@ export type MesocycleUpdateWithoutUserInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUpdateManyWithoutMesocycleNestedInput
@@ -951,6 +1130,9 @@ export type MesocycleUncheckedUpdateWithoutUserInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mesocycle_goals?: Prisma.MesocycleGoalUncheckedUpdateManyWithoutMesocycleNestedInput
@@ -966,6 +1148,9 @@ export type MesocycleUncheckedUpdateManyWithoutUserInput = {
   start_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   end_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  rir_start?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  rir_end?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  deload_last_week?: Prisma.BoolFieldUpdateOperationsInput | boolean
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1036,6 +1221,9 @@ export type MesocycleSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   start_date?: boolean
   end_date?: boolean
   status?: boolean
+  rir_start?: boolean
+  rir_end?: boolean
+  deload_last_week?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1054,6 +1242,9 @@ export type MesocycleSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   start_date?: boolean
   end_date?: boolean
   status?: boolean
+  rir_start?: boolean
+  rir_end?: boolean
+  deload_last_week?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1067,6 +1258,9 @@ export type MesocycleSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   start_date?: boolean
   end_date?: boolean
   status?: boolean
+  rir_start?: boolean
+  rir_end?: boolean
+  deload_last_week?: boolean
   created_at?: boolean
   updated_at?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1080,11 +1274,14 @@ export type MesocycleSelectScalar = {
   start_date?: boolean
   end_date?: boolean
   status?: boolean
+  rir_start?: boolean
+  rir_end?: boolean
+  deload_last_week?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type MesocycleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "name" | "description" | "start_date" | "end_date" | "status" | "created_at" | "updated_at", ExtArgs["result"]["mesocycle"]>
+export type MesocycleOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "user_id" | "name" | "description" | "start_date" | "end_date" | "status" | "rir_start" | "rir_end" | "deload_last_week" | "created_at" | "updated_at", ExtArgs["result"]["mesocycle"]>
 export type MesocycleInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   mesocycle_goals?: boolean | Prisma.Mesocycle$mesocycle_goalsArgs<ExtArgs>
@@ -1117,6 +1314,9 @@ export type $MesocyclePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     start_date: Date
     end_date: Date
     status: string
+    rir_start: number | null
+    rir_end: number | null
+    deload_last_week: boolean
     created_at: Date
     updated_at: Date
   }, ExtArgs["result"]["mesocycle"]>
@@ -1554,6 +1754,9 @@ export interface MesocycleFieldRefs {
   readonly start_date: Prisma.FieldRef<"Mesocycle", 'DateTime'>
   readonly end_date: Prisma.FieldRef<"Mesocycle", 'DateTime'>
   readonly status: Prisma.FieldRef<"Mesocycle", 'String'>
+  readonly rir_start: Prisma.FieldRef<"Mesocycle", 'Int'>
+  readonly rir_end: Prisma.FieldRef<"Mesocycle", 'Int'>
+  readonly deload_last_week: Prisma.FieldRef<"Mesocycle", 'Boolean'>
   readonly created_at: Prisma.FieldRef<"Mesocycle", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"Mesocycle", 'DateTime'>
 }

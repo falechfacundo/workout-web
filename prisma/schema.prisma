@@ -160,6 +160,12 @@ model Mesocycle {
   start_date DateTime @db.Date
   end_date   DateTime @db.Date
   status     String   @default("planned")
+  // Periodización: RIR objetivo de la semana 1 y de la última semana de carga (rampa lineal entre
+  // ambos); null = sin progresión (rige el RIR de cada ejercicio). Con deload_last_week, la última
+  // semana es de descarga (la app baja las series a la mitad).
+  rir_start        Int?
+  rir_end          Int?
+  deload_last_week Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

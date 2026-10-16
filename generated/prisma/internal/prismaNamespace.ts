@@ -2150,6 +2150,9 @@ export const MesocycleScalarFieldEnum = {
   start_date: 'start_date',
   end_date: 'end_date',
   status: 'status',
+  rir_start: 'rir_start',
+  rir_end: 'rir_end',
+  deload_last_week: 'deload_last_week',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const
