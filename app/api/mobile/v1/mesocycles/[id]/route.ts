@@ -8,6 +8,8 @@ import {
   serverErrorResponse,
 } from "@/lib/apiResponse";
 import { toPlainJSON } from "@/lib/utils/serialize";
+import { deleteMesocycle, mesocyclePatchSchema, updateMesocycle } from "@/lib/mobile/planning";
+import { parseBody, planningErrorResponse } from "@/lib/mobile/route-helpers";
 
 export async function GET(
   request: NextRequest,
@@ -50,5 +52,35 @@ export async function GET(
   } catch (error) {
     console.error("[MOBILE_MESOCYCLE_DETAIL]", error);
     return serverErrorResponse();
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const apiUser = await getApiUser(request);
+    if (!apiUser) return unauthorizedResponse();
+    const { id } = await params;
+
+    const body = await parseBody(request, mesocyclePatchSchema);
+    if (body.response) return body.response;
+
+    const updated = await updateMesocycle(apiUser.id, id, body.data);
+    if (!updated) return notFoundResponse("Mesociclo no encontrado.");
+    return successResponse(updated);
+  } catch (error) {
+    return planningErrorResponse("[MOBILE_MESOCYCLE_UPDATE]", error);
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const apiUser = await getApiUser(request);
+    if (!apiUser) return unauthorizedResponse();
+    const { id } = await params;
+
+    if (!(await deleteMesocycle(apiUser.id, id))) return notFoundResponse("Mesociclo no encontrado.");
+    return successResponse(null, "Mesociclo eliminado.");
+  } catch (error) {
+    return planningErrorResponse("[MOBILE_MESOCYCLE_DELETE]", error);
   }
 }
