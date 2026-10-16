@@ -104,3 +104,77 @@ export async function getRecords(
   }
   return out;
 }
+
+/** Misma fórmula que el SQL de `getRecords` y que la app: Epley con reps + RIR al fallo, tope 12. */
+export function e1rm(weight: number, reps: number, rir: number | null): number {
+  const toFailure = reps + Math.max(0, rir ?? 0);
+  if (toFailure <= 1) return weight;
+  return weight * (1 + Math.min(toFailure, 12) / 30);
+}
+
+export const REP_MAX_TARGETS = [1, 3, 5, 8, 10] as const;
+
+export type HistoryRow = {
+  workout_log_id: string;
+  date: string; // YYYY-MM-DD
+  set_number: number;
+  weight: number | null;
+  reps: number;
+  rir: number | null;
+};
+
+export type ExerciseHistory = {
+  /** Más reciente primero, máximo `maxSessions`. */
+  sessions: Array<{ workout_log_id: string; date: string; sets: LastSet[] }>;
+  /** Una entrada por entrenamiento, del más viejo al más nuevo (para graficar). */
+  series: Array<{ date: string; best_e1rm: number | null; top_weight: number | null; volume: number; sets: number }>;
+  /** Mayor peso hecho con AL MENOS N reps (un 100 × 5 también cuenta como 3RM). */
+  rep_maxes: Record<string, { weight: number; reps: number; date: string } | null>;
+  best_e1rm: { value: number; weight: number; reps: number; date: string } | null;
+};
+
+const r1 = (n: number) => Math.round(n * 10) / 10;
+
+/** Resume todos los sets de un ejercicio. `rows` en cualquier orden. */
+export function summarizeHistory(rows: HistoryRow[], maxSessions = 50): ExerciseHistory {
+  const byLog = new Map<string, { date: string; sets: LastSet[] }>();
+  for (const r of rows) {
+    const entry = byLog.get(r.workout_log_id) ?? { date: r.date, sets: [] };
+    entry.sets.push({ set_number: r.set_number, weight: r.weight, reps: r.reps, rir: r.rir });
+    byLog.set(r.workout_log_id, entry);
+  }
+  const logs = [...byLog.entries()]
+    .map(([workout_log_id, v]) => ({ workout_log_id, date: v.date, sets: v.sets.sort((a, b) => a.set_number - b.set_number) }))
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+
+  const series = [...logs].reverse().map((l) => {
+    let best: number | null = null;
+    let top: number | null = null;
+    let volume = 0;
+    for (const s of l.sets) {
+      if (s.weight == null || s.weight <= 0 || s.reps <= 0) continue;
+      const est = e1rm(s.weight, s.reps, s.rir);
+      best = best === null ? est : Math.max(best, est);
+      top = top === null ? s.weight : Math.max(top, s.weight);
+      volume += s.weight * s.reps;
+    }
+    return { date: l.date, best_e1rm: best === null ? null : r1(best), top_weight: top, volume: Math.round(volume), sets: l.sets.length };
+  });
+
+  const rep_maxes: ExerciseHistory["rep_maxes"] = {};
+  for (const n of REP_MAX_TARGETS) rep_maxes[n] = null;
+  let best_e1rm: ExerciseHistory["best_e1rm"] = null;
+  for (const l of logs) {
+    for (const s of l.sets) {
+      if (s.weight == null || s.weight <= 0 || s.reps <= 0) continue;
+      for (const n of REP_MAX_TARGETS) {
+        const cur = rep_maxes[n];
+        if (s.reps >= n && (!cur || s.weight > cur.weight)) rep_maxes[n] = { weight: s.weight, reps: s.reps, date: l.date };
+      }
+      const est = r1(e1rm(s.weight, s.reps, s.rir));
+      if (!best_e1rm || est > best_e1rm.value) best_e1rm = { value: est, weight: s.weight, reps: s.reps, date: l.date };
+    }
+  }
+
+  return { sessions: logs.slice(0, maxSessions), series, rep_maxes, best_e1rm };
+}
