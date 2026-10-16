@@ -173,6 +173,38 @@ Requiere auth, escopeado por `user_id` (404 si no es tuyo). Incluye
 que el action web) y `training_sessions` con sus `session_exercises`
 (incluye el `exercise` completo, no solo el ID).
 
+### `GET /exercises`
+
+Requiere auth. Catálogo completo: ejercicios del sistema (`is_default`) más los propios del
+usuario, ordenados por nombre. Viaja entero (son decenas) y la app busca y filtra localmente.
+
+```ts
+Array<{
+  id: string;
+  name: string;
+  equipment: string | null;
+  is_custom: boolean; // true = creado por el usuario
+  primary_muscle_group: { id: string; name: string } | null;
+  secondary_muscle_groups: Array<{ id: string; name: string }>; // por incidencia desc
+}>
+```
+
+### `POST /exercises`
+
+Requiere auth. Crea un ejercicio propio. Devuelve 201 con la misma forma que un ítem de `GET`.
+
+```ts
+{ name: string; equipment?: string | null; primary_muscle_group_id: string; secondary_muscle_group_ids?: string[] }
+```
+
+- 400 si el nombre tiene menos de 2 caracteres o un grupo muscular no es del catálogo ni del usuario.
+- 409 si ya existe un ejercicio con ese nombre (sin distinguir mayúsculas) entre los del sistema y los propios.
+
+### `GET /muscle-groups`
+
+Requiere auth. Grupos del sistema más los propios: `Array<{ id, name, is_custom }>`. Los nombres
+del sistema están en inglés; la app los traduce.
+
 ### `GET /training-sessions/:id`
 
 Requiere auth, escopeado vía `mesocycle.user_id`. Pensado para la pantalla

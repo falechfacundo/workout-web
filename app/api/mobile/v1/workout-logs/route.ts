@@ -106,6 +106,16 @@ export async function POST(request: NextRequest) {
       return successResponse(toPlainJSON(duplicate), "Entrenamiento ya guardado.");
     }
 
+    // Los sets solo pueden apuntar a ejercicios del sistema o propios: con ejercicios personalizados,
+    // sin esto se podrían registrar sets sobre el ejercicio privado de otro usuario.
+    const exerciseIds = [...new Set(input.sets.map((s) => s.exercise_id))];
+    if (exerciseIds.length > 0) {
+      const allowed = await db.exercise.count({
+        where: { id: { in: exerciseIds }, OR: [{ is_default: true }, { user_id: apiUser.id }] },
+      });
+      if (allowed !== exerciseIds.length) return errorResponse("Ejercicio no encontrado.", 404);
+    }
+
     // Dos envíos simultáneos pueden pasar ambos el chequeo de arriba; el índice único (user_id, start_time)
     // hace fallar al segundo con P2002 y le devolvemos el que ganó.
     let workoutLog;
