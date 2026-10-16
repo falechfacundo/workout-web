@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getApiUser } from "@/lib/auth";
 import { getLastSessions, getRecords } from "@/lib/mobile/exercise-history";
+import { deleteSession, replaceSession, sessionInputSchema } from "@/lib/mobile/planning";
+import { parseBody, planningErrorResponse } from "@/lib/mobile/route-helpers";
 import {
   successResponse,
   unauthorizedResponse,
@@ -63,5 +65,36 @@ export async function GET(
   } catch (error) {
     console.error("[MOBILE_TRAINING_SESSION_DETAIL]", error);
     return serverErrorResponse();
+  }
+}
+
+/** Reemplaza la sesión completa: datos y lista de ejercicios (el orden es el del array). */
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const apiUser = await getApiUser(request);
+    if (!apiUser) return unauthorizedResponse();
+    const { id } = await params;
+
+    const body = await parseBody(request, sessionInputSchema);
+    if (body.response) return body.response;
+
+    const session = await replaceSession(apiUser.id, id, body.data);
+    if (!session) return notFoundResponse("Sesión no encontrada.");
+    return successResponse(session);
+  } catch (error) {
+    return planningErrorResponse("[MOBILE_SESSION_REPLACE]", error);
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const apiUser = await getApiUser(request);
+    if (!apiUser) return unauthorizedResponse();
+    const { id } = await params;
+
+    if (!(await deleteSession(apiUser.id, id))) return notFoundResponse("Sesión no encontrada.");
+    return successResponse(null, "Sesión eliminada.");
+  } catch (error) {
+    return planningErrorResponse("[MOBILE_SESSION_DELETE]", error);
   }
 }
