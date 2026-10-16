@@ -200,6 +200,21 @@ Requiere auth. Crea un ejercicio propio. Devuelve 201 con la misma forma que un 
 - 400 si el nombre tiene menos de 2 caracteres o un grupo muscular no es del catálogo ni del usuario.
 - 409 si ya existe un ejercicio con ese nombre (sin distinguir mayúsculas) entre los del sistema y los propios.
 
+### `GET /analytics/weekly-volume?weeks=8&today=YYYY-MM-DD`
+
+Requiere auth. Series por grupo muscular y por semana (lunes a domingo), de la más vieja a la actual.
+Mismo criterio que `getMuscleVolumeByRegion`: un set suma 1 al músculo primario y 0,5 a cada
+secundario (repartido si hay más de un primario); efectiva = RIR <= 2. `weeks` entre 1 y 26
+(default 8). `today` es la fecha local del teléfono y decide cuál es "esta semana" (el servidor está
+en UTC); si falta, se usa la fecha UTC.
+
+```ts
+{
+  weeks: Array<{ week_start: string; muscles: Record<muscle_group_id, { sets: number; effective_sets: number }> }>;
+  muscle_groups: Array<{ id: string; name: string }>; // los que aparecen en el período
+}
+```
+
 ### `GET /muscle-groups`
 
 Requiere auth. Grupos del sistema más los propios: `Array<{ id, name, is_custom }>`. Los nombres
