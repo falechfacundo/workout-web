@@ -18,8 +18,14 @@ const logger = createLogger("mesocycle-templates-actions");
 export type MesocycleTemplateFormData = MesocycleTemplate;
 
 // Obtener todas las plantillas (públicas y privadas para el usuario)
-export async function getMesocycleTemplates(userId: string) {
+export async function getMesocycleTemplates() {
   return safeAction(async () => {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+    const userId = user.id;
+
     logger.debug("Iniciando getMesocycleTemplates", { userId });
     const startTime = performance.now();
 
@@ -133,8 +139,16 @@ export async function getMesocycleTemplate(templateId: string) {
     logger.debug("Obteniendo plantilla de mesociclo por ID", { templateId });
 
     try {
-      const template = await db.mesocycleTemplate.findUnique({
-        where: { id: templateId },
+      const user = await getServerUser();
+      if (!user?.id) {
+        return { data: null, error: "Debes iniciar sesión" };
+      }
+
+      const template = await db.mesocycleTemplate.findFirst({
+        where: {
+          id: templateId,
+          OR: [{ user_id: user.id }, { is_default: true }, { is_public: true }],
+        },
         include: {
           goals: true,
           muscle_focus: { include: { muscle_group: true } },
@@ -274,8 +288,8 @@ export async function updateMesocycleTemplate(
       }
 
       // Actualizamos la plantilla principal
-      await db.mesocycleTemplate.update({
-        where: { id: validatedFields.id },
+      const { count } = await db.mesocycleTemplate.updateMany({
+        where: { id: validatedFields.id, user_id: user.id, is_default: false },
         data: {
           name: validatedFields.name,
           description: validatedFields.description,
@@ -283,6 +297,10 @@ export async function updateMesocycleTemplate(
           is_public: validatedFields.is_public,
         },
       });
+
+      if (count === 0) {
+        return { data: null, error: "Plantilla no encontrada" };
+      }
 
       // Eliminamos los objetivos anteriores e insertamos los nuevos
       await db.mesocycleTemplateGoal.deleteMany({
@@ -339,10 +357,19 @@ export async function updateMesocycleTemplate(
 export async function deleteMesocycleTemplate(templateId: string) {
   return safeAction(async () => {
     try {
+      const user = await getServerUser();
+      if (!user?.id) {
+        return { data: null, error: "Debes iniciar sesión" };
+      }
+
       // Las relaciones se eliminan en cascada desde el esquema de Prisma
-      await db.mesocycleTemplate.delete({
-        where: { id: templateId },
+      const { count } = await db.mesocycleTemplate.deleteMany({
+        where: { id: templateId, user_id: user.id, is_default: false },
       });
+
+      if (count === 0) {
+        return { data: null, error: "Plantilla no encontrada" };
+      }
 
       // Revalidamos la ruta para actualizar los datos
       revalidatePath("/dashboard/mesocycles/templates");

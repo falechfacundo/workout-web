@@ -417,8 +417,16 @@ export async function getExercisesByMuscleGroup(muscleGroupId: string) {
     logger.debug("Obteniendo ejercicios por grupo muscular", { muscleGroupId });
     const startTime = performance.now();
 
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const data = await db.exerciseMuscleGroup.findMany({
-      where: { muscle_group_id: muscleGroupId },
+      where: {
+        muscle_group_id: muscleGroupId,
+        exercise: { OR: [{ user_id: user.id }, { is_default: true }] },
+      },
       include: { exercise: true },
     });
 

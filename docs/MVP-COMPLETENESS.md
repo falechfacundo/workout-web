@@ -47,7 +47,8 @@ Este doc es la fuente de verdad del estado por feature y de la deuda técnica. P
 
 - [ ] **~132 warnings `no-explicit-any`**: tipar contra `lib/schemas/*` (Zod) o los tipos de Prisma. No agregar `any` nuevos.
 - [x] **Toasts duplicados**: unificado en Sonner (`components/ui/sonner.tsx`); se eliminaron Radix Toast y los dos `use-toast.ts`.
-- [ ] **Server actions sin chequeo de sesión y carga de datos en cliente**: ver [`REFACTOR-SERVER-COMPONENTS.md`](./REFACTOR-SERVER-COMPONENTS.md). La fase 0 (seguridad) es prioritaria.
+- [x] **Server actions sin chequeo de sesión** (fase 0 de [`REFACTOR-SERVER-COMPONENTS.md`](./REFACTOR-SERVER-COMPONENTS.md)): todas las acciones de `lib/actions/*` validan con `getServerUser()` y ya no reciben `userId` del cliente. `deleteMesocycleTemplate`/`updateMesocycleTemplate` filtran por dueño y excluyen las `is_default`; `createWorkoutLog` usa el usuario de la sesión y verifica que la sesión y el mesociclo sean suyos; `getMesocycleCompliance`, `getTrainingSessionsByMesocycle` y `getMesocycleTemplate` filtran por dueño. Las lecturas por `userId` que usa la API mobile viven en `lib/queries/` (`server-only`).
+- [ ] **Carga de datos en cliente**: fases 1+ de [`REFACTOR-SERVER-COMPONENTS.md`](./REFACTOR-SERVER-COMPONENTS.md).
 - [ ] **Unlink de Google sin passkey de respaldo**: si un usuario se registró directo con Google y nunca puso password, no puede desvincular (quedaría sin forma de entrar). Sería bueno ofrecer "set a password" desde Settings para destrabar ese caso.
 - [ ] **Migraciones versionadas**: hoy se usa `prisma db push` contra prod. Considerar `prisma migrate dev`/`deploy` con archivos de migración.
 - [ ] **Sin test suite**: agregar al menos smoke tests de auth + CRUD básico.

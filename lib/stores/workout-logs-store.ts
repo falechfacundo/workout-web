@@ -44,7 +44,7 @@ export const useWorkoutLogsStore = create<WorkoutLogsState>((set) => ({
     try {
       logger.debug("Fetching workout logs", { userId });
       set({ isLoading: true, error: null });
-      const result = await getWorkoutLogs(userId);
+      const result = await getWorkoutLogs();
 
       if (result.error) {
         logger.warn("Error fetching workout logs", {
@@ -164,7 +164,7 @@ export const useWorkoutLogsStore = create<WorkoutLogsState>((set) => ({
       set({ isLoading: true, error: null });
 
       try {
-        const data = await getWorkoutStats(userId, period);
+        const data = await getWorkoutStats(period);
         const elapsedTime = Math.round(performance.now() - startTime);
 
         logger.info("Workout stats fetched successfully", {

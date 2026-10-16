@@ -118,7 +118,7 @@ export default function DashboardPage() {
           fetchWorkoutStats(user.id, "month"),
         ]);
 
-        const metricsResult = await getPerformanceMetrics(user.id);
+        const metricsResult = await getPerformanceMetrics();
 
         if (metricsResult.error) {
           setError(t("errorMetrics"));
@@ -135,7 +135,7 @@ export default function DashboardPage() {
         setMetricsLoading(false);
 
         const { data: volumeData, error: volumeError } =
-          await getVolumeByMuscleGroup(user.id, "month");
+          await getVolumeByMuscleGroup("month");
 
         if (volumeError) {
           console.error("Error loading muscle group volume:", volumeError);

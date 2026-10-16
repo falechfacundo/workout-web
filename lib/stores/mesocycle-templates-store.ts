@@ -52,7 +52,7 @@ export const useMesocycleTemplatesStore = create<MesocycleTemplatesState>(
         set({ isLoading: true, error: null });
 
         // Usamos la server action directamente
-        const { data, error } = await getMesocycleTemplates(userId);
+        const { data, error } = await getMesocycleTemplates();
 
         if (error || !data) {
           logger.warn("Error fetching mesocycle templates", {

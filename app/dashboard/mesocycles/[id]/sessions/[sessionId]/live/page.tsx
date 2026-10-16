@@ -52,7 +52,7 @@ export default function LiveSessionPage() {
 
   useEffect(() => {
     if (!user) return;
-    getLastExercisePerformance(user.id)
+    getLastExercisePerformance()
       .then((result) => {
         const list = (result.data as LastPerformance[]) || [];
         setLastPerformance(

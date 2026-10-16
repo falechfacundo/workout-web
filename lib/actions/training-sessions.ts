@@ -41,8 +41,14 @@ const SessionExerciseSchema = z.object({
 
 export type SessionExerciseFormData = z.infer<typeof SessionExerciseSchema>;
 
-export async function getTrainingSessions(userId: string) {
+export async function getTrainingSessions() {
   return safeAction(async () => {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+    const userId = user.id;
+
     const startTime = performance.now();
     logger.debug("Starting getTrainingSessions", { userId });
 
@@ -83,12 +89,17 @@ export async function getTrainingSessions(userId: string) {
 
 export async function getTrainingSessionsByMesocycle(mesocycleId: string) {
   return safeAction(async () => {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     const startTime = performance.now();
     logger.debug("Starting getTrainingSessionsByMesocycle", { mesocycleId });
 
     try {
       const data = await db.trainingSession.findMany({
-        where: { mesocycle_id: mesocycleId },
+        where: { mesocycle_id: mesocycleId, mesocycle: { user_id: user.id } },
         orderBy: { scheduled_date: "asc" },
       });
 
@@ -807,11 +818,15 @@ export async function updateTrainingSessionStatus(id: string, status: string) {
 }
 
 export async function getScheduledSessionsByDateRange(
-  userId: string,
   startDate: string,
   endDate: string
 ) {
   return safeAction(async () => {
+    const user = await getServerUser();
+    if (!user?.id) {
+      return { data: null, error: "Debes iniciar sesión" };
+    }
+
     try {
       const data = await db.trainingSession.findMany({
         where: {
@@ -819,6 +834,7 @@ export async function getScheduledSessionsByDateRange(
             gte: new Date(startDate),
             lte: new Date(endDate),
           },
+          mesocycle: { user_id: user.id },
         },
         include: {
           mesocycle: { select: { name: true, user_id: true } },
@@ -826,13 +842,8 @@ export async function getScheduledSessionsByDateRange(
         orderBy: { scheduled_date: "asc" },
       });
 
-      // Filter to only sessions belonging to this user's mesocycles
-      const userSessions = (data || []).filter(
-        (s: any) => s.mesocycle?.user_id === userId
-      );
-
       return {
-        data: userSessions,
+        data,
         error: null,
       };
     } catch {

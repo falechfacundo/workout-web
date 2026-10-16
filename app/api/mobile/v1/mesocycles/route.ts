@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getApiUser } from "@/lib/auth";
-import { getMesocycles } from "@/lib/actions/mesocycles";
+import { getMesocycles } from "@/lib/queries/mesocycles";
 import { successResponse, unauthorizedResponse, serverErrorResponse } from "@/lib/apiResponse";
 
 export async function GET(request: NextRequest) {

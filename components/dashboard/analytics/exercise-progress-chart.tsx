@@ -46,7 +46,7 @@ export function ExerciseProgressChart({ userId }: ExerciseProgressChartProps) {
 
       setIsLoading(true)
       try {
-        const result = await getExerciseProgress(userId, selectedExercise)
+        const result = await getExerciseProgress(selectedExercise)
         setData(Array.isArray(result.data) ? result.data : [])
       } catch (error) {
         console.error("Failed to fetch exercise progress:", error)

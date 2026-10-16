@@ -19,6 +19,8 @@ Mitigación ya aplicada en el PR #3: Recharts se carga con `next/dynamic` en `/d
 
 ## Fase 0: seguridad (hacer primero, PR propio)
 
+**Estado: hecha.** Todas las acciones de `lib/actions/*` validan la sesión (el script de abajo no devuelve nada). `lib/queries/analytics.ts` tiene las lecturas de analytics por `userId` y `lib/queries/mesocycles.ts` tiene `getMesocycles` y `getActiveMesocycles`. Las rutas mobile importan de ahí. El resto de las lecturas (`workout-logs`, `training-sessions`, `mesocycle-templates`) sigue en las acciones con `getServerUser()`; se pasan a `lib/queries` cuando se migre la página que las use.
+
 Las server actions son endpoints POST públicos: cualquiera que tenga el ID de la acción puede invocarlas con los argumentos que quiera. Estas acciones **no verifican la sesión** y operan sobre el `userId` o `id` que reciben del cliente:
 
 | Acción | Archivo | Riesgo |

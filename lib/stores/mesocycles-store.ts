@@ -40,7 +40,7 @@ export const useMesocyclesStore = create<MesocyclesState>((set) => ({
     try {
       logger.debug("Fetching mesocycles", { userId });
       set({ isLoading: true, error: null });
-      const result = await getMesocycles(userId);
+      const result = await getMesocycles();
 
       if (result.error) {
         logger.warn("Error fetching mesocycles", {
@@ -80,7 +80,7 @@ export const useMesocyclesStore = create<MesocyclesState>((set) => ({
     try {
       logger.debug("Fetching active mesocycles", { userId });
       set({ isLoading: true, error: null });
-      const result = await getActiveMesocycles(userId);
+      const result = await getActiveMesocycles();
 
       if (result.error) {
         logger.warn("Error fetching active mesocycles", {

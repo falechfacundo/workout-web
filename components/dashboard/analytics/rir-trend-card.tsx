@@ -41,7 +41,7 @@ export function RirTrendCard({ userId }: { userId: string }) {
   useEffect(() => {
     async function load() {
       try {
-        const result = await getRirWeeklyTrend(userId, 10);
+        const result = await getRirWeeklyTrend(10);
         setData((result.data as WeekStat[]) || []);
       } catch (err) {
         console.error("Error loading RIR trend:", err);

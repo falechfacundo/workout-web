@@ -95,54 +95,70 @@ export async function POST(request: NextRequest) {
     // Idempotencia: si el celular no recibió la respuesta (red caída justo después de que el servidor guardó),
     // el reintento manda el MISMO payload. La clave natural es (usuario, start_time): un mismo usuario no
     // puede empezar dos entrenamientos en el mismo instante exacto. Devolvemos el existente en vez de duplicar.
-    const duplicate = await db.workoutLog.findFirst({
-      where: { user_id: apiUser.id, start_time: new Date(input.start_time) },
-      include: { exercise_logs: true },
-    });
+    const findDuplicate = () =>
+      db.workoutLog.findFirst({
+        where: { user_id: apiUser.id, start_time: new Date(input.start_time) },
+        include: { exercise_logs: true },
+      });
+
+    const duplicate = await findDuplicate();
     if (duplicate) {
       return successResponse(toPlainJSON(duplicate), "Entrenamiento ya guardado.");
     }
 
-    const workoutLog = await db.$transaction(async (tx) => {
-      const log = await tx.workoutLog.create({
-        data: {
-          user_id: apiUser.id,
-          training_session_id: input.training_session_id ?? null,
-          mesocycle_id: input.mesocycle_id ?? null,
-          date: new Date(input.date),
-          start_time: new Date(input.start_time),
-          end_time: new Date(input.end_time),
-          duration_minutes: input.duration_minutes ?? null,
-          notes: input.notes ?? null,
-          rating: input.rating ?? null,
-        },
-      });
-
-      if (input.sets.length > 0) {
-        await tx.exerciseLog.createMany({
-          data: input.sets.map((s) => ({
-            workout_log_id: log.id,
-            exercise_id: s.exercise_id,
-            set_number: s.set_number,
-            reps: s.reps,
-            weight: s.weight ?? null,
-            rir: s.rir ?? null,
-          })),
+    // Dos envíos simultáneos pueden pasar ambos el chequeo de arriba; el índice único (user_id, start_time)
+    // hace fallar al segundo con P2002 y le devolvemos el que ganó.
+    let workoutLog;
+    try {
+      workoutLog = await db.$transaction(async (tx) => {
+        const log = await tx.workoutLog.create({
+          data: {
+            user_id: apiUser.id,
+            training_session_id: input.training_session_id ?? null,
+            mesocycle_id: input.mesocycle_id ?? null,
+            date: new Date(input.date),
+            start_time: new Date(input.start_time),
+            end_time: new Date(input.end_time),
+            duration_minutes: input.duration_minutes ?? null,
+            notes: input.notes ?? null,
+            rating: input.rating ?? null,
+          },
         });
-      }
 
-      if (input.training_session_id && input.complete_session) {
-        await tx.trainingSession.update({
-          where: { id: input.training_session_id },
-          data: { status: "completed", completed_date: new Date(input.date) },
+        if (input.sets.length > 0) {
+          await tx.exerciseLog.createMany({
+            data: input.sets.map((s) => ({
+              workout_log_id: log.id,
+              exercise_id: s.exercise_id,
+              set_number: s.set_number,
+              reps: s.reps,
+              weight: s.weight ?? null,
+              rir: s.rir ?? null,
+            })),
+          });
+        }
+
+        if (input.training_session_id && input.complete_session) {
+          await tx.trainingSession.update({
+            where: { id: input.training_session_id },
+            data: { status: "completed", completed_date: new Date(input.date) },
+          });
+        }
+
+        return tx.workoutLog.findUniqueOrThrow({
+          where: { id: log.id },
+          include: { exercise_logs: true },
         });
-      }
-
-      return tx.workoutLog.findUniqueOrThrow({
-        where: { id: log.id },
-        include: { exercise_logs: true },
       });
-    });
+    } catch (error) {
+      if ((error as { code?: string })?.code === "P2002") {
+        const existing = await findDuplicate();
+        if (existing) {
+          return successResponse(toPlainJSON(existing), "Entrenamiento ya guardado.");
+        }
+      }
+      throw error;
+    }
 
     return createdResponse(toPlainJSON(workoutLog), "Entrenamiento guardado.");
   } catch (error) {

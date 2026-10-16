@@ -43,7 +43,7 @@ export const useTrainingSessionsStore = create<TrainingSessionsState>(
       try {
         logger.debug("Fetching training sessions", { userId });
         set({ isLoading: true, error: null });
-        const result = await getTrainingSessions(userId);
+        const result = await getTrainingSessions();
 
         if (result.error) {
           logger.warn("Error fetching training sessions", {

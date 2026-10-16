@@ -23,7 +23,7 @@ export function VolumeByMuscleGroup({ userId }: VolumeByMuscleGroupProps) {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        const result = await getVolumeByMuscleGroup(userId, period)
+        const result = await getVolumeByMuscleGroup(period)
         setData(Array.isArray(result.data) ? result.data : [])
       } catch (error) {
         console.error("Failed to fetch volume data:", error)
