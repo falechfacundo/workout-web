@@ -177,10 +177,23 @@ que el action web) y `training_sessions` con sus `session_exercises`
 
 Requiere auth, escopeado vía `mesocycle.user_id`. Pensado para la pantalla
 del Workout Player. Devuelve la sesión + `session_exercises` (con `exercise`)
-+ `last_performance`: un mapa `exercise_id -> { weight, reps, rir, date }`
-con el set más reciente registrado de cada ejercicio **de esta sesión**
-(no de todos los ejercicios del usuario — más barato que
-`getLastExercisePerformance`, que trae los últimos 60 logs completos).
+y tres mapas por `exercise_id`, solo de los ejercicios **de esta sesión**:
+
+```ts
+// Todos los sets del último entrenamiento que incluyó el ejercicio, por set_number.
+// Se buscan en los últimos 60 entrenamientos del usuario; si no aparece, no hay entrada.
+last_sets: Record<string, { date: string; sets: Array<{ set_number: number; weight: number | null; reps: number; rir: number | null }> }>;
+
+// Récords históricos. best_e1rm = Epley ajustado por RIR: weight * (1 + min(reps + rir, 12) / 30),
+// o weight si reps + rir <= 1. Es la misma fórmula que usa la app para detectar un PR en vivo.
+records: Record<string, { best_e1rm: number; best_weight: number }>;
+
+// Compatibilidad con APKs anteriores a last_sets: el set más pesado de la última sesión.
+last_performance: Record<string, { weight: number | null; reps: number; rir: number | null; date: string }>;
+```
+
+Hasta 2026-10, `last_performance` era un set cualquiera del último entrenamiento (sin orden por
+set) y la consulta traía todo el historial de esos ejercicios sin límite.
 
 ### `GET /workout-logs`
 

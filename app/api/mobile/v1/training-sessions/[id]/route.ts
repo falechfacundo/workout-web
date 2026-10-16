@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getApiUser } from "@/lib/auth";
+import { getLastSessions, getRecords } from "@/lib/mobile/exercise-history";
 import {
   successResponse,
   unauthorizedResponse,
@@ -30,41 +31,35 @@ export async function GET(
 
     if (!session) return notFoundResponse("Sesión no encontrada.");
 
-    // Última performance por ejercicio (solo para los ejercicios de esta
-    // sesión), para prefillear el player en vivo.
-    const exerciseIds = session.session_exercises.map((se) => se.exercise_id);
-    const recentLogs = exerciseIds.length
-      ? await db.exerciseLog.findMany({
-          where: {
-            exercise_id: { in: exerciseIds },
-            workout_log: { user_id: apiUser.id },
-          },
-          select: {
-            exercise_id: true,
-            weight: true,
-            reps: true,
-            rir: true,
-            workout_log: { select: { date: true } },
-          },
-          orderBy: { workout_log: { date: "desc" } },
-        })
-      : [];
+    // Historial para el Workout Player, solo de los ejercicios de esta sesión:
+    // - last_sets: todos los sets del último entrenamiento de cada ejercicio (columna "Anterior").
+    // - records: mejor e1RM y peso máximo histórico (detección de PR en vivo).
+    // - last_performance: compatibilidad con APKs viejos. Antes era un set cualquiera del último
+    //   entrenamiento (sin orden por set) y traía todo el historial sin límite; ahora es el set más
+    //   pesado de la última sesión.
+    const exerciseIds = [...new Set(session.session_exercises.map((se) => se.exercise_id))];
+    const [lastSessions, records] = await Promise.all([
+      getLastSessions(apiUser.id, exerciseIds),
+      getRecords(apiUser.id, exerciseIds),
+    ]);
 
     const lastPerformance: Record<
       string,
       { weight: number | null; reps: number; rir: number | null; date: string }
     > = {};
-    for (const log of recentLogs) {
-      if (lastPerformance[log.exercise_id]) continue; // ya tenemos la más reciente (orden desc)
-      lastPerformance[log.exercise_id] = {
-        weight: log.weight != null ? Number(log.weight) : null,
-        reps: log.reps,
-        rir: log.rir,
-        date: log.workout_log.date.toISOString().split("T")[0],
-      };
+    for (const [exerciseId, last] of Object.entries(lastSessions)) {
+      const top = last.sets.reduce((best, set) =>
+        (set.weight ?? -1) > (best.weight ?? -1) ? set : best
+      );
+      lastPerformance[exerciseId] = { weight: top.weight, reps: top.reps, rir: top.rir, date: last.date };
     }
 
-    return successResponse({ ...session, last_performance: lastPerformance });
+    return successResponse({
+      ...session,
+      last_performance: lastPerformance,
+      last_sets: lastSessions,
+      records,
+    });
   } catch (error) {
     console.error("[MOBILE_TRAINING_SESSION_DETAIL]", error);
     return serverErrorResponse();
