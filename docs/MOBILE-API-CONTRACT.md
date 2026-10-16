@@ -215,6 +215,24 @@ en UTC); si falta, se usa la fecha UTC.
 }
 ```
 
+### `GET /exercises/:id/history`
+
+Requiere auth. 404 si el ejercicio no es del sistema ni del usuario. Pantalla de progreso de un
+ejercicio. Trae solo los sets de ese ejercicio del usuario.
+
+```ts
+{
+  exercise: /* misma forma que un ítem de GET /exercises */;
+  // Una entrada por entrenamiento, del más viejo al más nuevo. e1RM con la fórmula de records.
+  series: Array<{ date: string; best_e1rm: number | null; top_weight: number | null; volume: number; sets: number }>;
+  // Mayor peso hecho con AL MENOS N reps (un 100 × 5 también es el 3RM si no hay nada mejor).
+  rep_maxes: Record<"1" | "3" | "5" | "8" | "10", { weight: number; reps: number; date: string } | null>;
+  best_e1rm: { value: number; weight: number; reps: number; date: string } | null;
+  // Últimos 50 entrenamientos con el ejercicio, más reciente primero.
+  sessions: Array<{ workout_log_id: string; date: string; sets: Array<{ set_number; weight; reps; rir }> }>;
+}
+```
+
 ### `GET /muscle-groups`
 
 Requiere auth. Grupos del sistema más los propios: `Array<{ id, name, is_custom }>`. Los nombres
