@@ -28,6 +28,10 @@ export async function GET(
           orderBy: { order_index: "asc" },
           include: { exercise: true },
         },
+        // El Player calcula la semana del mesociclo (con la fecha local) y el RIR objetivo.
+        mesocycle: {
+          select: { start_date: true, end_date: true, rir_start: true, rir_end: true, deload_last_week: true },
+        },
       },
     });
 

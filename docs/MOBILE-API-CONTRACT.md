@@ -171,7 +171,50 @@ problema real antes de agregar cursor pagination.
 Requiere auth, escopeado por `user_id` (404 si no es tuyo). Incluye
 `goals`, `focus_muscle_groups` (array de IDs, no objetos completos — igual
 que el action web) y `training_sessions` con sus `session_exercises`
-(incluye el `exercise` completo, no solo el ID).
+(incluye el `exercise` completo, no solo el ID). Las sesiones vienen por `scheduled_date`; las que
+no tienen fecha, al final por orden de creación. `GET /mesocycles` suma `_count.training_sessions`.
+
+### Planificación: `POST /mesocycles` · `PATCH /mesocycles/:id` · `DELETE /mesocycles/:id` · `POST /mesocycles/:id/duplicate`
+
+Requiere auth; lo ajeno o inexistente es 404. Body del POST (el PATCH acepta cualquier subconjunto):
+
+```ts
+{
+  name: string;                       // 1–100
+  description?: string | null;
+  start_date: "YYYY-MM-DD"; end_date: "YYYY-MM-DD"; // end >= start (en el PATCH, contra lo guardado)
+  status?: "planned" | "in_progress" | "completed" | "cancelled";
+  focus_muscle_groups?: string[];     // reemplaza el foco completo
+  // Periodización: RIR objetivo de la semana 1 y de la última semana de carga (0–5, los dos o
+  // ninguno). La app calcula la rampa por semana. deload_last_week: la última semana es de descarga.
+  rir_start?: number | null; rir_end?: number | null; deload_last_week?: boolean;
+}
+```
+
+Borrar conserva los entrenamientos registrados (`mesocycle_id` pasa a null). Duplicar copia sesiones,
+foco, objetivos y periodización, con todo en `planned`.
+
+### Sesiones: `POST /mesocycles/:id/sessions` · `PUT /training-sessions/:id` · `DELETE /training-sessions/:id` · `POST /training-sessions/:id/duplicate`
+
+El `PUT` reemplaza la sesión entera en una transacción; el orden de los ejercicios es el del array.
+Los ejercicios tienen que ser del sistema o propios (400 si no). Con `day_of_week`, `scheduled_date`
+queda en el primer día de esa semana a partir del inicio del mesociclo.
+
+```ts
+{
+  name: string; description?: string | null;
+  day_of_week?: 0..6 | null;          // 0 = domingo
+  duration_minutes?: number | null;
+  exercises: Array<{ exercise_id: string; sets: 1..20; reps: 1..100; rir?: 0..10 | null;
+                     rest_between_sets?: number | null; rest_after_exercise?: number | null; notes?: string | null }>;
+}
+```
+
+### `GET /mesocycle-templates` · `POST /mesocycle-templates/:id/instantiate`
+
+Plantillas propias, del sistema y públicas, con sesiones y ejercicios resumidos. `instantiate` recibe
+`{ start_date: "YYYY-MM-DD", name?: string }`, crea el mesociclo con `duration_weeks` semanas y
+agenda cada sesión en su primer día a partir del inicio.
 
 ### `GET /exercises`
 
@@ -242,7 +285,9 @@ del sistema están en inglés; la app los traduce.
 
 Requiere auth, escopeado vía `mesocycle.user_id`. Pensado para la pantalla
 del Workout Player. Devuelve la sesión + `session_exercises` (con `exercise`)
-y tres mapas por `exercise_id`, solo de los ejercicios **de esta sesión**:
+y `mesocycle: { start_date, end_date, rir_start, rir_end, deload_last_week }` (para que el Player
+calcule la semana y el RIR objetivo con la fecha local), más tres mapas por `exercise_id`, solo de
+los ejercicios **de esta sesión**:
 
 ```ts
 // Todos los sets del último entrenamiento que incluyó el ejercicio, por set_number.
@@ -446,10 +491,6 @@ después codear:
   fuerza logout limpio (`setUnauthorizedHandler` en `lib/api/client.ts` del
   repo mobile) — así que al menos no queda la UI mobile mostrando errores 401
   en loop, pero el usuario sí tiene que loguearse de nuevo entero.
-- **Mesocycle / training-session / exercise CRUD (crear/editar/borrar) desde mobile.**
-  Deliberadamente fuera de v1: la planificación se hace en el dashboard web,
-  mobile es "ver el plan + loguear el entrenamiento". Si eso cambia, es
-  trabajo nuevo, no un gap a completar rápido.
 - **Push notifications.** OJO con esto — no es solo "agregar un tipo de
   notificación": `WorkoutReminder` (`day_of_week`/`time_of_day`/
   `notification_type`) es hoy **puro CRUD sin dispatcher**. No hay cron, ni
