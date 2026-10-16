@@ -27,7 +27,8 @@ export async function GET(
         mesocycle_goals: true,
         mesocycle_muscle_group_focus: { include: { muscle_group: true } },
         training_sessions: {
-          orderBy: { scheduled_date: "asc" },
+          // Las sesiones sin fecha (sin día de la semana) van al final, en orden de creación.
+          orderBy: [{ scheduled_date: { sort: "asc", nulls: "last" } }, { created_at: "asc" }],
           include: {
             session_exercises: {
               orderBy: { order_index: "asc" },

@@ -57,6 +57,18 @@ export class PlanningError extends Error {}
 
 const toDate = (s: string) => new Date(`${s}T00:00:00Z`);
 
+/**
+ * Primer día >= `start` que cae en `dayOfWeek` (0 = domingo, igual que `Date.getUTCDay`). Las
+ * sesiones del mesociclo son la semana tipo y se agendan en su primera ocurrencia, como en el seed.
+ */
+export function firstOccurrence(start: Date, dayOfWeek: number): Date {
+  const offset = (dayOfWeek - start.getUTCDay() + 7) % 7;
+  return new Date(start.getTime() + offset * 86_400_000);
+}
+
+const scheduledFor = (start: Date, dayOfWeek: number | null | undefined) =>
+  dayOfWeek == null ? null : firstOccurrence(start, dayOfWeek);
+
 /** Los ejercicios del plan solo pueden ser del sistema o propios (igual que en POST /workout-logs). */
 async function assertExercisesAllowed(userId: string, exercises: SessionInput["exercises"]) {
   const ids = [...new Set(exercises.map((e) => e.exercise_id))];
@@ -197,7 +209,7 @@ const sessionInclude = {
 };
 
 export async function createSession(userId: string, mesocycleId: string, input: SessionInput) {
-  const mesocycle = await db.mesocycle.findFirst({ where: { id: mesocycleId, user_id: userId }, select: { id: true } });
+  const mesocycle = await db.mesocycle.findFirst({ where: { id: mesocycleId, user_id: userId }, select: { start_date: true } });
   if (!mesocycle) return null;
   await assertExercisesAllowed(userId, input.exercises);
 
@@ -209,6 +221,7 @@ export async function createSession(userId: string, mesocycleId: string, input: 
       day_of_week: input.day_of_week ?? null,
       duration_minutes: input.duration_minutes ?? null,
       status: "planned",
+      scheduled_date: scheduledFor(mesocycle.start_date, input.day_of_week),
       session_exercises: { create: exerciseRows(input.exercises) },
     },
     include: sessionInclude,
@@ -223,7 +236,7 @@ export async function createSession(userId: string, mesocycleId: string, input: 
 export async function replaceSession(userId: string, sessionId: string, input: SessionInput) {
   const owned = await db.trainingSession.findFirst({
     where: { id: sessionId, mesocycle: { user_id: userId } },
-    select: { id: true },
+    select: { mesocycle: { select: { start_date: true } } },
   });
   if (!owned) return null;
   await assertExercisesAllowed(userId, input.exercises);
@@ -237,6 +250,7 @@ export async function replaceSession(userId: string, sessionId: string, input: S
         description: input.description || null,
         day_of_week: input.day_of_week ?? null,
         duration_minutes: input.duration_minutes ?? null,
+        scheduled_date: scheduledFor(owned.mesocycle.start_date, input.day_of_week),
         session_exercises: { create: exerciseRows(input.exercises) },
       },
       include: sessionInclude,
