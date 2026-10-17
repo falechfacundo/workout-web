@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
     const from = weekStarts(today, weeks)[0];
 
     const logs = await db.exerciseLog.findMany({
-      where: { workout_log: { user_id: apiUser.id, date: { gte: new Date(`${from}T00:00:00Z`) } } },
+      // Los calentamientos no son series de trabajo: no suman volumen.
+      where: { set_type: { not: "warmup" }, workout_log: { user_id: apiUser.id, date: { gte: new Date(`${from}T00:00:00Z`) } } },
       select: { exercise_id: true, rir: true, workout_log: { select: { date: true } } },
     });
 

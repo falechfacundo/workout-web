@@ -243,6 +243,8 @@ model SessionExercise {
   rest_after_exercise Int?
   notes         String?
   order_index   Int
+  // Ejercicios consecutivos con el mismo número forman una superserie (null = solo).
+  superset_group Int?
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
@@ -288,6 +290,8 @@ model ExerciseLog {
   weight        Decimal? @db.Decimal(10, 2)
   rir           Int?
   notes         String?
+  // normal | warmup | drop | failure. Los calentamientos no cuentan para récords ni volumen.
+  set_type      String   @default("normal")
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 

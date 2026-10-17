@@ -17,6 +17,8 @@ const setInputSchema = z.object({
   reps: z.number().int().min(0),
   weight: z.number().min(0).nullable().optional(),
   rir: z.number().int().min(0).max(10).nullable().optional(),
+  // APKs viejos no lo mandan: queda "normal".
+  set_type: z.enum(["normal", "warmup", "drop", "failure"]).default("normal"),
 });
 
 const createWorkoutLogSchema = z.object({
@@ -144,6 +146,7 @@ export async function POST(request: NextRequest) {
               reps: s.reps,
               weight: s.weight ?? null,
               rir: s.rir ?? null,
+              set_type: s.set_type,
             })),
           });
         }

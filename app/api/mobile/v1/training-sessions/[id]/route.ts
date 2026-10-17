@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getApiUser } from "@/lib/auth";
-import { getLastSessions, getRecords } from "@/lib/mobile/exercise-history";
+import { getLastSessions, getRecords, isWorkSet } from "@/lib/mobile/exercise-history";
 import { deleteSession, replaceSession, sessionInputSchema } from "@/lib/mobile/planning";
 import { parseBody, planningErrorResponse } from "@/lib/mobile/route-helpers";
 import {
@@ -54,7 +54,8 @@ export async function GET(
       { weight: number | null; reps: number; rir: number | null; date: string }
     > = {};
     for (const [exerciseId, last] of Object.entries(lastSessions)) {
-      const top = last.sets.reduce((best, set) =>
+      const work = last.sets.filter(isWorkSet);
+      const top = (work.length ? work : last.sets).reduce((best, set) =>
         (set.weight ?? -1) > (best.weight ?? -1) ? set : best
       );
       lastPerformance[exerciseId] = { weight: top.weight, reps: top.reps, rir: top.rir, date: last.date };

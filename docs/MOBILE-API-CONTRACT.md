@@ -206,7 +206,8 @@ queda en el primer día de esa semana a partir del inicio del mesociclo.
   day_of_week?: 0..6 | null;          // 0 = domingo
   duration_minutes?: number | null;
   exercises: Array<{ exercise_id: string; sets: 1..20; reps: 1..100; rir?: 0..10 | null;
-                     rest_between_sets?: number | null; rest_after_exercise?: number | null; notes?: string | null }>;
+                     rest_between_sets?: number | null; rest_after_exercise?: number | null; notes?: string | null;
+                     superset_group?: 1..40 | null }>; // consecutivos con el mismo número = superserie
 }
 ```
 
@@ -304,6 +305,10 @@ last_performance: Record<string, { weight: number | null; reps: number; rir: num
 
 Hasta 2026-10, `last_performance` era un set cualquiera del último entrenamiento (sin orden por
 set) y la consulta traía todo el historial de esos ejercicios sin límite.
+
+### Tipos de set
+
+Cada set de `POST /workout-logs` acepta `set_type: "normal" | "warmup" | "drop" | "failure"` (default `normal`, así los APKs viejos siguen funcionando). `last_sets`, `GET /exercises/:id/history` y `GET /workout-logs/:id` lo devuelven. Los `warmup` se muestran pero **no cuentan** para `records`, e1RM, `rep_maxes`, `series[].sets` ni `analytics/weekly-volume`.
 
 ### `GET /workout-logs`
 
