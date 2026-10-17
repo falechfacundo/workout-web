@@ -50,6 +50,8 @@ export const sessionExerciseInputSchema = z.object({
   rest_between_sets: z.number().int().min(0).max(1800).nullable().optional(),
   rest_after_exercise: z.number().int().min(0).max(1800).nullable().optional(),
   notes: z.string().trim().max(500).nullable().optional(),
+  // Ejercicios consecutivos con el mismo número forman una superserie.
+  superset_group: z.number().int().min(1).max(40).nullable().optional(),
 });
 
 /** Una sesión completa: el editor mobile guarda todo de una vez y el orden es el del array. */
@@ -108,6 +110,7 @@ const exerciseRows = (exercises: SessionInput["exercises"]) =>
     rest_after_exercise: e.rest_after_exercise ?? null,
     notes: e.notes || null,
     order_index: i,
+    superset_group: e.superset_group ?? null,
   }));
 
 export async function createMesocycle(userId: string, input: MesocycleInput) {
@@ -215,8 +218,8 @@ export async function duplicateMesocycle(userId: string, id: string) {
           status: "planned",
           scheduled_date: s.scheduled_date,
           session_exercises: {
-            create: s.session_exercises.map(({ exercise_id, sets, reps, rir, rest_between_sets, rest_after_exercise, notes, order_index }) => ({
-              exercise_id, sets, reps, rir, rest_between_sets, rest_after_exercise, notes, order_index,
+            create: s.session_exercises.map(({ exercise_id, sets, reps, rir, rest_between_sets, rest_after_exercise, notes, order_index, superset_group }) => ({
+              exercise_id, sets, reps, rir, rest_between_sets, rest_after_exercise, notes, order_index, superset_group,
             })),
           },
         })),
@@ -301,8 +304,8 @@ export async function duplicateSession(userId: string, sessionId: string) {
       duration_minutes: source.duration_minutes,
       status: "planned",
       session_exercises: {
-        create: source.session_exercises.map(({ exercise_id, sets, reps, rir, rest_between_sets, rest_after_exercise, notes, order_index }) => ({
-          exercise_id, sets, reps, rir, rest_between_sets, rest_after_exercise, notes, order_index,
+        create: source.session_exercises.map(({ exercise_id, sets, reps, rir, rest_between_sets, rest_after_exercise, notes, order_index, superset_group }) => ({
+          exercise_id, sets, reps, rir, rest_between_sets, rest_after_exercise, notes, order_index, superset_group,
         })),
       },
     },

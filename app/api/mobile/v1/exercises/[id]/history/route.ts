@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getApiUser } from "@/lib/auth";
-import { summarizeHistory } from "@/lib/mobile/exercise-history";
+import { summarizeHistory, type SetType } from "@/lib/mobile/exercise-history";
 import {
   successResponse,
   unauthorizedResponse,
@@ -45,6 +45,7 @@ export async function GET(
         weight: true,
         reps: true,
         rir: true,
+        set_type: true,
         workout_log: { select: { id: true, date: true } },
       },
     });
@@ -57,6 +58,7 @@ export async function GET(
         weight: l.weight != null ? Number(l.weight) : null,
         reps: l.reps,
         rir: l.rir,
+        set_type: l.set_type as SetType,
       }))
     );
 

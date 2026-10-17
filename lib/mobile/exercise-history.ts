@@ -1,12 +1,18 @@
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 
+export type SetType = "normal" | "warmup" | "drop" | "failure";
+
 export type LastSet = {
   set_number: number;
   weight: number | null;
   reps: number;
   rir: number | null;
+  set_type: SetType;
 };
+
+/** Los calentamientos se muestran, pero no cuentan para récords, e1RM, rep maxes ni volumen. */
+export const isWorkSet = (s: { set_type?: string | null }) => s.set_type !== "warmup";
 
 export type LastSession = { date: string; sets: LastSet[] };
 
@@ -43,7 +49,7 @@ export async function getLastSessions(
         exercise_logs: {
           where: { exercise_id: { in: [...missing] } },
           orderBy: { set_number: "asc" },
-          select: { exercise_id: true, set_number: true, weight: true, reps: true, rir: true },
+          select: { exercise_id: true, set_number: true, weight: true, reps: true, rir: true, set_type: true },
         },
       },
     });
@@ -64,6 +70,7 @@ export async function getLastSessions(
           weight: el.weight != null ? Number(el.weight) : null,
           reps: el.reps,
           rir: el.rir,
+          set_type: el.set_type as SetType,
         });
       }
     }
@@ -92,6 +99,7 @@ export async function getRecords(
       AND el.exercise_id IN (${Prisma.join(exerciseIds)})
       AND el.weight > 0
       AND el.reps > 0
+      AND el.set_type <> 'warmup'
     GROUP BY el.exercise_id
   `;
   const out: Record<string, ExerciseRecord> = {};
@@ -121,6 +129,7 @@ export type HistoryRow = {
   weight: number | null;
   reps: number;
   rir: number | null;
+  set_type: SetType;
 };
 
 export type ExerciseHistory = {
@@ -140,7 +149,7 @@ export function summarizeHistory(rows: HistoryRow[], maxSessions = 50): Exercise
   const byLog = new Map<string, { date: string; sets: LastSet[] }>();
   for (const r of rows) {
     const entry = byLog.get(r.workout_log_id) ?? { date: r.date, sets: [] };
-    entry.sets.push({ set_number: r.set_number, weight: r.weight, reps: r.reps, rir: r.rir });
+    entry.sets.push({ set_number: r.set_number, weight: r.weight, reps: r.reps, rir: r.rir, set_type: r.set_type });
     byLog.set(r.workout_log_id, entry);
   }
   const logs = [...byLog.entries()]
@@ -151,14 +160,15 @@ export function summarizeHistory(rows: HistoryRow[], maxSessions = 50): Exercise
     let best: number | null = null;
     let top: number | null = null;
     let volume = 0;
-    for (const s of l.sets) {
+    const work = l.sets.filter(isWorkSet);
+    for (const s of work) {
       if (s.weight == null || s.weight <= 0 || s.reps <= 0) continue;
       const est = e1rm(s.weight, s.reps, s.rir);
       best = best === null ? est : Math.max(best, est);
       top = top === null ? s.weight : Math.max(top, s.weight);
       volume += s.weight * s.reps;
     }
-    return { date: l.date, best_e1rm: best === null ? null : r1(best), top_weight: top, volume: Math.round(volume), sets: l.sets.length };
+    return { date: l.date, best_e1rm: best === null ? null : r1(best), top_weight: top, volume: Math.round(volume), sets: work.length };
   });
 
   const rep_maxes: ExerciseHistory["rep_maxes"] = {};
@@ -166,7 +176,7 @@ export function summarizeHistory(rows: HistoryRow[], maxSessions = 50): Exercise
   let best_e1rm: ExerciseHistory["best_e1rm"] = null;
   for (const l of logs) {
     for (const s of l.sets) {
-      if (s.weight == null || s.weight <= 0 || s.reps <= 0) continue;
+      if (!isWorkSet(s) || s.weight == null || s.weight <= 0 || s.reps <= 0) continue;
       for (const n of REP_MAX_TARGETS) {
         const cur = rep_maxes[n];
         if (s.reps >= n && (!cur || s.weight > cur.weight)) rep_maxes[n] = { weight: s.weight, reps: s.reps, date: l.date };

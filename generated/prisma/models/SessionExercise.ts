@@ -33,6 +33,7 @@ export type SessionExerciseAvgAggregateOutputType = {
   rest_between_sets: number | null
   rest_after_exercise: number | null
   order_index: number | null
+  superset_group: number | null
 }
 
 export type SessionExerciseSumAggregateOutputType = {
@@ -42,6 +43,7 @@ export type SessionExerciseSumAggregateOutputType = {
   rest_between_sets: number | null
   rest_after_exercise: number | null
   order_index: number | null
+  superset_group: number | null
 }
 
 export type SessionExerciseMinAggregateOutputType = {
@@ -55,6 +57,7 @@ export type SessionExerciseMinAggregateOutputType = {
   rest_after_exercise: number | null
   notes: string | null
   order_index: number | null
+  superset_group: number | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -70,6 +73,7 @@ export type SessionExerciseMaxAggregateOutputType = {
   rest_after_exercise: number | null
   notes: string | null
   order_index: number | null
+  superset_group: number | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -85,6 +89,7 @@ export type SessionExerciseCountAggregateOutputType = {
   rest_after_exercise: number
   notes: number
   order_index: number
+  superset_group: number
   created_at: number
   updated_at: number
   _all: number
@@ -98,6 +103,7 @@ export type SessionExerciseAvgAggregateInputType = {
   rest_between_sets?: true
   rest_after_exercise?: true
   order_index?: true
+  superset_group?: true
 }
 
 export type SessionExerciseSumAggregateInputType = {
@@ -107,6 +113,7 @@ export type SessionExerciseSumAggregateInputType = {
   rest_between_sets?: true
   rest_after_exercise?: true
   order_index?: true
+  superset_group?: true
 }
 
 export type SessionExerciseMinAggregateInputType = {
@@ -120,6 +127,7 @@ export type SessionExerciseMinAggregateInputType = {
   rest_after_exercise?: true
   notes?: true
   order_index?: true
+  superset_group?: true
   created_at?: true
   updated_at?: true
 }
@@ -135,6 +143,7 @@ export type SessionExerciseMaxAggregateInputType = {
   rest_after_exercise?: true
   notes?: true
   order_index?: true
+  superset_group?: true
   created_at?: true
   updated_at?: true
 }
@@ -150,6 +159,7 @@ export type SessionExerciseCountAggregateInputType = {
   rest_after_exercise?: true
   notes?: true
   order_index?: true
+  superset_group?: true
   created_at?: true
   updated_at?: true
   _all?: true
@@ -252,6 +262,7 @@ export type SessionExerciseGroupByOutputType = {
   rest_after_exercise: number | null
   notes: string | null
   order_index: number
+  superset_group: number | null
   created_at: Date
   updated_at: Date
   _count: SessionExerciseCountAggregateOutputType | null
@@ -290,6 +301,7 @@ export type SessionExerciseWhereInput = {
   rest_after_exercise?: Prisma.IntNullableFilter<"SessionExercise"> | number | null
   notes?: Prisma.StringNullableFilter<"SessionExercise"> | string | null
   order_index?: Prisma.IntFilter<"SessionExercise"> | number
+  superset_group?: Prisma.IntNullableFilter<"SessionExercise"> | number | null
   created_at?: Prisma.DateTimeFilter<"SessionExercise"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"SessionExercise"> | Date | string
   training_session?: Prisma.XOR<Prisma.TrainingSessionScalarRelationFilter, Prisma.TrainingSessionWhereInput>
@@ -307,6 +319,7 @@ export type SessionExerciseOrderByWithRelationInput = {
   rest_after_exercise?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   order_index?: Prisma.SortOrder
+  superset_group?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   training_session?: Prisma.TrainingSessionOrderByWithRelationInput
@@ -327,6 +340,7 @@ export type SessionExerciseWhereUniqueInput = Prisma.AtLeast<{
   rest_after_exercise?: Prisma.IntNullableFilter<"SessionExercise"> | number | null
   notes?: Prisma.StringNullableFilter<"SessionExercise"> | string | null
   order_index?: Prisma.IntFilter<"SessionExercise"> | number
+  superset_group?: Prisma.IntNullableFilter<"SessionExercise"> | number | null
   created_at?: Prisma.DateTimeFilter<"SessionExercise"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"SessionExercise"> | Date | string
   training_session?: Prisma.XOR<Prisma.TrainingSessionScalarRelationFilter, Prisma.TrainingSessionWhereInput>
@@ -344,6 +358,7 @@ export type SessionExerciseOrderByWithAggregationInput = {
   rest_after_exercise?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   order_index?: Prisma.SortOrder
+  superset_group?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   _count?: Prisma.SessionExerciseCountOrderByAggregateInput
@@ -367,6 +382,7 @@ export type SessionExerciseScalarWhereWithAggregatesInput = {
   rest_after_exercise?: Prisma.IntNullableWithAggregatesFilter<"SessionExercise"> | number | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"SessionExercise"> | string | null
   order_index?: Prisma.IntWithAggregatesFilter<"SessionExercise"> | number
+  superset_group?: Prisma.IntNullableWithAggregatesFilter<"SessionExercise"> | number | null
   created_at?: Prisma.DateTimeWithAggregatesFilter<"SessionExercise"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"SessionExercise"> | Date | string
 }
@@ -380,6 +396,7 @@ export type SessionExerciseCreateInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
   training_session: Prisma.TrainingSessionCreateNestedOneWithoutSession_exercisesInput
@@ -397,6 +414,7 @@ export type SessionExerciseUncheckedCreateInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -410,6 +428,7 @@ export type SessionExerciseUpdateInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   training_session?: Prisma.TrainingSessionUpdateOneRequiredWithoutSession_exercisesNestedInput
@@ -427,6 +446,7 @@ export type SessionExerciseUncheckedUpdateInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -442,6 +462,7 @@ export type SessionExerciseCreateManyInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -455,6 +476,7 @@ export type SessionExerciseUpdateManyMutationInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -470,6 +492,7 @@ export type SessionExerciseUncheckedUpdateManyInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -495,6 +518,7 @@ export type SessionExerciseCountOrderByAggregateInput = {
   rest_after_exercise?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   order_index?: Prisma.SortOrder
+  superset_group?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -506,6 +530,7 @@ export type SessionExerciseAvgOrderByAggregateInput = {
   rest_between_sets?: Prisma.SortOrder
   rest_after_exercise?: Prisma.SortOrder
   order_index?: Prisma.SortOrder
+  superset_group?: Prisma.SortOrder
 }
 
 export type SessionExerciseMaxOrderByAggregateInput = {
@@ -519,6 +544,7 @@ export type SessionExerciseMaxOrderByAggregateInput = {
   rest_after_exercise?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   order_index?: Prisma.SortOrder
+  superset_group?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -534,6 +560,7 @@ export type SessionExerciseMinOrderByAggregateInput = {
   rest_after_exercise?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   order_index?: Prisma.SortOrder
+  superset_group?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -545,6 +572,7 @@ export type SessionExerciseSumOrderByAggregateInput = {
   rest_between_sets?: Prisma.SortOrder
   rest_after_exercise?: Prisma.SortOrder
   order_index?: Prisma.SortOrder
+  superset_group?: Prisma.SortOrder
 }
 
 export type SessionExerciseCreateNestedManyWithoutExerciseInput = {
@@ -648,6 +676,7 @@ export type SessionExerciseCreateWithoutExerciseInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
   training_session: Prisma.TrainingSessionCreateNestedOneWithoutSession_exercisesInput
@@ -663,6 +692,7 @@ export type SessionExerciseUncheckedCreateWithoutExerciseInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -707,6 +737,7 @@ export type SessionExerciseScalarWhereInput = {
   rest_after_exercise?: Prisma.IntNullableFilter<"SessionExercise"> | number | null
   notes?: Prisma.StringNullableFilter<"SessionExercise"> | string | null
   order_index?: Prisma.IntFilter<"SessionExercise"> | number
+  superset_group?: Prisma.IntNullableFilter<"SessionExercise"> | number | null
   created_at?: Prisma.DateTimeFilter<"SessionExercise"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"SessionExercise"> | Date | string
 }
@@ -720,6 +751,7 @@ export type SessionExerciseCreateWithoutTraining_sessionInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
   exercise: Prisma.ExerciseCreateNestedOneWithoutSession_exercisesInput
@@ -735,6 +767,7 @@ export type SessionExerciseUncheckedCreateWithoutTraining_sessionInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -775,6 +808,7 @@ export type SessionExerciseCreateManyExerciseInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -788,6 +822,7 @@ export type SessionExerciseUpdateWithoutExerciseInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   training_session?: Prisma.TrainingSessionUpdateOneRequiredWithoutSession_exercisesNestedInput
@@ -803,6 +838,7 @@ export type SessionExerciseUncheckedUpdateWithoutExerciseInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -817,6 +853,7 @@ export type SessionExerciseUncheckedUpdateManyWithoutExerciseInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -831,6 +868,7 @@ export type SessionExerciseCreateManyTraining_sessionInput = {
   rest_after_exercise?: number | null
   notes?: string | null
   order_index: number
+  superset_group?: number | null
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -844,6 +882,7 @@ export type SessionExerciseUpdateWithoutTraining_sessionInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exercise?: Prisma.ExerciseUpdateOneRequiredWithoutSession_exercisesNestedInput
@@ -859,6 +898,7 @@ export type SessionExerciseUncheckedUpdateWithoutTraining_sessionInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -873,6 +913,7 @@ export type SessionExerciseUncheckedUpdateManyWithoutTraining_sessionInput = {
   rest_after_exercise?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order_index?: Prisma.IntFieldUpdateOperationsInput | number
+  superset_group?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -890,6 +931,7 @@ export type SessionExerciseSelect<ExtArgs extends runtime.Types.Extensions.Inter
   rest_after_exercise?: boolean
   notes?: boolean
   order_index?: boolean
+  superset_group?: boolean
   created_at?: boolean
   updated_at?: boolean
   training_session?: boolean | Prisma.TrainingSessionDefaultArgs<ExtArgs>
@@ -907,6 +949,7 @@ export type SessionExerciseSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   rest_after_exercise?: boolean
   notes?: boolean
   order_index?: boolean
+  superset_group?: boolean
   created_at?: boolean
   updated_at?: boolean
   training_session?: boolean | Prisma.TrainingSessionDefaultArgs<ExtArgs>
@@ -924,6 +967,7 @@ export type SessionExerciseSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   rest_after_exercise?: boolean
   notes?: boolean
   order_index?: boolean
+  superset_group?: boolean
   created_at?: boolean
   updated_at?: boolean
   training_session?: boolean | Prisma.TrainingSessionDefaultArgs<ExtArgs>
@@ -941,11 +985,12 @@ export type SessionExerciseSelectScalar = {
   rest_after_exercise?: boolean
   notes?: boolean
   order_index?: boolean
+  superset_group?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type SessionExerciseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "training_session_id" | "exercise_id" | "sets" | "reps" | "rir" | "rest_between_sets" | "rest_after_exercise" | "notes" | "order_index" | "created_at" | "updated_at", ExtArgs["result"]["sessionExercise"]>
+export type SessionExerciseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "training_session_id" | "exercise_id" | "sets" | "reps" | "rir" | "rest_between_sets" | "rest_after_exercise" | "notes" | "order_index" | "superset_group" | "created_at" | "updated_at", ExtArgs["result"]["sessionExercise"]>
 export type SessionExerciseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   training_session?: boolean | Prisma.TrainingSessionDefaultArgs<ExtArgs>
   exercise?: boolean | Prisma.ExerciseDefaultArgs<ExtArgs>
@@ -976,6 +1021,7 @@ export type $SessionExercisePayload<ExtArgs extends runtime.Types.Extensions.Int
     rest_after_exercise: number | null
     notes: string | null
     order_index: number
+    superset_group: number | null
     created_at: Date
     updated_at: Date
   }, ExtArgs["result"]["sessionExercise"]>
@@ -1413,6 +1459,7 @@ export interface SessionExerciseFieldRefs {
   readonly rest_after_exercise: Prisma.FieldRef<"SessionExercise", 'Int'>
   readonly notes: Prisma.FieldRef<"SessionExercise", 'String'>
   readonly order_index: Prisma.FieldRef<"SessionExercise", 'Int'>
+  readonly superset_group: Prisma.FieldRef<"SessionExercise", 'Int'>
   readonly created_at: Prisma.FieldRef<"SessionExercise", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"SessionExercise", 'DateTime'>
 }

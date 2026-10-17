@@ -274,6 +274,7 @@ export const SessionExerciseScalarFieldEnum = {
   rest_after_exercise: 'rest_after_exercise',
   notes: 'notes',
   order_index: 'order_index',
+  superset_group: 'superset_group',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const
@@ -308,6 +309,7 @@ export const ExerciseLogScalarFieldEnum = {
   weight: 'weight',
   rir: 'rir',
   notes: 'notes',
+  set_type: 'set_type',
   created_at: 'created_at',
   updated_at: 'updated_at'
 } as const

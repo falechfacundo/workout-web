@@ -49,6 +49,7 @@ export type ExerciseLogMinAggregateOutputType = {
   weight: runtime.Decimal | null
   rir: number | null
   notes: string | null
+  set_type: string | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -62,6 +63,7 @@ export type ExerciseLogMaxAggregateOutputType = {
   weight: runtime.Decimal | null
   rir: number | null
   notes: string | null
+  set_type: string | null
   created_at: Date | null
   updated_at: Date | null
 }
@@ -75,6 +77,7 @@ export type ExerciseLogCountAggregateOutputType = {
   weight: number
   rir: number
   notes: number
+  set_type: number
   created_at: number
   updated_at: number
   _all: number
@@ -104,6 +107,7 @@ export type ExerciseLogMinAggregateInputType = {
   weight?: true
   rir?: true
   notes?: true
+  set_type?: true
   created_at?: true
   updated_at?: true
 }
@@ -117,6 +121,7 @@ export type ExerciseLogMaxAggregateInputType = {
   weight?: true
   rir?: true
   notes?: true
+  set_type?: true
   created_at?: true
   updated_at?: true
 }
@@ -130,6 +135,7 @@ export type ExerciseLogCountAggregateInputType = {
   weight?: true
   rir?: true
   notes?: true
+  set_type?: true
   created_at?: true
   updated_at?: true
   _all?: true
@@ -230,6 +236,7 @@ export type ExerciseLogGroupByOutputType = {
   weight: runtime.Decimal | null
   rir: number | null
   notes: string | null
+  set_type: string
   created_at: Date
   updated_at: Date
   _count: ExerciseLogCountAggregateOutputType | null
@@ -266,6 +273,7 @@ export type ExerciseLogWhereInput = {
   weight?: Prisma.DecimalNullableFilter<"ExerciseLog"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.IntNullableFilter<"ExerciseLog"> | number | null
   notes?: Prisma.StringNullableFilter<"ExerciseLog"> | string | null
+  set_type?: Prisma.StringFilter<"ExerciseLog"> | string
   created_at?: Prisma.DateTimeFilter<"ExerciseLog"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"ExerciseLog"> | Date | string
   workout_log?: Prisma.XOR<Prisma.WorkoutLogScalarRelationFilter, Prisma.WorkoutLogWhereInput>
@@ -281,6 +289,7 @@ export type ExerciseLogOrderByWithRelationInput = {
   weight?: Prisma.SortOrderInput | Prisma.SortOrder
   rir?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  set_type?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   workout_log?: Prisma.WorkoutLogOrderByWithRelationInput
@@ -299,6 +308,7 @@ export type ExerciseLogWhereUniqueInput = Prisma.AtLeast<{
   weight?: Prisma.DecimalNullableFilter<"ExerciseLog"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.IntNullableFilter<"ExerciseLog"> | number | null
   notes?: Prisma.StringNullableFilter<"ExerciseLog"> | string | null
+  set_type?: Prisma.StringFilter<"ExerciseLog"> | string
   created_at?: Prisma.DateTimeFilter<"ExerciseLog"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"ExerciseLog"> | Date | string
   workout_log?: Prisma.XOR<Prisma.WorkoutLogScalarRelationFilter, Prisma.WorkoutLogWhereInput>
@@ -314,6 +324,7 @@ export type ExerciseLogOrderByWithAggregationInput = {
   weight?: Prisma.SortOrderInput | Prisma.SortOrder
   rir?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  set_type?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
   _count?: Prisma.ExerciseLogCountOrderByAggregateInput
@@ -335,6 +346,7 @@ export type ExerciseLogScalarWhereWithAggregatesInput = {
   weight?: Prisma.DecimalNullableWithAggregatesFilter<"ExerciseLog"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.IntNullableWithAggregatesFilter<"ExerciseLog"> | number | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"ExerciseLog"> | string | null
+  set_type?: Prisma.StringWithAggregatesFilter<"ExerciseLog"> | string
   created_at?: Prisma.DateTimeWithAggregatesFilter<"ExerciseLog"> | Date | string
   updated_at?: Prisma.DateTimeWithAggregatesFilter<"ExerciseLog"> | Date | string
 }
@@ -346,6 +358,7 @@ export type ExerciseLogCreateInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
   workout_log: Prisma.WorkoutLogCreateNestedOneWithoutExercise_logsInput
@@ -361,6 +374,7 @@ export type ExerciseLogUncheckedCreateInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -372,6 +386,7 @@ export type ExerciseLogUpdateInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workout_log?: Prisma.WorkoutLogUpdateOneRequiredWithoutExercise_logsNestedInput
@@ -387,6 +402,7 @@ export type ExerciseLogUncheckedUpdateInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -400,6 +416,7 @@ export type ExerciseLogCreateManyInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -411,6 +428,7 @@ export type ExerciseLogUpdateManyMutationInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -424,6 +442,7 @@ export type ExerciseLogUncheckedUpdateManyInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -447,6 +466,7 @@ export type ExerciseLogCountOrderByAggregateInput = {
   weight?: Prisma.SortOrder
   rir?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  set_type?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -467,6 +487,7 @@ export type ExerciseLogMaxOrderByAggregateInput = {
   weight?: Prisma.SortOrder
   rir?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  set_type?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -480,6 +501,7 @@ export type ExerciseLogMinOrderByAggregateInput = {
   weight?: Prisma.SortOrder
   rir?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  set_type?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
   updated_at?: Prisma.SortOrder
 }
@@ -582,6 +604,7 @@ export type ExerciseLogCreateWithoutExerciseInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
   workout_log: Prisma.WorkoutLogCreateNestedOneWithoutExercise_logsInput
@@ -595,6 +618,7 @@ export type ExerciseLogUncheckedCreateWithoutExerciseInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -637,6 +661,7 @@ export type ExerciseLogScalarWhereInput = {
   weight?: Prisma.DecimalNullableFilter<"ExerciseLog"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.IntNullableFilter<"ExerciseLog"> | number | null
   notes?: Prisma.StringNullableFilter<"ExerciseLog"> | string | null
+  set_type?: Prisma.StringFilter<"ExerciseLog"> | string
   created_at?: Prisma.DateTimeFilter<"ExerciseLog"> | Date | string
   updated_at?: Prisma.DateTimeFilter<"ExerciseLog"> | Date | string
 }
@@ -648,6 +673,7 @@ export type ExerciseLogCreateWithoutWorkout_logInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
   exercise: Prisma.ExerciseCreateNestedOneWithoutExercise_logsInput
@@ -661,6 +687,7 @@ export type ExerciseLogUncheckedCreateWithoutWorkout_logInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -699,6 +726,7 @@ export type ExerciseLogCreateManyExerciseInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -710,6 +738,7 @@ export type ExerciseLogUpdateWithoutExerciseInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   workout_log?: Prisma.WorkoutLogUpdateOneRequiredWithoutExercise_logsNestedInput
@@ -723,6 +752,7 @@ export type ExerciseLogUncheckedUpdateWithoutExerciseInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -735,6 +765,7 @@ export type ExerciseLogUncheckedUpdateManyWithoutExerciseInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -747,6 +778,7 @@ export type ExerciseLogCreateManyWorkout_logInput = {
   weight?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: number | null
   notes?: string | null
+  set_type?: string
   created_at?: Date | string
   updated_at?: Date | string
 }
@@ -758,6 +790,7 @@ export type ExerciseLogUpdateWithoutWorkout_logInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   exercise?: Prisma.ExerciseUpdateOneRequiredWithoutExercise_logsNestedInput
@@ -771,6 +804,7 @@ export type ExerciseLogUncheckedUpdateWithoutWorkout_logInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -783,6 +817,7 @@ export type ExerciseLogUncheckedUpdateManyWithoutWorkout_logInput = {
   weight?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   rir?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  set_type?: Prisma.StringFieldUpdateOperationsInput | string
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -798,6 +833,7 @@ export type ExerciseLogSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   weight?: boolean
   rir?: boolean
   notes?: boolean
+  set_type?: boolean
   created_at?: boolean
   updated_at?: boolean
   workout_log?: boolean | Prisma.WorkoutLogDefaultArgs<ExtArgs>
@@ -813,6 +849,7 @@ export type ExerciseLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   weight?: boolean
   rir?: boolean
   notes?: boolean
+  set_type?: boolean
   created_at?: boolean
   updated_at?: boolean
   workout_log?: boolean | Prisma.WorkoutLogDefaultArgs<ExtArgs>
@@ -828,6 +865,7 @@ export type ExerciseLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   weight?: boolean
   rir?: boolean
   notes?: boolean
+  set_type?: boolean
   created_at?: boolean
   updated_at?: boolean
   workout_log?: boolean | Prisma.WorkoutLogDefaultArgs<ExtArgs>
@@ -843,11 +881,12 @@ export type ExerciseLogSelectScalar = {
   weight?: boolean
   rir?: boolean
   notes?: boolean
+  set_type?: boolean
   created_at?: boolean
   updated_at?: boolean
 }
 
-export type ExerciseLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workout_log_id" | "exercise_id" | "set_number" | "reps" | "weight" | "rir" | "notes" | "created_at" | "updated_at", ExtArgs["result"]["exerciseLog"]>
+export type ExerciseLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workout_log_id" | "exercise_id" | "set_number" | "reps" | "weight" | "rir" | "notes" | "set_type" | "created_at" | "updated_at", ExtArgs["result"]["exerciseLog"]>
 export type ExerciseLogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workout_log?: boolean | Prisma.WorkoutLogDefaultArgs<ExtArgs>
   exercise?: boolean | Prisma.ExerciseDefaultArgs<ExtArgs>
@@ -876,6 +915,7 @@ export type $ExerciseLogPayload<ExtArgs extends runtime.Types.Extensions.Interna
     weight: runtime.Decimal | null
     rir: number | null
     notes: string | null
+    set_type: string
     created_at: Date
     updated_at: Date
   }, ExtArgs["result"]["exerciseLog"]>
@@ -1311,6 +1351,7 @@ export interface ExerciseLogFieldRefs {
   readonly weight: Prisma.FieldRef<"ExerciseLog", 'Decimal'>
   readonly rir: Prisma.FieldRef<"ExerciseLog", 'Int'>
   readonly notes: Prisma.FieldRef<"ExerciseLog", 'String'>
+  readonly set_type: Prisma.FieldRef<"ExerciseLog", 'String'>
   readonly created_at: Prisma.FieldRef<"ExerciseLog", 'DateTime'>
   readonly updated_at: Prisma.FieldRef<"ExerciseLog", 'DateTime'>
 }
